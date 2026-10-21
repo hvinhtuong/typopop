@@ -17,14 +17,28 @@
         <div class="pill" id="hearts">💗💗💗💗💗</div>
         <button class="pill" id="mute" aria-label="Bật tắt âm thanh">🔊</button>
     </div>
-  <div class="ov" id="start">
-    <h1>Typo Pop</h1>
-    <p>Gõ đúng từ tiếng Anh đang rơi để bắn hạ chúng trước khi chạm đất.</p>
-    <div class="lv" id="modes"><button data-m="0" class="on">Dễ</button><button data-m="1">Vừa</button><button data-m="2">Khó</button></div>
-    <button class="btn" id="play">Chơi ngay</button>
-    <button class="btn btn-sub" id="btn-rank-start">🏆 Bảng xếp hạng</button>
-    <p style="font-size:14px;opacity:.8">Trên điện thoại: chạm vào màn hình để mở bàn phím, chạm vào từ để chọn.</p>
-  </div>
+    <div class="ov" id="start">
+        <h1>Typo Pop</h1>
+        <p>Gõ đúng từ tiếng Anh đang rơi để bắn hạ chúng trước khi chạm đất.</p>
+
+        <!-- Chọn độ khó -->
+        <div class="lv" id="modes"><button data-m="0" class="on">Dễ</button><button data-m="1">Vừa</button><button data-m="2">Khó</button></div>
+
+        <!-- Chọn chủ đề từ vựng -->
+        <div class="topic-container">
+            <div class="topic-label">Chủ đề:</div>
+            <div class="lv" id="topics">
+                <button data-topic="all" class="on">Tất cả</button>
+                <button data-topic="it">Công nghệ</button>
+                <button data-topic="travel">Du lịch</button>
+                <button data-topic="daily">Giao tiếp</button>
+            </div>
+        </div>
+
+        <button class="btn" id="play">Chơi ngay</button>
+        <button class="btn btn-sub" id="btn-rank-start">🏆 Bảng xếp hạng</button>
+        <p style="font-size:14px;opacity:.8">Trên điện thoại: chạm vào màn hình để mở bàn phím, chạm vào từ để chọn.</p>
+    </div>
 
   <!-- Màn hình nhập tên người chơi -->
   <div class="ov hide" id="name-modal">

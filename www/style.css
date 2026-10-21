@@ -386,3 +386,40 @@ h1 {
     opacity: .85;
     text-align: right
 }
+
+.topic-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: 2px 0
+}
+
+.topic-label {
+    font-size: 14px;
+    color: #d9d3ff;
+    font-weight: 600
+}
+
+#topics {
+    flex-wrap: wrap;
+    justify-content: center
+}
+
+#topics button {
+    border: 2px solid rgba(255, 255, 255, .3);
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 14px
+}
+
+#topics button.on {
+    background: var(--sun);
+    color: #3a1250;
+    border-color: var(--sun)
+}

@@ -1,7 +1,18 @@
-const WORDS = `chef:đầu bếp|international:quốc tế|soap:xà phòng|laughter:tiếng cười|recognize:nhận ra|human:con người|monkey:con khỉ|running:đang chạy|tip:mẹo|businessmen:các doanh nhân|mirror:cái gương|temperature:nhiệt độ|better:tốt hơn|cat:con mèo|sun:mặt trời|book:quyển sách|milk:sữa|tree:cái cây|fish:con cá|happy:vui vẻ|water:nước|friend:bạn bè|apple:quả táo|window:cửa sổ|garden:khu vườn|family:gia đình|bridge:cây cầu|season:mùa|travel:du lịch|library:thư viện|hungry:đói bụng|answer:câu trả lời|breakfast:bữa sáng|weather:thời tiết|holiday:kỳ nghỉ|kitchen:nhà bếp|delicious:ngon tuyệt|beautiful:xinh đẹp|dangerous:nguy hiểm|important:quan trọng|different:khác biệt|adventure:cuộc phiêu lưu|information:thông tin|education:giáo dục|dictionary:từ điển|vegetable:rau củ|exercise:bài tập|language:ngôn ngữ|neighbor:hàng xóm|umbrella:cái ô|treasure:kho báu|rainbow:cầu vồng|elephant:con voi|computer:máy tính|mountain:ngọn núi|customer:khách hàng|chocolate:sô-cô-la|butterfly:con bướm|restaurant:nhà hàng|pronounce:phát âm|comfortable:thoải mái|opportunity:cơ hội`.split('|').map(s => {
-    const [a, b] = s.split(':');
-    return {w: a, vi: b}
-});
+const WORD_PACKS = {
+    all: [], // Sẽ tự động tổng hợp tất cả chủ đề bên dưới
+    it: `developer:lập trình viên|software:phần mềm|hardware:phần cứng|database:cơ sở dữ liệu|network:mạng máy tính|security:bảo mật|cloud:điện toán đám mây|framework:khung làm việc|deployment:triển khai|repository:kho lưu trữ|algorithm:thuật toán|debugging:gỡ lỗi|interface:giao diện|compile:biên dịch|terminal:cửa sổ lệnh|variable:biến|function:hàm|syntax:cú pháp|server:máy chủ|client:máy khách`.split('|').map(s=>{const[a,b]=s.split(':');return{w:a,vi:b}}),
+    travel: `airport:sân bay|passport:hộ chiếu|luggage:hành lý|hotel:khách sạn|ticket:vé xe máy bay|reservation:đặt chỗ|destination:điểm đến|souvenir:quà lưu niệm|guidebook:sách hướng dẫn|itinerary:lịch trình|adventure:cuộc phiêu lưu|landscape:phong cảnh|island:hòn đảo|beach:bãi biển|mountain:ngọn núi|journey:chuyến đi|sightseeing:vãn cảnh|passport:hộ chiếu|customs:hải quan|vacation:kỳ nghỉ`.split('|').map(s=>{const[a,b]=s.split(':');return{w:a,vi:b}}),
+    daily: `chef:đầu bếp|soap:xà phòng|laughter:tiếng cười|human:con người|monkey:con khỉ|running:đang chạy|tip:mẹo|mirror:cái gương|temperature:nhiệt độ|better:tốt hơn|cat:con mèo|sun:mặt trời|book:quyển sách|milk:sữa|tree:cái cây|fish:con cá|happy:vui vẻ|water:nước|friend:bạn bè|apple:quả táo|window:cửa sổ|garden:khu vườn|family:gia đình|bridge:cây cầu|season:mùa|library:thư viện|hungry:đói bụng|answer:câu trả lời|breakfast:bữa sáng|weather:thời tiết|holiday:kỳ nghỉ|kitchen:nhà bếp|delicious:ngon tuyệt|beautiful:xinh đẹp|dangerous:nguy hiểm|important:quan trọng|different:khác biệt|information:thông tin|education:giáo dục|dictionary:từ điển|vegetable:rau củ|exercise:bài tập|language:ngôn ngữ|neighbor:hàng xóm|umbrella:cái ô|treasure:kho báu|rainbow:cầu vồng|elephant:con voi|computer:máy tính|customer:khách hàng|chocolate:sô-cô-la|butterfly:con bướm|restaurant:nhà hàng|pronounce:phát âm|comfortable:thoải mái|opportunity:cơ hội`.split('|').map(s=>{const[a,b]=s.split(':');return{w:a,vi:b}})
+};
+
+// Gộp chung vào gói 'all' và loại bỏ các từ trùng lặp
+const allMap = new Map();
+[...WORD_PACKS.it, ...WORD_PACKS.travel, ...WORD_PACKS.daily].forEach(o => allMap.set(o.w, o));
+WORD_PACKS.all = [...allMap.values()];
+
+let currentTopic = 'all';
+let WORDS = WORD_PACKS.all;
+
 const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
 const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
 const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -727,10 +738,20 @@ $('btn-rank-over').onclick=()=>openRank('over');$('close-rank').onclick=()=>{
   snd(480,.08,'triangle',.06);
 };
 
+// Chọn chế độ độ khó
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
-  if(state==='paused')return;
-  mode=+b.dataset.m;
-  document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x===b));
+    if(state==='paused')return;
+    mode=+b.dataset.m;
+    document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x===b));
+});
+
+// Chọn chủ đề từ vựng
+document.querySelectorAll('#topics button').forEach(b=>b.onclick=()=>{
+    if(state==='paused')return;
+    currentTopic=b.dataset.topic;
+    WORDS=WORD_PACKS[currentTopic]||WORD_PACKS.all;
+    document.querySelectorAll('#topics button').forEach(x=>x.classList.toggle('on',x===b));
+    snd(500,.06,'triangle',.05);
 });
 
 document.addEventListener('visibilitychange',()=>{
