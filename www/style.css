@@ -423,3 +423,39 @@ h1 {
     color: #3a1250;
     border-color: var(--sun)
 }
+
+.restart-settings {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0;
+    background: rgba(255, 255, 255, .05);
+    padding: 8px 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, .1)
+}
+
+#over-topics button, #over-modes button {
+    border: 2px solid rgba(255, 255, 255, .3);
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px
+}
+
+#over-topics button.on {
+    background: var(--sun);
+    color: #3a1250;
+    border-color: var(--sun)
+}
+
+#over-modes button.on {
+    background: var(--mint);
+    color: #06402e;
+    border-color: var(--mint)
+}

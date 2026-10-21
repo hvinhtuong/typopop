@@ -1,8 +1,17 @@
 const WORD_PACKS = {
     all: [], // Sẽ tự động tổng hợp tất cả chủ đề bên dưới
-    it: `developer:lập trình viên|software:phần mềm|hardware:phần cứng|database:cơ sở dữ liệu|network:mạng máy tính|security:bảo mật|cloud:điện toán đám mây|framework:khung làm việc|deployment:triển khai|repository:kho lưu trữ|algorithm:thuật toán|debugging:gỡ lỗi|interface:giao diện|compile:biên dịch|terminal:cửa sổ lệnh|variable:biến|function:hàm|syntax:cú pháp|server:máy chủ|client:máy khách`.split('|').map(s=>{const[a,b]=s.split(':');return{w:a,vi:b}}),
-    travel: `airport:sân bay|passport:hộ chiếu|luggage:hành lý|hotel:khách sạn|ticket:vé xe máy bay|reservation:đặt chỗ|destination:điểm đến|souvenir:quà lưu niệm|guidebook:sách hướng dẫn|itinerary:lịch trình|adventure:cuộc phiêu lưu|landscape:phong cảnh|island:hòn đảo|beach:bãi biển|mountain:ngọn núi|journey:chuyến đi|sightseeing:vãn cảnh|passport:hộ chiếu|customs:hải quan|vacation:kỳ nghỉ`.split('|').map(s=>{const[a,b]=s.split(':');return{w:a,vi:b}}),
-    daily: `chef:đầu bếp|soap:xà phòng|laughter:tiếng cười|human:con người|monkey:con khỉ|running:đang chạy|tip:mẹo|mirror:cái gương|temperature:nhiệt độ|better:tốt hơn|cat:con mèo|sun:mặt trời|book:quyển sách|milk:sữa|tree:cái cây|fish:con cá|happy:vui vẻ|water:nước|friend:bạn bè|apple:quả táo|window:cửa sổ|garden:khu vườn|family:gia đình|bridge:cây cầu|season:mùa|library:thư viện|hungry:đói bụng|answer:câu trả lời|breakfast:bữa sáng|weather:thời tiết|holiday:kỳ nghỉ|kitchen:nhà bếp|delicious:ngon tuyệt|beautiful:xinh đẹp|dangerous:nguy hiểm|important:quan trọng|different:khác biệt|information:thông tin|education:giáo dục|dictionary:từ điển|vegetable:rau củ|exercise:bài tập|language:ngôn ngữ|neighbor:hàng xóm|umbrella:cái ô|treasure:kho báu|rainbow:cầu vồng|elephant:con voi|computer:máy tính|customer:khách hàng|chocolate:sô-cô-la|butterfly:con bướm|restaurant:nhà hàng|pronounce:phát âm|comfortable:thoải mái|opportunity:cơ hội`.split('|').map(s=>{const[a,b]=s.split(':');return{w:a,vi:b}})
+    it: `developer:lập trình viên|software:phần mềm|hardware:phần cứng|database:cơ sở dữ liệu|network:mạng máy tính|security:bảo mật|cloud:điện toán đám mây|framework:khung làm việc|deployment:triển khai|repository:kho lưu trữ|algorithm:thuật toán|debugging:gỡ lỗi|interface:giao diện|compile:biên dịch|terminal:cửa sổ lệnh|variable:biến|function:hàm|syntax:cú pháp|server:máy chủ|client:máy khách`.split('|').map(s => {
+        const [a, b] = s.split(':');
+        return {w: a, vi: b}
+    }),
+    travel: `airport:sân bay|passport:hộ chiếu|luggage:hành lý|hotel:khách sạn|ticket:vé xe máy bay|reservation:đặt chỗ|destination:điểm đến|souvenir:quà lưu niệm|guidebook:sách hướng dẫn|itinerary:lịch trình|adventure:cuộc phiêu lưu|landscape:phong cảnh|island:hòn đảo|beach:bãi biển|mountain:ngọn núi|journey:chuyến đi|sightseeing:vãn cảnh|passport:hộ chiếu|customs:hải quan|vacation:kỳ nghỉ`.split('|').map(s => {
+        const [a, b] = s.split(':');
+        return {w: a, vi: b}
+    }),
+    daily: `chef:đầu bếp|soap:xà phòng|laughter:tiếng cười|human:con người|monkey:con khỉ|running:đang chạy|tip:mẹo|mirror:cái gương|temperature:nhiệt độ|better:tốt hơn|cat:con mèo|sun:mặt trời|book:quyển sách|milk:sữa|tree:cái cây|fish:con cá|happy:vui vẻ|water:nước|friend:bạn bè|apple:quả táo|window:cửa sổ|garden:khu vườn|family:gia đình|bridge:cây cầu|season:mùa|library:thư viện|hungry:đói bụng|answer:câu trả lời|breakfast:bữa sáng|weather:thời tiết|holiday:kỳ nghỉ|kitchen:nhà bếp|delicious:ngon tuyệt|beautiful:xinh đẹp|dangerous:nguy hiểm|important:quan trọng|different:khác biệt|information:thông tin|education:giáo dục|dictionary:từ điển|vegetable:rau củ|exercise:bài tập|language:ngôn ngữ|neighbor:hàng xóm|umbrella:cái ô|treasure:kho báu|rainbow:cầu vồng|elephant:con voi|computer:máy tính|customer:khách hàng|chocolate:sô-cô-la|butterfly:con bướm|restaurant:nhà hàng|pronounce:phát âm|comfortable:thoải mái|opportunity:cơ hội`.split('|').map(s => {
+        const [a, b] = s.split(':');
+        return {w: a, vi: b}
+    })
 };
 
 // Gộp chung vào gói 'all' và loại bỏ các từ trùng lặp
@@ -23,54 +32,75 @@ const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2
 const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
 const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
 let W = 0, H = 0, DPR = 1, mode = 0, state = 'menu', last = 0;
-let words,parts,bullets,floats,stars,score,lives,combo,level,killed,hits,misses,missed,target,spawnT,shake,bestEver=0,topScores=[],lastRecordTime=0,playerName='',rankFrom='start',mascot;
-try{
-  bestEver=+localStorage.getItem('mtv-best')||0;
-  playerName=localStorage.getItem('mtv-name')||'';
-  topScores=JSON.parse(localStorage.getItem('mtv-top5')||'[]');
-  if(!topScores.length && bestEver>0){
-    topScores=[{name:playerName||'Người chơi',score:bestEver,lvl:1,mode:0,date:'Kỷ lục cũ',t:0}];
-  }
-}catch(e){}
+let words, parts, bullets, floats, stars, score, lives, combo, level, killed, hits, misses, missed, target, spawnT,
+    shake, bestEver = 0, topScores = [], lastRecordTime = 0, playerName = '', rankFrom = 'start', mascot;
+try {
+    bestEver = +localStorage.getItem('mtv-best') || 0;
+    playerName = localStorage.getItem('mtv-name') || '';
+    topScores = JSON.parse(localStorage.getItem('mtv-top5') || '[]');
+    if (!topScores.length && bestEver > 0) {
+        topScores = [{name: playerName || 'Người chơi', score: bestEver, lvl: 1, mode: 0, date: 'Kỷ lục cũ', t: 0}];
+    }
+} catch (e) {
+}
 
 /* ---------- âm thanh ---------- */
 /* ---------- âm thanh & phát âm ---------- */
-let AC,muted=false,enVoice=null;
+let AC, muted = false, enVoice = null;
 
 // Tự động tìm giọng đọc tiếng Anh tự nhiên nhất có sẵn trên máy
-function loadVoice(){
-  if(!('speechSynthesis' in window))return;
-  const vs=speechSynthesis.getVoices();
-  enVoice=vs.find(v=>/en[-_]US/i.test(v.lang)&&/Google|Natural|Siri|Samantha/i.test(v.name))
-      ||vs.find(v=>/en[-_]US/i.test(v.lang))
-      ||vs.find(v=>/^en/i.test(v.lang))||null;
-}
-if('speechSynthesis' in window){
-  loadVoice();
-  speechSynthesis.onvoiceschanged=loadVoice;
+function loadVoice() {
+    if (!('speechSynthesis' in window)) return;
+    const vs = speechSynthesis.getVoices();
+    enVoice = vs.find(v => /en[-_]US/i.test(v.lang) && /Google|Natural|Siri|Samantha/i.test(v.name))
+        || vs.find(v => /en[-_]US/i.test(v.lang))
+        || vs.find(v => /^en/i.test(v.lang)) || null;
 }
 
-function speak(word){
-  if(muted||!('speechSynthesis' in window))return;
-  try{
-    speechSynthesis.cancel(); // Ngắt từ đang đọc dở nếu người chơi bắn nổ liên tiếp
-    const u=new SpeechSynthesisUtterance(word);
-    if(enVoice)u.voice=enVoice;
-    u.lang='en-US';
-    u.rate=1.0;  // Tốc độ đọc vừa phải, rõ chữ
-    u.pitch=1.05;
-    u.volume=1.0;
-    speechSynthesis.speak(u);
-  }catch(e){}
+if ('speechSynthesis' in window) {
+    loadVoice();
+    speechSynthesis.onvoiceschanged = loadVoice;
 }
 
-function snd(f,d=.08,type='sine',v=.07,slide=0,delay=0){if(muted)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime+delay,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(f*slide,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
-const sPop=n=>[523,659,784,1047].forEach((f,i)=>snd(f*(1+Math.min(n,8)*.03),.14,'triangle',.07,0,i*.05));
-$('mute').onclick=e=>{
-  muted=!muted;
-  if(muted&&'speechSynthesis' in window)speechSynthesis.cancel();
-  e.target.textContent=muted?'🔇':'🔊';
-  refocus();
+function speak(word) {
+    if (muted || !('speechSynthesis' in window)) return;
+    try {
+        speechSynthesis.cancel(); // Ngắt từ đang đọc dở nếu người chơi bắn nổ liên tiếp
+        const u = new SpeechSynthesisUtterance(word);
+        if (enVoice) u.voice = enVoice;
+        u.lang = 'en-US';
+        u.rate = 1.0;  // Tốc độ đọc vừa phải, rõ chữ
+        u.pitch = 1.05;
+        u.volume = 1.0;
+        speechSynthesis.speak(u);
+    } catch (e) {
+    }
+}
+
+function snd(f, d = .08, type = 'sine', v = .07, slide = 0, delay = 0) {
+    if (muted) return;
+    try {
+        AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+        const t = AC.currentTime + delay, o = AC.createOscillator(), g = AC.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(f, t);
+        if (slide) o.frequency.exponentialRampToValueAtTime(f * slide, t + d);
+        g.gain.setValueAtTime(v, t);
+        g.gain.exponentialRampToValueAtTime(.0001, t + d);
+        o.connect(g);
+        g.connect(AC.destination);
+        o.start(t);
+        o.stop(t + d)
+    } catch (e) {
+    }
+}
+
+const sPop = n => [523, 659, 784, 1047].forEach((f, i) => snd(f * (1 + Math.min(n, 8) * .03), .14, 'triangle', .07, 0, i * .05));
+$('mute').onclick = e => {
+    muted = !muted;
+    if (muted && 'speechSynthesis' in window) speechSynthesis.cancel();
+    e.target.textContent = muted ? '🔇' : '🔊';
+    refocus();
 };
 
 /* ---------- kích thước ---------- */
@@ -188,95 +218,117 @@ function pickByChar(ch) {
 /* ---------- gõ phím (Hỗ trợ chống kẹt Telex / VNI & Mobile IME) ---------- */
 // Bảng tra cứu chuyển đổi ký tự tiếng Việt bị gom dấu về phím gõ Telex gốc
 const TELEX_MAP = {
-  'ă':'aw','â':'aa','đ':'dd','ê':'ee','ô':'oo','ơ':'ow','ư':'w',
-  'á':'as','à':'af','ả':'ar','ã':'ax','ạ':'aj',
-  'ắ':'aws','ằ':'awf','ẳ':'awr','ẵ':'awx','ặ':'awj',
-  'ấ':'aas','ầ':'aaf','ẩ':'aar','ẫ':'aax','ậ':'aaj',
-  'é':'es','è':'ef','ẻ':'er','ẽ':'ex','ẹ':'ej',
-  'ế':'ees','ề':'eef','ể':'eer','ễ':'eex','ệ':'eej',
-  'í':'is','ì':'if','ỉ':'ir','ĩ':'ix','ị':'ij',
-  'ó':'os','ò':'of','ỏ':'or','õ':'ox','ọ':'oj',
-  'ố':'oos','ồ':'oof','ổ':'oor','ỗ':'oox','ộ':'ooj',
-  'ớ':'ows','ờ':'owf','ở':'owr','ỡ':'owx','ợ':'owj',
-  'ú':'us','ù':'uf','ủ':'ur','ũ':'ux','ụ':'uj',
-  'ứ':'uws','ừ':'uwf','ử':'uwr','ữ':'uwx','ự':'uwj',
-  'ý':'ys','ỳ':'yf','ỷ':'yr','ỹ':'yx','ỵ':'yj'
+    'ă': 'aw', 'â': 'aa', 'đ': 'dd', 'ê': 'ee', 'ô': 'oo', 'ơ': 'ow', 'ư': 'w',
+    'á': 'as', 'à': 'af', 'ả': 'ar', 'ã': 'ax', 'ạ': 'aj',
+    'ắ': 'aws', 'ằ': 'awf', 'ẳ': 'awr', 'ẵ': 'awx', 'ặ': 'awj',
+    'ấ': 'aas', 'ầ': 'aaf', 'ẩ': 'aar', 'ẫ': 'aax', 'ậ': 'aaj',
+    'é': 'es', 'è': 'ef', 'ẻ': 'er', 'ẽ': 'ex', 'ẹ': 'ej',
+    'ế': 'ees', 'ề': 'eef', 'ể': 'eer', 'ễ': 'eex', 'ệ': 'eej',
+    'í': 'is', 'ì': 'if', 'ỉ': 'ir', 'ĩ': 'ix', 'ị': 'ij',
+    'ó': 'os', 'ò': 'of', 'ỏ': 'or', 'õ': 'ox', 'ọ': 'oj',
+    'ố': 'oos', 'ồ': 'oof', 'ổ': 'oor', 'ỗ': 'oox', 'ộ': 'ooj',
+    'ớ': 'ows', 'ờ': 'owf', 'ở': 'owr', 'ỡ': 'owx', 'ợ': 'owj',
+    'ú': 'us', 'ù': 'uf', 'ủ': 'ur', 'ũ': 'ux', 'ụ': 'uj',
+    'ứ': 'uws', 'ừ': 'uwf', 'ử': 'uwr', 'ữ': 'uwx', 'ự': 'uwj',
+    'ý': 'ys', 'ỳ': 'yf', 'ỷ': 'yr', 'ỹ': 'yx', 'ỵ': 'yj'
 };
 
 function normalizeChar(ch) {
-  ch = ch.toLowerCase();
-  if (/^[a-z'-]$/.test(ch)) return ch;
-  const mapped = TELEX_MAP[ch];
-  if (!mapped) return '';
-  // Nếu chữ 'ư' xuất hiện, kiểm tra xem từ mục tiêu đang cần 'u' hay 'w'
-  if (ch === 'ư') {
-    const needed = target ? target.w[target.typed] : null;
-    if (needed === 'u') return 'u';
-    return 'w';
-  }
-  // Trả về phím cuối cùng vừa tạo ra dấu/mũ trong tổ hợp Telex (s, f, r, x, j, w, a, e, o, d)
-  return mapped[mapped.length - 1];
+    ch = ch.toLowerCase();
+    if (/^[a-z'-]$/.test(ch)) return ch;
+    const mapped = TELEX_MAP[ch];
+    if (!mapped) return '';
+    // Nếu chữ 'ư' xuất hiện, kiểm tra xem từ mục tiêu đang cần 'u' hay 'w'
+    if (ch === 'ư') {
+        const needed = target ? target.w[target.typed] : null;
+        if (needed === 'u') return 'u';
+        return 'w';
+    }
+    // Trả về phím cuối cùng vừa tạo ra dấu/mũ trong tổ hợp Telex (s, f, r, x, j, w, a, e, o, d)
+    return mapped[mapped.length - 1];
 }
 
-function typeChar(rawCh){
-  if(state!=='play')return;
-  const ch = normalizeChar(rawCh);
-  if(!ch)return;
-  if(!target||target.typed===0){const t=pickByChar(ch);if(t){target=t;mascot.look=1}}
-  if(!target||target.w[target.typed]!==ch){
-    misses++;combo=0;shake=reduce?0:.25;snd(150,.18,'sawtooth',.05,.6);
-    if(target)target.sc=-1;
-    hud();
-    return;
-  }
-  const t=target;t.typed++;hits++;t.sc=1;mascot.sq=1;mascot.mouth=1;
-  bullets.push({x:mascot.x,y:H-70,t,kill:t.typed===t.w.length,lx:t.x,ly:t.y,tr:[]});
-  snd(520+t.typed*45,.09,'triangle',.06);
-  if(t.typed===t.w.length){t.locked=true;target=null}
+function typeChar(rawCh) {
+    if (state !== 'play') return;
+    const ch = normalizeChar(rawCh);
+    if (!ch) return;
+    if (!target || target.typed === 0) {
+        const t = pickByChar(ch);
+        if (t) {
+            target = t;
+            mascot.look = 1
+        }
+    }
+    if (!target || target.w[target.typed] !== ch) {
+        misses++;
+        combo = 0;
+        shake = reduce ? 0 : .25;
+        snd(150, .18, 'sawtooth', .05, .6);
+        if (target) target.sc = -1;
+        hud();
+        return;
+    }
+    const t = target;
+    t.typed++;
+    hits++;
+    t.sc = 1;
+    mascot.sq = 1;
+    mascot.mouth = 1;
+    bullets.push({x: mascot.x, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: []});
+    snd(520 + t.typed * 45, .09, 'triangle', .06);
+    if (t.typed === t.w.length) {
+        t.locked = true;
+        target = null
+    }
 }
 
 let handledByKeydown = false;
 
 kb.addEventListener('input', e => {
-  const v = kb.value;
-  kb.value = ''; // Xóa ngay để ngăn bộ gõ lưu bộ đệm ghép dấu với chữ tiếp theo
-  if (handledByKeydown) {
-    handledByKeydown = false;
-    return;
-  }
-  // Lấy ký tự vừa nhập (hoặc từ e.data trên mobile IME)
-  const str = v || e.data || '';
-  for (const ch of str) typeChar(ch);
+    const v = kb.value;
+    kb.value = ''; // Xóa ngay để ngăn bộ gõ lưu bộ đệm ghép dấu với chữ tiếp theo
+    if (handledByKeydown) {
+        handledByKeydown = false;
+        return;
+    }
+    // Lấy ký tự vừa nhập (hoặc từ e.data trên mobile IME)
+    const str = v || e.data || '';
+    for (const ch of str) typeChar(ch);
 });
 
 addEventListener('keydown', e => {
-  if(state!=='play') return;
-  if(e.ctrlKey || e.metaKey || e.altKey) return;
-  if(e.key==='Backspace' || e.key==='Escape'){
-    if(target && !target.locked){ target.typed=0; target=null; }
-    kb.value = '';
-    e.preventDefault();
-    return;
-  }
-  // Nếu bộ gõ IME đang xử lý tổ hợp phím (keyCode 229 / Process), nhường cho sự kiện 'input' xử lý
-  if(e.isComposing || e.key === 'Process' || e.keyCode === 229) return;
+    if (state !== 'play') return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'Backspace' || e.key === 'Escape') {
+        if (target && !target.locked) {
+            target.typed = 0;
+            target = null;
+        }
+        kb.value = '';
+        e.preventDefault();
+        return;
+    }
+    // Nếu bộ gõ IME đang xử lý tổ hợp phím (keyCode 229 / Process), nhường cho sự kiện 'input' xử lý
+    if (e.isComposing || e.key === 'Process' || e.keyCode === 229) return;
 
-  // Ưu tiên lấy ký tự vật lý từ e.code (KeyA -> a) để bỏ qua hoàn toàn Unikey trên PC nếu bắt được
-  let ch = '';
-  if (/^Key[A-Z]$/.test(e.code || '')) {
-    ch = e.code.slice(3).toLowerCase();
-  } else if (e.key && e.key.length === 1) {
-    ch = normalizeChar(e.key);
-  }
+    // Ưu tiên lấy ký tự vật lý từ e.code (KeyA -> a) để bỏ qua hoàn toàn Unikey trên PC nếu bắt được
+    let ch = '';
+    if (/^Key[A-Z]$/.test(e.code || '')) {
+        ch = e.code.slice(3).toLowerCase();
+    } else if (e.key && e.key.length === 1) {
+        ch = normalizeChar(e.key);
+    }
 
-  if(ch && /^[a-z'-]$/.test(ch)){
-    handledByKeydown = true;
-    typeChar(ch);
-    kb.value = '';
-    e.preventDefault();
-    // Reset cờ ngay sau chu kỳ sự kiện hiện tại để không chặn lần gõ tiếp theo
-    setTimeout(() => { handledByKeydown = false; }, 0);
-  }
+    if (ch && /^[a-z'-]$/.test(ch)) {
+        handledByKeydown = true;
+        typeChar(ch);
+        kb.value = '';
+        e.preventDefault();
+        // Reset cờ ngay sau chu kỳ sự kiện hiện tại để không chặn lần gõ tiếp theo
+        setTimeout(() => {
+            handledByKeydown = false;
+        }, 0);
+    }
 });
 cv.addEventListener('pointerdown', e => {
     if (state !== 'play') return;
@@ -323,17 +375,25 @@ function say(t, x, y, c, size = 26) {
     floats.push({t, x, y, c, l: 0, size})
 }
 
-function kill(q){
-  killed++;combo++;const gain=Math.round(q.w.length*10*(1+Math.min(combo,10)*.15));score+=gain;
-  burst(q.x,q.y,q.col,30);
-  // Hiển thị cả điểm cộng và nghĩa tiếng Việt bay lên khi nổ để nhớ từ tốt hơn
-  say('+'+gain+' · '+q.vi,q.x,q.y-10,'#ffd23f',22);
-  if(combo>=3)say(['Tuyệt!','Giỏi quá!','Siêu sao!','Bất bại!'][Math.min(combo-3,3)]+' x'+combo,q.x,q.y-44,'#ff6fae',22);
-  sPop(combo);
-  speak(q.w); // <--- Phát âm từ tiếng Anh vừa bắn hạ
-  words.splice(words.indexOf(q),1);
-  if(killed%10===0){level++;say('Cấp '+level+'!',W/2,H*.4,'#3ee6b0',Math.min(64,W/7));burst(W/2,H*.4,'#3ee6b0',60);[392,523,659,784].forEach((f,i)=>snd(f,.2,'square',.05,0,i*.09))}
-  hud();
+function kill(q) {
+    killed++;
+    combo++;
+    const gain = Math.round(q.w.length * 10 * (1 + Math.min(combo, 10) * .15));
+    score += gain;
+    burst(q.x, q.y, q.col, 30);
+    // Hiển thị cả điểm cộng và nghĩa tiếng Việt bay lên khi nổ để nhớ từ tốt hơn
+    say('+' + gain + ' · ' + q.vi, q.x, q.y - 10, '#ffd23f', 22);
+    if (combo >= 3) say(['Tuyệt!', 'Giỏi quá!', 'Siêu sao!', 'Bất bại!'][Math.min(combo - 3, 3)] + ' x' + combo, q.x, q.y - 44, '#ff6fae', 22);
+    sPop(combo);
+    speak(q.w); // <--- Phát âm từ tiếng Anh vừa bắn hạ
+    words.splice(words.indexOf(q), 1);
+    if (killed % 10 === 0) {
+        level++;
+        say('Cấp ' + level + '!', W / 2, H * .4, '#3ee6b0', Math.min(64, W / 7));
+        burst(W / 2, H * .4, '#3ee6b0', 60);
+        [392, 523, 659, 784].forEach((f, i) => snd(f, .2, 'square', .05, 0, i * .09))
+    }
+    hud();
 }
 
 function lose(q) {
@@ -357,15 +417,15 @@ function update(dt) {
         spawn();
         spawnT = Math.max(.9, 2.6 - level * .18 - mode * .3) + Math.random() * .6
     }
-  for(const q of words.slice()){
-    q.ph+=dt*2;
-    const nearBottom = q===target && q.y > H-150;
-    const speedFactor = q.locked ? 0.1 : (nearBottom ? 0.65 : 1);
-    q.y += q.vy * speedFactor * dt;
-    if(q.locked && q.y > H-95) q.y = H-95; // Giữ từ không lọt qua đáy màn hình khi chờ đạn nổ
-    q.sc*=.88;
-    if(!q.locked&&q.y>H-92)lose(q);
-  }
+    for (const q of words.slice()) {
+        q.ph += dt * 2;
+        const nearBottom = q === target && q.y > H - 150;
+        const speedFactor = q.locked ? 0.1 : (nearBottom ? 0.65 : 1);
+        q.y += q.vy * speedFactor * dt;
+        if (q.locked && q.y > H - 95) q.y = H - 95; // Giữ từ không lọt qua đáy màn hình khi chờ đạn nổ
+        q.sc *= .88;
+        if (!q.locked && q.y > H - 92) lose(q);
+    }
     for (const b of bullets) {
         const t = b.t.dead ? null : b.t;
         if (t) {
@@ -616,166 +676,220 @@ function loop(t) {
 }
 
 /* ---------- luồng game ---------- */
+
 /* ---------- luồng game ---------- */
-function saveScore(sc){
-  const now=new Date();
-  const pad=n=>String(n).padStart(2,'0');
-  const dateStr=`${pad(now.getDate())}/${pad(now.getMonth()+1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  lastRecordTime=Date.now();
-  if(sc>0){
-    topScores.push({name:playerName||'Người chơi',score:sc,lvl:level,mode,date:dateStr,t:lastRecordTime});
-    topScores.sort((a,b)=>b.score-a.score);
-    topScores=topScores.slice(0,5);
-    try{localStorage.setItem('mtv-top5',JSON.stringify(topScores))}catch(e){}
-  }
+function saveScore(sc) {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const dateStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    lastRecordTime = Date.now();
+    if (sc > 0) {
+        topScores.push({
+            name: playerName || 'Người chơi',
+            score: sc,
+            lvl: level,
+            mode,
+            date: dateStr,
+            t: lastRecordTime
+        });
+        topScores.sort((a, b) => b.score - a.score);
+        topScores = topScores.slice(0, 5);
+        try {
+            localStorage.setItem('mtv-top5', JSON.stringify(topScores))
+        } catch (e) {
+        }
+    }
 }
 
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, m => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[m]));
 }
 
-function renderRank(){
-  const medals=['🥇','🥈','🥉','4.','5.'];
-  const modeNames=['Dễ','Vừa','Khó'];
-  if(!topScores.length){
-  $('rank-list').innerHTML='<p style="opacity:.8">Chưa có kỷ lục nào. Hãy chơi một ván nhé!</p>';
-    return;
-  }
-  $('rank-list').innerHTML=topScores.map((r,i)=>`
-    <div class="rk-row ${i===0?'top1':''} ${r.t===lastRecordTime?'new':''}">
+function renderRank() {
+    const medals = ['🥇', '🥈', '🥉', '4.', '5.'];
+    const modeNames = ['Dễ', 'Vừa', 'Khó'];
+    if (!topScores.length) {
+        $('rank-list').innerHTML = '<p style="opacity:.8">Chưa có kỷ lục nào. Hãy chơi một ván nhé!</p>';
+        return;
+    }
+    $('rank-list').innerHTML = topScores.map((r, i) => `
+    <div class="rk-row ${i === 0 ? 'top1' : ''} ${r.t === lastRecordTime ? 'new' : ''}">
       <div class="rk-left">
         <span>${medals[i]}</span>
-        <span class="rk-name">${escapeHtml(r.name||'Người chơi')}</span>
+        <span class="rk-name">${escapeHtml(r.name || 'Người chơi')}</span>
         <span class="rk-score">⭐ ${r.score}</span>
       </div>
       <div class="rk-meta">
-        <div>Cấp ${r.lvl} · ${modeNames[r.mode]||modeNames[0]}</div>
-        <div>${r.date||''}</div>
+        <div>Cấp ${r.lvl} · ${modeNames[r.mode] || modeNames[0]}</div>
+        <div>${r.date || ''}</div>
       </div>
     </div>
   `).join('');
 }
 
-function openRank(fromScreen){
-  rankFrom=fromScreen;
-  renderRank();
-  $(fromScreen).classList.add('hide');$('rank').classList.remove('hide');
-  snd(600,.08,'triangle',.06);
+function openRank(fromScreen) {
+    rankFrom = fromScreen;
+    renderRank();
+    $(fromScreen).classList.add('hide');
+    $('rank').classList.remove('hide');
+    snd(600, .08, 'triangle', .06);
 }
 
 // Mở hộp thoại yêu cầu nhập tên khi bấm "Chơi ngay"
-function promptPlayerName(){
-  state='name';
-  $('start').classList.add('hide');
-  $('name-err').classList.add('hide');$('name-modal').classList.remove('hide');
-  const inp=$('player-name');
-  inp.value=playerName; // Điền sẵn tên lần trước (nếu có) để tiện sửa hoặc bấm tiếp
-  setTimeout(()=>{inp.focus();inp.select()},50);
-  snd(520,.08,'triangle',.06);
+function promptPlayerName() {
+    state = 'name';
+    $('start').classList.add('hide');
+    $('name-err').classList.add('hide');
+    $('name-modal').classList.remove('hide');
+    const inp = $('player-name');
+    inp.value = playerName; // Điền sẵn tên lần trước (nếu có) để tiện sửa hoặc bấm tiếp
+    setTimeout(() => {
+        inp.focus();
+        inp.select()
+    }, 50);
+    snd(520, .08, 'triangle', .06);
 }
 
 // Xác nhận tên và bắt đầu vào ván chơi
-function confirmNameAndPlay(){
-  const val=$('player-name').value.trim();
-  if(!val){
-  $('name-err').classList.remove('hide');
-    snd(180,.18,'sawtooth',.06,.6);
-    $('player-name').focus();
-    return;
-  }
-  playerName=val;
-  try{localStorage.setItem('mtv-name',playerName)}catch(e){}
-  $('name-modal').classList.add('hide');
-  begin();
+function confirmNameAndPlay() {
+    const val = $('player-name').value.trim();
+    if (!val) {
+        $('name-err').classList.remove('hide');
+        snd(180, .18, 'sawtooth', .06, .6);
+        $('player-name').focus();
+        return;
+    }
+    playerName = val;
+    try {
+        localStorage.setItem('mtv-name', playerName)
+    } catch (e) {
+    }
+    $('name-modal').classList.add('hide');
+    begin();
 }
 
-function resume(){
-  state='play';
-  $('start').classList.add('hide');
-  $('modes').style.display='';$('btn-rank-start').style.display='';
-  refocus();
+function resume() {
+    state = 'play';
+    $('start').classList.add('hide');
+    $('modes').style.display = '';
+    $('btn-rank-start').style.display = '';
+    refocus();
 }
 
-function begin(){
-  reset();
-  state='play';
-  if(!muted && 'speechSynthesis' in window){
-    try{const u=new SpeechSynthesisUtterance('');u.volume=0;speechSynthesis.speak(u)}catch(e){}
-  }
-  $('play').textContent='Chơi ngay';
-  $('modes').style.display='';$('btn-rank-start').style.display='';
-  $('start').classList.add('hide');$('name-modal').classList.add('hide');
-  $('over').classList.add('hide');$('rank').classList.add('hide');
-  mascot.x=W/2;
-  refocus();
-  snd(660,.15,'triangle',.07,1.5);
+function begin() {
+    reset();
+    state = 'play';
+    if (!muted && 'speechSynthesis' in window) {
+        try {
+            const u = new SpeechSynthesisUtterance('');
+            u.volume = 0;
+            speechSynthesis.speak(u)
+        } catch (e) {
+        }
+    }
+    $('play').textContent = 'Chơi ngay';
+    $('modes').style.display = '';
+    $('btn-rank-start').style.display = '';
+    $('start').classList.add('hide');
+    $('name-modal').classList.add('hide');
+    $('over').classList.add('hide');
+    $('rank').classList.add('hide');
+    mascot.x = W / 2;
+    refocus();
+    snd(660, .15, 'triangle', .07, 1.5);
 }
 
-function end(){
-  state='over';
-  const finalScore=Math.round(score);
-  const best=finalScore>bestEver;
-  if(best){
-    bestEver=finalScore;
-    try{localStorage.setItem('mtv-best',bestEver)}catch(e){}
-  }
-  saveScore(finalScore);
-  $('big').textContent=finalScore;
-  const acc=hits+misses?Math.round(hits/(hits+misses)*100):100;
-  $('stats').textContent=(best?'Kỷ lục mới! ':'Kỷ lục: '+bestEver+'. ')+`${playerName} hạ ${killed} từ · Chính xác ${acc}%`;
-  $('miss').innerHTML=missed.size?'<b>Từ cần ôn:</b> '+[...missed].slice(0,6).map(([w,v])=>w+' = '+v).join(' · '):'Không bỏ sót từ nào, quá đỉnh!';
-  [523,440,349,262].forEach((f,i)=>snd(f,.25,'triangle',.07,0,i*.15));
-  setTimeout(()=>$('over').classList.remove('hide'),500);
+function end() {
+    state = 'over';
+    const finalScore = Math.round(score);
+    const best = finalScore > bestEver;
+    if (best) {
+        bestEver = finalScore;
+        try {
+            localStorage.setItem('mtv-best', bestEver)
+        } catch (e) {
+        }
+    }
+    saveScore(finalScore);
+    $('big').textContent = finalScore;
+    const acc = hits + misses ? Math.round(hits / (hits + misses) * 100) : 100;
+    $('stats').textContent = (best ? 'Kỷ lục mới! ' : 'Kỷ lục: ' + bestEver + '. ') + `${playerName} hạ ${killed} từ · Chính xác ${acc}%`;
+    $('miss').innerHTML = missed.size ? '<b>Từ cần ôn:</b> ' + [...missed].slice(0, 6).map(([w, v]) => w + ' = ' + v).join(' · ') : 'Không bỏ sót từ nào, quá đỉnh!';
+    [523, 440, 349, 262].forEach((f, i) => snd(f, .25, 'triangle', .07, 0, i * .15));
+    setTimeout(() => $('over').classList.remove('hide'), 500);
 }
 
 // Gắn sự kiện cho các nút bấm
-$('play').onclick=()=>state==='paused'?resume():promptPlayerName();$('confirm-name').onclick=confirmNameAndPlay;
-$('cancel-name').onclick=()=>{
-  state='menu';
-  $('name-modal').classList.add('hide');$('start').classList.remove('hide');
-  snd(480,.08,'triangle',.06);
+$('play').onclick = () => state === 'paused' ? resume() : promptPlayerName();
+$('confirm-name').onclick = confirmNameAndPlay;
+$('cancel-name').onclick = () => {
+    state = 'menu';
+    $('name-modal').classList.add('hide');
+    $('start').classList.remove('hide');
+    snd(480, .08, 'triangle', .06);
 };
-$('player-name').addEventListener('input',()=>$('name-err').classList.add('hide'));$('again').onclick=begin; // Chơi lại ngay với tên đã nhập
+$('player-name').addEventListener('input', () => $('name-err').classList.add('hide'));
+$('again').onclick = begin; // Chơi lại ngay với tên đã nhập
 
 // Nút Bảng xếp hạng ở cả màn hình Bắt đầu và màn hình Game Over
-$('btn-rank-start').onclick=()=>openRank('start');
-$('btn-rank-over').onclick=()=>openRank('over');$('close-rank').onclick=()=>{
-  $('rank').classList.add('hide');$(rankFrom).classList.remove('hide');
-  snd(480,.08,'triangle',.06);
+$('btn-rank-start').onclick = () => openRank('start');
+$('btn-rank-over').onclick = () => openRank('over');
+$('close-rank').onclick = () => {
+    $('rank').classList.add('hide');
+    $(rankFrom).classList.remove('hide');
+    snd(480, .08, 'triangle', .06);
 };
 
 // Chọn chế độ độ khó
-document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
-    if(state==='paused')return;
-    mode=+b.dataset.m;
-    document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x===b));
+document.querySelectorAll('#modes button').forEach(b => b.onclick = () => {
+    if (state === 'paused') return;
+    mode = +b.dataset.m;
+    document.querySelectorAll('#modes button').forEach(x => x.classList.toggle('on', x === b));
 });
 
 // Chọn chủ đề từ vựng
-document.querySelectorAll('#topics button').forEach(b=>b.onclick=()=>{
-    if(state==='paused')return;
-    currentTopic=b.dataset.topic;
-    WORDS=WORD_PACKS[currentTopic]||WORD_PACKS.all;
-    document.querySelectorAll('#topics button').forEach(x=>x.classList.toggle('on',x===b));
-    snd(500,.06,'triangle',.05);
+document.querySelectorAll('#topics button').forEach(b => b.onclick = () => {
+    if (state === 'paused') return;
+    currentTopic = b.dataset.topic;
+    WORDS = WORD_PACKS[currentTopic] || WORD_PACKS.all;
+    document.querySelectorAll('#topics button').forEach(x => x.classList.toggle('on', x === b));
+    snd(500, .06, 'triangle', .05);
 });
 
-document.addEventListener('visibilitychange',()=>{
-  if(document.hidden&&state==='play'){
-    state='paused';
-    $('modes').style.display='none';
-    $('btn-rank-start').style.display='none';$('play').textContent='Chơi tiếp';
-    $('start').classList.remove('hide');
-  }
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && state === 'play') {
+        state = 'paused';
+        $('modes').style.display = 'none';
+        $('btn-rank-start').style.display = 'none';
+        $('play').textContent = 'Chơi tiếp';
+        $('start').classList.remove('hide');
+        // Xử lý nút thoát về màn hình chính khi đang ở Game Over
+        $('btn-home').onclick = () => {
+            state = 'menu';
+            $('over').classList.add('hide');
+            $('start').classList.remove('hide');
+            // Đảm bảo cập nhật lại hiển thị nút ở màn hình chính
+            $('modes').style.display = '';
+            $('btn-rank-start').style.display = '';
+            $('play').textContent = 'Chơi ngay';
+            snd(480, .08, 'triangle', .06);
+        };
+    }
 });
 
-addEventListener('keydown',e=>{
-  if(e.key==='Enter'){
-    if(state==='menu')promptPlayerName();
-    else if(state==='name')confirmNameAndPlay();
-    else if(state==='over')begin();
-    else if(state==='paused')resume();
-  }
+addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+        if (state === 'menu') promptPlayerName();
+        else if (state === 'name') confirmNameAndPlay();
+        else if (state === 'over') begin();
+        else if (state === 'paused') resume();
+    }
 });
 resize();
 initStars();

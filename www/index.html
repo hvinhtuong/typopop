@@ -35,8 +35,8 @@
             </div>
         </div>
 
-        <button class="btn" id="play">Chơi ngay</button>
-        <button class="btn btn-sub" id="btn-rank-start">🏆 Bảng xếp hạng</button>
+        <button class="btn" id="play">Play</button>
+        <button class="btn btn-sub" id="btn-rank-start">🏆 Rank</button>
         <p style="font-size:14px;opacity:.8">Trên điện thoại: chạm vào màn hình để mở bàn phím, chạm vào từ để chọn.</p>
     </div>
 
@@ -52,16 +52,33 @@
     </div>
   </div>
 
-  <div class="ov hide" id="over">
-    <h1 style="font-size:clamp(34px,10vw,56px)">Hết lượt rồi!</h1>
-    <div id="big">0</div>
-    <p id="stats"></p>
-    <div id="miss"></div>
-    <div class="actions">
-      <button class="btn" id="again">Chơi lại</button>
-      <button class="btn btn-sub" id="btn-rank-over">🏆 Bảng xếp hạng</button>
+    <div class="ov hide" id="over">
+        <h1 style="font-size:clamp(34px,10vw,56px)">Hết lượt rồi!</h1>
+        <div id="big">0</div>
+        <p id="stats"></p>
+        <div id="miss"></div>
+
+        <div class="restart-settings">
+            <div class="topic-label" style="margin-top:4px">Chọn lại chủ đề:</div>
+            <div class="lv" id="over-topics">
+                <button data-topic="all" class="on">Tất cả</button>
+                <button data-topic="it">Công nghệ</button>
+                <button data-topic="travel">Du lịch</button>
+                <button data-topic="daily">Giao tiếp</button>
+            </div>
+            <div class="lv" id="over-modes" style="margin-top:4px">
+                <button data-m="0" class="on">Dễ</button>
+                <button data-m="1">Vừa</button>
+                <button data-m="2">Khó</button>
+            </div>
+        </div>
+
+        <div class="actions" style="margin-top:8px">
+            <button class="btn" id="again">Play</button>
+            <button class="btn btn-sub" id="btn-rank-over">🏆 Rank</button>
+            <button class="btn btn-sub" id="btn-home">🏠 Home</button>
+        </div>
     </div>
-  </div>
 
   <!-- Màn hình Bảng xếp hạng Top 5 -->
   <div class="ov hide" id="rank">
