@@ -1,4 +1,4 @@
-# Mưa Từ Vựng – game gõ từ tiếng Anh
+# Typo Pop – game gõ từ tiếng Anh
 
 ## Cấu trúc
 - `www/index.html` – giao diện và các màn hình (menu, hết lượt)
