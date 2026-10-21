@@ -13,6 +13,12 @@ WORD_PACKS.all = [...allMap.values()];
 let currentTopic = 'all';
 let WORDS = WORD_PACKS.all;
 
+const isInMessenger = /FBAN|FBAV/i.test(navigator.userAgent);
+if (isInMessenger) {
+    // Có thể hiển thị một thẻ div cảnh báo nhỏ ở menu
+    console.log("Đang chạy trong Messenger - Hãy mở bằng Chrome/Safari để có âm thanh đầy đủ nha !");
+}
+
 const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
 const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
 const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
