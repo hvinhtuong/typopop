@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+    <title>Typo Pop – Game gõ từ tiếng Anh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+    <canvas id="c"></canvas>
+    <div id="hud">
+        <div class="pill" id="score">⭐ 0</div>
+        <div class="pill" id="combo" style="visibility:hidden">x1</div>
+        <div class="pill" id="lvl">Cấp 1</div>
+        <div class="pill" id="hearts">💗💗💗💗💗</div>
+        <button class="pill" id="mute" aria-label="Bật tắt âm thanh">🔊</button>
+    </div>
+  <div class="ov" id="start">
+    <h1>Typo Pop</h1>
+    <p>Gõ đúng từ tiếng Anh đang rơi để bắn hạ chúng trước khi chạm đất.</p>
+    <div class="lv" id="modes"><button data-m="0" class="on">Dễ</button><button data-m="1">Vừa</button><button data-m="2">Khó</button></div>
+    <button class="btn" id="play">Chơi ngay</button>
+    <button class="btn btn-sub" id="btn-rank-start">🏆 Bảng xếp hạng</button>
+    <p style="font-size:14px;opacity:.8">Trên điện thoại: chạm vào màn hình để mở bàn phím, chạm vào từ để chọn.</p>
+  </div>
+
+  <!-- Màn hình nhập tên người chơi -->
+  <div class="ov hide" id="name-modal">
+    <h1 style="font-size:clamp(30px,9vw,48px)">Nhập Tên Của Bạn</h1>
+    <p>Tên này sẽ được lưu vào Bảng xếp hạng kỷ lục.</p>
+    <input id="player-name" type="text" maxlength="16" placeholder="Ví dụ: Vĩnh Tường..." autocomplete="off" spellcheck="false">
+    <p id="name-err" class="err hide">Vui lòng nhập tên trước khi bắt đầu nhé!</p>
+    <div class="actions">
+      <button class="btn" id="confirm-name">Bắt đầu</button>
+      <button class="btn btn-sub" id="cancel-name">Quay lại</button>
+    </div>
+  </div>
+
+  <div class="ov hide" id="over">
+    <h1 style="font-size:clamp(34px,10vw,56px)">Hết lượt rồi!</h1>
+    <div id="big">0</div>
+    <p id="stats"></p>
+    <div id="miss"></div>
+    <div class="actions">
+      <button class="btn" id="again">Chơi lại</button>
+      <button class="btn btn-sub" id="btn-rank-over">🏆 Bảng xếp hạng</button>
+    </div>
+  </div>
+
+  <!-- Màn hình Bảng xếp hạng Top 5 -->
+  <div class="ov hide" id="rank">
+    <h1 style="font-size:clamp(30px,9vw,48px)">🏆 Top 5 Kỷ Lục</h1>
+    <div id="rank-list"></div>
+    <button class="btn" id="close-rank">Quay lại</button>
+  </div>
+    <input id="kb" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+           inputmode="text" aria-label="Gõ từ tại đây">
+</div>
+<script src="game.js"></script>
+</body>
+</html>
