@@ -675,6 +675,37 @@ function loop(t) {
 }
 
 /* ---------- luồng game ---------- */
+// Tải và hiển thị vinh danh người chơi cao điểm nhất toàn cầu ở màn hình Home
+async function fetchTopChamp(){
+    const el = $('top-champ');
+    if(!el) return;
+
+    let top1 = null;
+    if(sb){
+        try{
+            const { data, error } = await sb
+                .from('leaderboard')
+                .select('name, score')
+                .order('score', { ascending: false })
+                .limit(1);
+            if(!error && data && data.length > 0){
+                top1 = data[0];
+            }
+        }catch(e){}
+    }
+
+    if(!top1 && topScores.length > 0){
+        top1 = topScores[0];
+    }
+
+    if(top1 && top1.score > 0){
+        el.innerHTML = `👑 Kỷ lục số 1: <b>${escapeHtml(top1.name)}</b> (⭐ ${top1.score})`;
+        el.classList.remove('hide');
+    } else {
+        el.classList.add('hide');
+    }
+}
+
 async function saveScore(sc) {
     if (sc <= 0) return;
     lastRecordTime = Date.now();
@@ -839,7 +870,7 @@ function syncSettingsUI() {
     document.querySelectorAll('#over-modes button').forEach(x => x.classList.toggle('on', +x.dataset.m === mode));
 }
 
-function end() {
+async function end() {
     state = 'over';
     const finalScore = Math.round(score);
     const best = finalScore > bestEver;
@@ -849,14 +880,61 @@ function end() {
             localStorage.setItem('mtv-best', bestEver);
         } catch (e) {}
     }
+
+    // Ẩn thông báo top 5 cũ
+    const notifyEl = $('top-notify');
+    if(notifyEl) notifyEl.classList.add('hide');
+
+    // Lưu điểm và đồng thời kiểm tra xem có lọt Top 5 không
     saveScore(finalScore);
     syncSettingsUI();
-  $('big').textContent = finalScore;
+
+    $('big').textContent = finalScore;
     const acc = hits + misses ? Math.round(hits / (hits + misses) * 100) : 100;
-  $('stats').textContent = (best ? 'Kỷ lục mới! ' : 'Kỷ lục: ' + bestEver + '. ') + `${playerName} hạ ${killed} từ · Chính xác ${acc}%`;
+    $('stats').textContent = (best ? 'Kỷ lục mới! ' : 'Kỷ lục: ' + bestEver + '. ') + `${playerName} hạ ${killed} từ · Chính xác ${acc}%`;
     $('miss').innerHTML = missed.size ? '<b>Từ cần ôn:</b> ' + [...missed].slice(0, 6).map(([w, v]) => w + ' = ' + v).join(' · ') : 'Không bỏ sót từ nào, quá đỉnh!';
+
+    // Kiểm tra xem điểm này có nằm trong Top 5 hay không
+    checkTopRank(finalScore);
+
     [523, 440, 349, 262].forEach((f, i) => snd(f, .25, 'triangle', .07, 0, i * .15));
     setTimeout(() => $('over').classList.remove('hide'), 500);
+}
+
+// Kiểm tra điểm số hiện tại với Top 5
+async function checkTopRank(currentScore){
+    if(currentScore <= 0) return;
+    const notifyEl = $('top-notify');
+    let isTop = false;
+
+    if(sb){
+        try{
+            const { data } = await sb
+                .from('leaderboard')
+                .select('score')
+                .order('score', { ascending: false })
+                .limit(5);
+
+            // Nếu bảng xếp hạng chưa đủ 5 người hoặc điểm lớn hơn/bằng người thứ 5
+            if(data && (data.length < 5 || currentScore >= data[data.length - 1].score)){
+                isTop = true;
+            }
+        }catch(e){}
+    }
+
+    // Backup kiểm tra theo local nếu không có Supabase
+    if(!isTop && topScores.length > 0){
+        if(topScores.length < 5 || currentScore >= topScores[topScores.length - 1].score){
+            isTop = true;
+        }
+    }
+
+    if(isTop && notifyEl){
+        notifyEl.classList.remove('hide');
+        // Hiệu ứng âm thanh chúc mừng cúp vàng
+        [523, 659, 784, 1047].forEach((f, i) => snd(f * 1.2, .2, 'triangle', .08, 0, i * .08));
+        burst(W / 2, 80, '#ffd23f', 50);
+    }
 }
 
 // Gắn sự kiện các nút
@@ -890,6 +968,7 @@ if (btnHome) {
         $('btn-rank-start').style.display = '';
         $('play').textContent = 'Play';
         syncSettingsUI();
+        fetchTopChamp();
         snd(480, .08, 'triangle', .06);
     };
 }
@@ -947,4 +1026,5 @@ addEventListener('keydown', e => {
 resize();
 initStars();
 reset();
+fetchTopChamp();
 (document.fonts && document.fonts.load('700 24px Fredoka') || Promise.resolve()).finally(() => requestAnimationFrame(loop));

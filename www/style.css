@@ -459,3 +459,36 @@ h1 {
     color: #06402e;
     border-color: var(--mint)
 }
+/* Dòng vinh danh Top 1 ở màn hình Home */
+.top-champ{
+    background:rgba(255,210,63,.15);
+    border:2px solid var(--sun);
+    color:var(--sun);
+    padding:6px 18px;
+    border-radius:999px;
+    font-weight:700;
+    font-size:clamp(14px,3.8vw,16px);
+    box-shadow:0 0 16px rgba(255,210,63,.3);
+    animation:pulse 2s infinite ease-in-out;
+}
+
+/* Khung thông báo lọt Top 5 khi Game Over */
+.top-badge{
+    background:linear-gradient(90deg,#ffd23f,#ff6fae);
+    color:#1a1245;
+    font-weight:800;
+    font-size:clamp(14px,4vw,18px);
+    padding:8px 20px;
+    border-radius:999px;
+    box-shadow:0 0 20px rgba(255,210,63,.6);
+    animation:popIn .4s cubic-bezier(.175,.885,.32,1.275);
+}
+
+@keyframes pulse{
+    0%,100%{transform:scale(1)}
+    50%{transform:scale(1.04)}
+}
+@keyframes popIn{
+    from{transform:scale(.6);opacity:0}
+    to{transform:scale(1);opacity:1}
+}
