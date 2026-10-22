@@ -929,37 +929,62 @@ async function end() {
 }
 
 // Kiểm tra điểm số hiện tại với Top 5
-async function checkTopRank(currentScore){
-    if(currentScore <= 0) return;
+// Kiểm tra vị trí xếp hạng chính xác khi kết thúc ván
+async function checkTopRank(currentScore) {
+    if (currentScore <= 0) return;
     const notifyEl = $('top-notify');
-    let isTop = false;
+    let rankPosition = null;
 
-    if(sb){
-        try{
-            const { data } = await sb
+    // 1. Kiểm tra thứ hạng trên Supabase
+    if (sb) {
+        try {
+            const { data, error } = await sb
                 .from('leaderboard')
                 .select('score')
                 .order('score', { ascending: false })
                 .limit(5);
 
-            // Nếu bảng xếp hạng chưa đủ 5 người hoặc điểm lớn hơn/bằng người thứ 5
-            if(data && (data.length < 5 || currentScore >= data[data.length - 1].score)){
-                isTop = true;
+            if (!error && data) {
+                // Tìm vị trí của điểm số hiện tại trong danh sách Top 5
+                let rank = 1;
+                for (const item of data) {
+                    if (currentScore < item.score) {
+                        rank++;
+                    } else {
+                        break;
+                    }
+                }
+                if (rank <= 5) rankPosition = rank;
             }
-        }catch(e){}
-    }
-
-    // Backup kiểm tra theo local nếu không có Supabase
-    if(!isTop && topScores.length > 0){
-        if(topScores.length < 5 || currentScore >= topScores[topScores.length - 1].score){
-            isTop = true;
+        } catch (e) {
+            console.warn('Lỗi kiểm tra rank Supabase:', e);
         }
     }
 
-    if(isTop && notifyEl){
+    // 2. Dự phòng kiểm tra theo bộ nhớ máy (local) nếu offline hoặc lỗi mạng
+    if (!rankPosition) {
+        try {
+            const localTop = JSON.parse(localStorage.getItem('mtv-top5') || '[]');
+            let rank = 1;
+            for (const item of localTop) {
+                if (currentScore < item.score) {
+                    rank++;
+                } else {
+                    break;
+                }
+            }
+            if (rank <= 5) rankPosition = rank;
+        } catch (e) {}
+    }
+
+    // 3. Hiển thị thông báo tương ứng với thứ hạng đạt được
+    if (rankPosition && notifyEl) {
+        const trophy = rankPosition === 1 ? '👑' : '🏆';
+        notifyEl.innerHTML = `${trophy} XUẤT SẮC! BẠN ĐÃ ĐẠT TOP ${rankPosition} TOÀN CẦU! ${trophy}`;
         notifyEl.classList.remove('hide');
-        // Hiệu ứng âm thanh chúc mừng cúp vàng
-        [523, 659, 784, 1047].forEach((f, i) => snd(f * 1.2, .2, 'triangle', .08, 0, i * .08));
+
+        // Hiệu ứng âm thanh và pháo hoa chúc mừng
+        [523, 659, 784, 1047].forEach((f, i) => snd(f * 1.2, 0.2, 'triangle', 0.08, 0, i * 0.08));
         burst(W / 2, 80, '#ffd23f', 50);
     }
 }
