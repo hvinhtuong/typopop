@@ -1,6 +1,6 @@
 // --- Cấu hình Supabase ---
 const SUPABASE_URL = 'https://ksiapqqsxgnctbwdzxzj.supabase.co'; // Thay bằng URL của bạn
-const SUPABASE_KEY = 'sb_publishable_8AmSB3ELvkso84_2COImng_TM6E_LoX';               // Thay bằng anon key của bạn
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzaWFwcXFzeGduY3Rid2R6eHpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDg5NDcsImV4cCI6MjEwODIyNDk0N30.gf4iMpC28lqfluWtK0Cf2RZfysQQblNDJxB5FvrVdDU';               // Thay bằng anon key của bạn
 const sb = (window.supabase && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co')
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
     : null;
