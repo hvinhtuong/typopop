@@ -1,3 +1,17 @@
+// --- Cấu hình Supabase ---
+const SUPABASE_URL = 'https://ksiapqqsxgnctbwdzxzj.supabase.co'; // Thay bằng URL của bạn
+const SUPABASE_KEY = 'sb_publishable_8AmSB3ELvkso84_2COImng_TM6E_LoX';               // Thay bằng anon key của bạn
+const sb = (window.supabase && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co')
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    : null;
+
+let words,parts,bullets,floats,stars,score,lives,combo,level,killed,hits,misses,missed,target,spawnT,shake,bestEver=0,topScores=[],lastRecordTime=0,playerName='',rankFrom='start',mascot;
+try{
+    bestEver=+localStorage.getItem('mtv-best')||0;
+    playerName=localStorage.getItem('mtv-name')||'';
+    topScores=JSON.parse(localStorage.getItem('mtv-top5')||'[]');
+}catch(e){}
+
 const WORD_PACKS = {
     all: [], // Sẽ tự động tổng hợp tất cả chủ đề bên dưới
     it: `developer:lập trình viên|software:phần mềm|hardware:phần cứng|database:cơ sở dữ liệu|network:mạng máy tính|security:bảo mật|cloud:điện toán đám mây|framework:khung làm việc|deployment:triển khai|repository:kho lưu trữ|algorithm:thuật toán|debugging:gỡ lỗi|interface:giao diện|compile:biên dịch|terminal:cửa sổ lệnh|variable:biến|function:hàm|syntax:cú pháp|server:máy chủ|client:máy khách`.split('|').map(s => {
@@ -676,50 +690,94 @@ function loop(t) {
 }
 
 /* ---------- luồng game ---------- */
-
-/* ---------- luồng game ---------- */
-function saveScore(sc) {
-    const now = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    const dateStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+// Lưu điểm: Đẩy lên Supabase (Global) và lưu backup vào localStorage
+async function saveScore(sc){
+    if(sc <= 0) return;
     lastRecordTime = Date.now();
-    if (sc > 0) {
-        topScores.push({
-            name: playerName || 'Người chơi',
-            score: sc,
-            lvl: level,
-            mode,
-            date: dateStr,
-            t: lastRecordTime
-        });
-        topScores.sort((a, b) => b.score - a.score);
-        topScores = topScores.slice(0, 5);
-        try {
-            localStorage.setItem('mtv-top5', JSON.stringify(topScores))
-        } catch (e) {
+    const player = playerName || 'Người chơi';
+    const topicName = typeof currentTopic !== 'undefined' ? currentTopic : 'all';
+
+    // 1. Lưu backup cục bộ
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const dateStr = `${pad(now.getDate())}/${pad(now.getMonth()+1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    topScores.push({name: player, score: sc, lvl: level, mode, topic: topicName, date: dateStr, t: lastRecordTime});
+    topScores.sort((a,b) => b.score - a.score);
+    topScores = topScores.slice(0, 5);
+    try{ localStorage.setItem('mtv-top5', JSON.stringify(topScores)); }catch(e){}
+
+    // 2. Đẩy lên Supabase Database
+    if(sb){
+        try{
+            await sb.from('leaderboard').insert([
+                { name: player, score: sc, level: level, mode: mode, topic: topicName }
+            ]);
+        }catch(err){
+            console.error('Lỗi gửi điểm lên Supabase:', err);
         }
     }
 }
 
-function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, m => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-    }[m]));
+function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
-function renderRank() {
-    const medals = ['🥇', '🥈', '🥉', '4.', '5.'];
-    const modeNames = ['Dễ', 'Vừa', 'Khó'];
-    if (!topScores.length) {
-        $('rank-list').innerHTML = '<p style="opacity:.8">Chưa có kỷ lục nào. Hãy chơi một ván nhé!</p>';
+// Lấy Top 5 toàn cầu từ Supabase về hiển thị
+async function renderRank(){
+    const rankBox = $('rank-list');
+    rankBox.innerHTML = '<p style="opacity:.8">Đang tải bảng xếp hạng toàn cầu...</p>';
+
+    const medals = ['🥇','🥈','🥉','4.','5.'];
+    const modeNames = ['Dễ','Vừa','Khó'];
+    let list = [];
+
+    // Lấy dữ liệu từ Supabase
+    if(sb){
+        try{
+            const { data, error } = await sb
+                .from('leaderboard')
+                .select('*')
+                .order('score', { ascending: false })
+                .limit(5);
+
+            if(!error && data && data.length > 0){
+                list = data.map(item => {
+                    const d = new Date(item.created_at);
+                    const pad = n => String(n).padStart(2,'0');
+                    return {
+                        name: item.name,
+                        score: item.score,
+                        lvl: item.level,
+                        mode: item.mode,
+                        date: `${pad(d.getDate())}/${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`,
+                        isCurrent: item.name === playerName && item.score === Math.round(score)
+                    };
+                });
+            }
+        }catch(err){
+            console.warn('Không tải được Supabase, chuyển sang cache local:', err);
+        }
+    }
+
+    // Phương án dự phòng nếu offline hoặc chưa cấu hình Supabase: dùng localStorage
+    if(!list.length){
+        list = topScores.map(r => ({
+            name: r.name,
+            score: r.score,
+            lvl: r.lvl,
+            mode: r.mode,
+            date: r.date,
+            isCurrent: r.t === lastRecordTime
+        }));
+    }
+
+    if(!list.length){
+        rankBox.innerHTML = '<p style="opacity:.8">Chưa có kỷ lục nào. Hãy là người đầu tiên ghi danh!</p>';
         return;
     }
-    $('rank-list').innerHTML = topScores.map((r, i) => `
-    <div class="rk-row ${i === 0 ? 'top1' : ''} ${r.t === lastRecordTime ? 'new' : ''}">
+
+    rankBox.innerHTML = list.map((r, i) => `
+    <div class="rk-row ${i === 0 ? 'top1' : ''} ${r.isCurrent ? 'new' : ''}">
       <div class="rk-left">
         <span>${medals[i]}</span>
         <span class="rk-name">${escapeHtml(r.name || 'Người chơi')}</span>
@@ -793,7 +851,7 @@ function begin() {
         } catch (e) {
         }
     }
-    $('play').textContent = 'Chơi ngay';
+    $('play').textContent = 'Play';
     $('modes').style.display = '';
     $('btn-rank-start').style.display = '';
     $('start').classList.add('hide');
@@ -877,7 +935,7 @@ document.addEventListener('visibilitychange', () => {
             // Đảm bảo cập nhật lại hiển thị nút ở màn hình chính
             $('modes').style.display = '';
             $('btn-rank-start').style.display = '';
-            $('play').textContent = 'Chơi ngay';
+            $('play').textContent = 'Play';
             snd(480, .08, 'triangle', .06);
         };
     }
