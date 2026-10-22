@@ -681,32 +681,41 @@ async function fetchTopChamp(){
     if(!el) return;
 
     let top1 = null;
-    if(sb){
-        try{
+
+    // 1. Thử lấy từ Supabase
+    if (sb) {
+        try {
             const { data, error } = await sb
                 .from('leaderboard')
                 .select('name, score')
                 .order('score', { ascending: false })
                 .limit(1);
-            if(!error && data && data.length > 0){
+
+            if (!error && data && data.length > 0) {
                 top1 = data[0];
             }
-        }catch(e){
-            console.warn('Lỗi lấy Top 1 từ Supabase:', e);
+        } catch(e) {
+            console.warn('Lỗi Supabase khi lấy Top 1:', e);
         }
     }
 
-    // Nếu Supabase chưa có dữ liệu hoặc offline, lấy từ kỷ lục máy (local)
-    if(!top1 && typeof topScores !== 'undefined' && topScores.length > 0){
-        top1 = topScores[0];
+    // 2. Nếu Supabase chưa có hoặc lỗi mạng, lấy từ kỷ lục máy (local)
+    if (!top1) {
+        try {
+            const localTop = JSON.parse(localStorage.getItem('mtv-top5') || '[]');
+            if (localTop.length > 0 && localTop[0].score > 0) {
+                top1 = localTop[0];
+            } else if (bestEver > 0) {
+                top1 = { name: playerName || 'Người chơi', score: bestEver };
+            }
+        } catch(e) {}
     }
 
-    // Cập nhật giao diện
-    if(top1 && top1.score > 0){
+    // 3. Cập nhật trực tiếp lên giao diện
+    if (top1 && top1.score > 0) {
         el.innerHTML = `👑 Kỷ lục số 1: <b>${escapeHtml(top1.name || 'Người chơi')}</b> (⭐ ${top1.score})`;
         el.classList.remove('hide');
     } else {
-        // Nếu chưa có ai lập kỷ lục, hiện lời kêu gọi thay vì kẹt chữ "Đang nạp kỷ lục..."
         el.innerHTML = `👑 Hãy là người đầu tiên lập kỷ lục!`;
         el.classList.remove('hide');
     }
@@ -886,20 +895,18 @@ async function end() {
         } catch (e) {}
     }
 
-    // Ẩn thông báo top 5 cũ
     const notifyEl = $('top-notify');
     if(notifyEl) notifyEl.classList.add('hide');
 
-    // Lưu điểm và đồng thời kiểm tra xem có lọt Top 5 không
-    saveScore(finalScore);
+    // Chờ lưu điểm xong xuôi vào cả LocalStorage lẫn Supabase
+    await saveScore(finalScore);
     syncSettingsUI();
 
     $('big').textContent = finalScore;
     const acc = hits + misses ? Math.round(hits / (hits + misses) * 100) : 100;
-    $('stats').textContent = (best ? 'Kỷ lục mới! ' : 'Kỷ lục: ' + bestEver + '. ') + `${playerName} hạ ${killed} từ · Chính xác ${acc}%`;
+    $('stats').textContent = (best ? 'Kỷ lục mới! ' : 'Kỷ lục: ' + bestEver + '. ') + `${playerName || 'Người chơi'} hạ ${killed} từ · Chính xác ${acc}%`;
     $('miss').innerHTML = missed.size ? '<b>Từ cần ôn:</b> ' + [...missed].slice(0, 6).map(([w, v]) => w + ' = ' + v).join(' · ') : 'Không bỏ sót từ nào, quá đỉnh!';
 
-    // Kiểm tra xem điểm này có nằm trong Top 5 hay không
     checkTopRank(finalScore);
 
     [523, 440, 349, 262].forEach((f, i) => snd(f, .25, 'triangle', .07, 0, i * .15));
