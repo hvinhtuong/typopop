@@ -1075,7 +1075,7 @@ async function end() {
 // Kiểm tra vị trí xếp hạng chính xác khi kết thúc ván
 // Kiểm tra vị trí xếp hạng chính xác khi kết thúc ván
 async function checkTopRank(currentScore) {
-    const notifyEl = \$('top-notify');
+    const notifyEl = $('top-notify');
     if (!notifyEl) return;
 
     // Luôn ẩn và xóa trắng trước tiên
