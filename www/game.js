@@ -269,13 +269,17 @@ function typeChar(rawCh) {
     if (state !== 'play') return;
     const ch = normalizeChar(rawCh);
     if (!ch) return;
-    if (!target || target.typed === 0) {
+
+    // Nếu chưa có target hoặc target chưa gõ chữ nào: tìm từ bắt đầu bằng ch
+    if (!target) {
         const t = pickByChar(ch);
         if (t) {
             target = t;
             mascot.look = 1;
         }
     }
+
+    // Kiểm tra tính hợp lệ của ký tự với target hiện tại
     if (!target || target.w[target.typed] !== ch) {
         misses++;
         combo = 0;
@@ -285,6 +289,8 @@ function typeChar(rawCh) {
         hud();
         return;
     }
+
+    // Gõ đúng ký tự: Bắn đạn và tiến trình từ
     const t = target;
     t.typed++;
     hits++;
@@ -293,6 +299,7 @@ function typeChar(rawCh) {
     mascot.mouth = 1;
     bullets.push({ x: mascot.x, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [] });
     snd(520 + t.typed * 45, .09, 'triangle', .06);
+
     if (t.typed === t.w.length) {
         t.locked = true;
         target = null;
@@ -301,20 +308,22 @@ function typeChar(rawCh) {
 
 let handledByKeydown = false;
 
-kb.addEventListener('input', e => {
+// Xử lý bộ gõ qua thẻ input ảo
+kb.addEventListener('input', () => {
     const v = kb.value;
     kb.value = '';
-    if (handledByKeydown) {
-        handledByKeydown = false;
-        return;
+    if (!v) return;
+    for (const ch of v) {
+        typeChar(ch);
     }
-    const str = v || e.data || '';
-    for (const ch of str) typeChar(ch);
 });
 
+// Xử lý phím vật lý trực tiếp
 addEventListener('keydown', e => {
     if (state !== 'play') return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    // Đổi target hoặc hủy chọn từ
     if (e.key === 'Backspace' || e.key === 'Escape') {
         if (target && !target.locked) {
             target.typed = 0;
@@ -324,8 +333,11 @@ addEventListener('keydown', e => {
         e.preventDefault();
         return;
     }
+
+    // Bỏ qua nếu IME/Unikey đang ghép phím (để sự kiện 'input' giải quyết)
     if (e.isComposing || e.key === 'Process' || e.keyCode === 229) return;
 
+    // Lấy ký tự từ keycode vật lý
     let ch = '';
     if (/^Key[A-Z]$/.test(e.code || '')) {
         ch = e.code.slice(3).toLowerCase();
@@ -334,19 +346,16 @@ addEventListener('keydown', e => {
     }
 
     if (ch && /^[a-z'-]$/.test(ch)) {
-        handledByKeydown = true;
         typeChar(ch);
         kb.value = '';
         e.preventDefault();
-        setTimeout(() => {
-            handledByKeydown = false;
-        }, 0);
     }
 });
 
 cv.addEventListener('pointerdown', e => {
     if (state !== 'play') return;
-    refocus();
+    refocus(); // Focus lại ngay vào input bàn phím
+
     const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
     let b = null, bd = 1e9;
     for (const q of words) {
@@ -364,6 +373,7 @@ cv.addEventListener('pointerdown', e => {
         b.sc = 1;
         snd(700, .06, 'sine', .05);
     }
+    e.preventDefault();
 });
 
 /* ---------- hiệu ứng ---------- */
