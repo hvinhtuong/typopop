@@ -1,5 +1,5 @@
 (() => {
-// --- Cấu hình Supabase ---
+    // --- Cấu hình Supabase ---
     const SUPABASE_URL = 'https://ksiapqqsxgnctbwdzxzj.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzaWFwcXFzeGduY3Rid2R6eHpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDg5NDcsImV4cCI6MjEwODIyNDk0N30.gf4iMpC28lqfluWtK0Cf2RZfysQQblNDJxB5FvrVdDU';
 
@@ -28,7 +28,6 @@
         })
     };
 
-// Tự động gộp và lọc trùng cho danh mục 'Tất cả'
     const allMap = new Map();
     [...WORD_PACKS.it, ...WORD_PACKS.travel, ...WORD_PACKS.daily].forEach(o => allMap.set(o.w, o));
     WORD_PACKS.all = [...allMap.values()];
@@ -36,15 +35,15 @@
     let currentTopic = 'all';
     let WORDS = WORD_PACKS.all;
 
-    const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2d'), kb =$('kb');
+    const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
     const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
     const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
     let W = 0, H = 0, DPR = 1, mode = 0, state = 'menu', last = 0;
 
-// KHAI BÁO BIẾN TRẠNG THÁI GAME (CHỈ ĐỂ DUY NHẤT 1 LẦN TẠI ĐÂY)
     let words, parts, bullets, floats, stars, score, lives, combo, level, killed, hits, misses, missed, target, spawnT,
         shake, bestEver = 0, topScores = [], lastRecordTime = 0, playerName = '', rankFrom = 'start', mascot,
         freezeTimer = 0;
+
     try {
         bestEver = +localStorage.getItem('mtv-best') || 0;
         playerName = localStorage.getItem('mtv-name') || '';
@@ -168,7 +167,8 @@
     }
 
     function hud() {
-        $('score').textContent = '⭐ ' + Math.round(score);$('lvl').textContent = 'Cấp ' + level;
+        $('score').textContent = '⭐ ' + Math.round(score);
+        $('lvl').textContent = 'Cấp ' + level;
         $('hearts').textContent = '💗'.repeat(Math.max(lives, 0)) + '🤍'.repeat(5 - Math.max(lives, 0));
         const c = $('combo');
         c.style.visibility = combo >= 2 ? 'visible' : 'hidden';
@@ -203,15 +203,13 @@
             }
         }
 
-        // Tỉ lệ khoảng 18% xuất hiện từ đặc biệt
-// Tăng tỉ lệ lên để dễ dàng test các hiệu ứng
         let power = null;
         const rand = Math.random();
         if (rand < 0.12) {
             power = 'bomb';
-        } else if (rand < 0.30) {
+        } else if (rand < 0.25) {
             power = 'freeze';
-        } else if (rand < 0.42) {
+        } else if (rand < 0.35) {
             power = 'heal';
         }
 
@@ -227,7 +225,7 @@
             col: COL[Math.random() * COL.length | 0],
             locked: false,
             sc: 0,
-            power // 'bomb' | 'freeze' | 'heal' | null
+            power
         });
     }
 
@@ -272,7 +270,6 @@
         const ch = normalizeChar(rawCh);
         if (!ch) return;
 
-        // Nếu chưa có target hoặc target chưa gõ chữ nào: tìm từ bắt đầu bằng ch
         if (!target) {
             const t = pickByChar(ch);
             if (t) {
@@ -281,7 +278,6 @@
             }
         }
 
-        // Kiểm tra tính hợp lệ của ký tự với target hiện tại
         if (!target || target.w[target.typed] !== ch) {
             misses++;
             combo = 0;
@@ -292,7 +288,6 @@
             return;
         }
 
-        // Gõ đúng ký tự: Bắn đạn và tiến trình từ
         const t = target;
         t.typed++;
         hits++;
@@ -308,24 +303,17 @@
         }
     }
 
-    let handledByKeydown = false;
-
-// Xử lý bộ gõ qua thẻ input ảo
     kb.addEventListener('input', () => {
         const v = kb.value;
         kb.value = '';
         if (!v) return;
-        for (const ch of v) {
-            typeChar(ch);
-        }
+        for (const ch of v) typeChar(ch);
     });
 
-// Xử lý phím vật lý trực tiếp
     addEventListener('keydown', e => {
         if (state !== 'play') return;
         if (e.ctrlKey || e.metaKey || e.altKey) return;
 
-        // Đổi target hoặc hủy chọn từ
         if (e.key === 'Backspace' || e.key === 'Escape') {
             if (target && !target.locked) {
                 target.typed = 0;
@@ -336,10 +324,8 @@
             return;
         }
 
-        // Bỏ qua nếu IME/Unikey đang ghép phím (để sự kiện 'input' giải quyết)
         if (e.isComposing || e.key === 'Process' || e.keyCode === 229) return;
 
-        // Lấy ký tự từ keycode vật lý
         let ch = '';
         if (/^Key[A-Z]$/.test(e.code || '')) {
             ch = e.code.slice(3).toLowerCase();
@@ -356,7 +342,7 @@
 
     cv.addEventListener('pointerdown', e => {
         if (state !== 'play') return;
-        refocus(); // Focus lại ngay vào input bàn phím
+        refocus();
 
         const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
         let b = null, bd = 1e9;
@@ -409,15 +395,12 @@
         burst(q.x, q.y, q.col, 30);
         say('+' + gain + ' · ' + q.vi, q.x, q.y - 10, '#ffd23f', 22);
 
-        // --- KÍCH HOẠT HIỆU ỨNG POWER-UP ---
         if (q.power === 'bomb') {
-            // Nổ bom: Tiêu diệt toàn bộ từ còn lại trên màn hình
             say('💣 BOOM !!! - CLEAR ALL', W / 2, H * .4, '#ff5d6c', 30);
             snd(120, .4, 'sawtooth', .12, .3);
             burst(W / 2, H / 2, '#ff5d6c', 80);
             shake = reduce ? 0 : .6;
 
-            // Quét sạch các từ khác
             const others = words.filter(w => w !== q && !w.locked);
             others.forEach(w => {
                 killed++;
@@ -427,12 +410,10 @@
             });
             target = null;
         } else if (q.power === 'freeze') {
-            // Đóng băng: Làm chậm 60% tốc độ rơi trong 5 giây
             freezeTimer = 5;
-            say('❄️ FREEZE -ĐÓNG BĂNG 5s!', q.x, q.y - 40, '#5cc8ff', 24);
+            say('❄️ FREEZE - ĐÓNG BĂNG 5s!', q.x, q.y - 40, '#5cc8ff', 24);
             [600, 800, 1000].forEach((f, i) => snd(f, .15, 'sine', .08, 0, i * .06));
         } else if (q.power === 'heal') {
-            // Hồi máu: Tăng 1 tim (tối đa 5)
             if (lives < 5) {
                 lives++;
                 say('💖 +1 HEART!', q.x, q.y - 40, '#ff6fae', 26);
@@ -444,12 +425,11 @@
         }
 
         if (combo >= 3 && !q.power) {
-            say(['GREATE!', 'GOOD!', 'MASTER!', 'UNSTOPPABLE!'][Math.min(combo - 3, 3)] + ' x' + combo, q.x, q.y - 44, '#ff6fae', 22);
+            say(['GREAT!', 'GOOD!', 'MASTER!', 'UNSTOPPABLE!'][Math.min(combo - 3, 3)] + ' x' + combo, q.x, q.y - 44, '#ff6fae', 22);
         }
         sPop(combo);
         speak(q.w);
 
-        // Loại bỏ từ vừa bị tiêu diệt
         const idx = words.indexOf(q);
         if (idx !== -1) words.splice(idx, 1);
 
@@ -467,7 +447,7 @@
         combo = 0;
         shake = reduce ? 0 : .5;
         burst(q.x, H - 60, '#ff5d6c', 26, false);
-        say('Opps!', q.x, H - 110, '#ff5d6c');
+        say('Oops!', q.x, H - 110, '#ff5d6c');
         snd(220, .35, 'square', .06, .4);
         if (!missed.has(q.w)) missed.set(q.w, q.vi);
         if (target === q) target = null;
@@ -478,7 +458,6 @@
 
     /* ---------- vòng lặp ---------- */
     function update(dt) {
-        // Đếm ngược thời gian đóng băng
         if (freezeTimer > 0) {
             freezeTimer = Math.max(0, freezeTimer - dt);
         }
@@ -489,7 +468,6 @@
             spawnT = Math.max(.9, 2.6 - level * .18 - mode * .3) + Math.random() * .6;
         }
 
-        // Nếu đang bị đóng băng, tốc độ rơi giảm xuống còn 35%
         const freezeSlowFactor = freezeTimer > 0 ? 0.35 : 1.0;
 
         for (const q of words.slice()) {
@@ -501,6 +479,7 @@
             q.sc *= .88;
             if (!q.locked && q.y > H - 92) lose(q);
         }
+
         for (const b of bullets) {
             const t = b.t.dead ? null : b.t;
             if (t) {
@@ -523,6 +502,7 @@
             }
         }
         bullets = bullets.filter(b => !b.done);
+
         for (const p of parts) {
             p.l += dt;
             p.vy += 620 * dt;
@@ -531,15 +511,18 @@
             p.rot += dt * 8;
         }
         parts = parts.filter(p => p.l < p.m);
+
         for (const f of floats) {
             f.l += dt;
             f.y -= 50 * dt;
         }
         floats = floats.filter(f => f.l < 1);
+
         mascot.x += ((target ? target.x : W / 2) - mascot.x) * Math.min(1, dt * 8);
         mascot.sq *= .85;
         mascot.mouth *= .9;
         shake = Math.max(0, shake - dt);
+
         for (const s of stars) {
             s.t += dt * s.s * 3;
             s.y += dt * s.s * .012 * (1 + level * .1);
@@ -600,7 +583,6 @@
         ctx.scale(sc, sc);
         if (q.sc < -.1) ctx.translate(Math.sin(t / 20) * 4, 0);
 
-        // Xác định màu sắc và biểu tượng của từ đặc biệt
         let strokeColor = q.col;
         let fillColor = isT ? 'rgba(255,210,63,.22)' : 'rgba(255,255,255,.12)';
         let badge = '';
@@ -632,7 +614,6 @@
             strokeColor = '#ffd23f';
         }
 
-        // Vẽ khung bóng bo tròn
         rr(-q.pw / 2, -h / 2, q.pw, h, h / 2);
         ctx.fillStyle = fillColor;
         ctx.fill();
@@ -641,29 +622,21 @@
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-// --- VẼ HUY HIỆU ICON KỸ NĂNG NỔI BẬT ---
+        // --- VẼ EMOJI NỔI BẬT KHÔNG VIỀN KHÔNG BACKGROUND ---
         if (badge) {
             ctx.save();
-
-            // Đặt emoji bay hẳn lên trên mép trái của ô chữ, không bị đè vào chữ
-            const ex = -q.pw / 2 + 6;
+            const ex = -q.pw / 2 + 8;
             const ey = -h / 2 - 12;
-
-            // Tắt shadow để emoji không bị nhòe nét
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
-
-            // Kích thước to rõ và dùng font màu hệ thống
             const emojiSize = Math.max(22, Math.round(f * 0.95));
             ctx.font = `${emojiSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-
             ctx.fillText(badge, ex, ey);
             ctx.restore();
         }
 
-        // Vẽ chữ tiếng Anh
         ctx.font = `700 ${f}px Fredoka,sans-serif`;
         ctx.textBaseline = 'middle';
         ctx.textAlign = 'left';
@@ -673,7 +646,6 @@
         ctx.fillStyle = '#fff';
         ctx.fillText(q.w.slice(q.typed), x0 + ctx.measureText(a).width, 1);
 
-        // Vẽ nghĩa tiếng Việt
         ctx.textAlign = 'center';
         ctx.font = `500 ${f * .56}px Fredoka,sans-serif`;
         ctx.fillStyle = isT ? '#ffe98a' : 'rgba(255,214,235,.85)';
@@ -740,7 +712,6 @@
         ctx.save();
         if (shake > 0) ctx.translate((Math.random() - .5) * shake * 22, (Math.random() - .5) * shake * 22);
         drawBg(t);
-        // Phủ hiệu ứng sương tuyết xanh khi đang kích hoạt Đóng băng
         if (freezeTimer > 0) {
             ctx.fillStyle = `rgba(92, 200, 255, ${Math.min(0.25, freezeTimer * 0.05)})`;
             ctx.fillRect(0, 0, W, H);
@@ -813,7 +784,6 @@
     }
 
     /* ---------- luồng game ---------- */
-// Tải và hiển thị vinh danh người chơi cao điểm nhất toàn cầu ở màn hình Home
     async function fetchTopChamp() {
         const el = $('top-champ');
         if (!el) return;
@@ -821,7 +791,6 @@
         let top1 = null;
         const pad = n => String(n).padStart(2, '0');
 
-        // 1. Thử lấy từ Supabase
         if (sb) {
             try {
                 const { data, error } = await sb
@@ -843,7 +812,6 @@
             }
         }
 
-        // 2. Nếu không có kết quả từ Supabase, lấy từ bộ nhớ máy (local)
         if (!top1) {
             try {
                 const localTop = JSON.parse(localStorage.getItem('mtv-top5') || '[]');
@@ -863,7 +831,6 @@
             } catch (e) {}
         }
 
-        // 3. Hiển thị thông tin kèm thời gian
         if (top1 && top1.score > 0) {
             const timeBadge = top1.timeStr ? `<span class="champ-time">🕒 ${top1.timeStr}</span>` : '';
             el.innerHTML = `👑 Top 1: <b>${escapeHtml(top1.name || 'Người chơi')}</b> (⭐ ${top1.score}) ${timeBadge}`;
@@ -874,10 +841,11 @@
         }
     }
 
-    // Chuỗi bí mật khớp hoàn toàn với chuỗi trên Postgres Database
+    // Chuỗi bí mật: Đảm bảo trùng khớp 100% với trigger SQL trên Postgres
     const CLIENT_SALT = 'typopop_secret_salt_2026';
 
     async function generateScoreSignature(name, score, level, killed) {
+        // Ép kiểu chính xác: name đã trim, score/level/killed là số nguyên
         const payload = `${name}:${score}:${level}:${killed}:${CLIENT_SALT}`;
         const msgBuffer = new TextEncoder().encode(payload);
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -888,7 +856,10 @@
     async function saveScore(sc) {
         if (sc <= 0) return;
         lastRecordTime = Date.now();
-        const player = playerName || 'Người chơi';
+        const player = (playerName || 'Người chơi').trim();
+        const finalScore = Math.round(sc);
+        const finalLevel = Math.max(1, Math.round(level));
+        const finalKilled = Math.max(0, Math.round(killed));
         const topicName = typeof currentTopic !== 'undefined' ? currentTopic : 'all';
 
         const now = new Date();
@@ -896,7 +867,7 @@
         const dateStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
         // Lưu tạm vào bộ nhớ máy
-        topScores.push({ name: player, score: sc, lvl: level, mode, topic: topicName, date: dateStr, t: lastRecordTime });
+        topScores.push({ name: player, score: finalScore, lvl: finalLevel, mode, topic: topicName, date: dateStr, t: lastRecordTime });
         topScores.sort((a, b) => b.score - a.score);
         topScores = topScores.slice(0, 5);
         try { localStorage.setItem('mtv-top5', JSON.stringify(topScores)); } catch (e) {}
@@ -904,21 +875,25 @@
         // Gửi lên Supabase kèm chữ ký mã băm
         if (sb) {
             try {
-                const sig = await generateScoreSignature(player, sc, level, killed);
-                const { error } = await sb.from('leaderboard').insert([
+                const sig = await generateScoreSignature(player, finalScore, finalLevel, finalKilled);
+                const { data, error } = await sb.from('leaderboard').insert([
                     {
                         name: player,
-                        score: sc,
-                        level: level,
+                        score: finalScore,
+                        level: finalLevel,
                         mode: mode,
                         topic: topicName,
-                        killed: killed,
+                        killed: finalKilled,
                         signature: sig
                     }
                 ]);
-                if (error) console.warn('Supabase từ chối bản ghi:', error.message);
+                if (error) {
+                    console.error('❌ Supabase từ chối bản ghi:', error.message, error.details || '');
+                } else {
+                    console.log('✅ Đã lưu điểm lên Supabase thành công!');
+                }
             } catch (err) {
-                console.warn('Lỗi gửi điểm lên Supabase:', err);
+                console.error('❌ Lỗi ngoại lệ khi gửi điểm lên Supabase:', err);
             }
         }
     }
@@ -996,14 +971,16 @@
     function openRank(fromScreen) {
         rankFrom = fromScreen;
         renderRank();
-        $(fromScreen).classList.add('hide');$('rank').classList.remove('hide');
+        $(fromScreen).classList.add('hide');
+        $('rank').classList.remove('hide');
         snd(600, .08, 'triangle', .06);
     }
 
     function promptPlayerName() {
         state = 'name';
         $('start').classList.add('hide');
-        $('name-err').classList.add('hide');$('name-modal').classList.remove('hide');
+        $('name-err').classList.add('hide');
+        $('name-modal').classList.remove('hide');
         const inp = $('player-name');
         inp.value = playerName;
         setTimeout(() => {
@@ -1032,7 +1009,8 @@
     function resume() {
         state = 'play';
         $('start').classList.add('hide');
-        $('modes').style.display = '';$('btn-rank-start').style.display = '';
+        $('modes').style.display = '';
+        $('btn-rank-start').style.display = '';
         refocus();
     }
 
@@ -1047,14 +1025,19 @@
             } catch (e) {}
         }
         $('play').textContent = 'Play';
-        $('modes').style.display = '';$('btn-rank-start').style.display = '';
-        $('start').classList.add('hide');$('name-modal').classList.add('hide');
-        $('over').classList.add('hide');$('rank').classList.add('hide');
+        $('modes').style.display = '';
+        $('btn-rank-start').style.display = '';
+        $('start').classList.add('hide');
+        $('name-modal').classList.add('hide');
+        $('over').classList.add('hide');
+        $('rank').classList.add('hide');
+
         const notifyEl = $('top-notify');
         if (notifyEl) {
             notifyEl.classList.add('hide');
             notifyEl.innerHTML = '';
         }
+
         mascot.x = W / 2;
         refocus();
         snd(660, .15, 'triangle', .07, 1.5);
@@ -1079,9 +1062,11 @@
         }
 
         const notifyEl = $('top-notify');
-        if(notifyEl) notifyEl.classList.add('hide');
+        if (notifyEl) {
+            notifyEl.classList.add('hide');
+            notifyEl.innerHTML = '';
+        }
 
-        // Chờ lưu điểm xong xuôi vào cả LocalStorage lẫn Supabase
         await saveScore(finalScore);
         syncSettingsUI();
 
@@ -1096,24 +1081,17 @@
         setTimeout(() => $('over').classList.remove('hide'), 500);
     }
 
-// Kiểm tra điểm số hiện tại với Top 5
-// Kiểm tra vị trí xếp hạng chính xác khi kết thúc ván
-// Kiểm tra vị trí xếp hạng chính xác khi kết thúc ván
-// Kiểm tra vị trí xếp hạng chính xác khi kết thúc ván
     async function checkTopRank(currentScore) {
         const notifyEl = $('top-notify');
         if (!notifyEl) return;
 
-        // Luôn ẩn và xóa trắng trước tiên
         notifyEl.classList.add('hide');
         notifyEl.innerHTML = '';
 
-        // Nếu điểm bằng 0 hoặc âm, chắc chắn không xét duyệt Top
         if (currentScore <= 0) return;
 
         let rankPosition = null;
 
-        // 1. Kiểm tra trên Supabase
         if (sb) {
             try {
                 const { data, error } = await sb
@@ -1123,10 +1101,7 @@
                     .limit(5);
 
                 if (!error && data) {
-                    // Đếm số người có điểm số cao hơn điểm hiện tại
                     const higherCount = data.filter(item => item.score > currentScore).length;
-
-                    // Chỉ khi có ít hơn 5 người điểm cao hơn thì mới vào Top 5
                     if (higherCount < 5) {
                         rankPosition = higherCount + 1;
                     }
@@ -1136,7 +1111,6 @@
             }
         }
 
-        // 2. Dự phòng kiểm tra bộ nhớ máy (local) nếu offline hoặc lỗi mạng
         if (!rankPosition && typeof topScores !== 'undefined') {
             try {
                 const localTop = JSON.parse(localStorage.getItem('mtv-top5') || '[]');
@@ -1147,19 +1121,17 @@
             } catch (e) {}
         }
 
-        // 3. Chỉ hiển thị bảng vinh danh khi THỰC SỰ đạt từ Top 1 đến Top 5
         if (rankPosition && rankPosition <= 5) {
             const trophy = rankPosition === 1 ? '👑' : '🏆';
             notifyEl.innerHTML = `${trophy} XUẤT SẮC! BẠN ĐÃ ĐẠT TOP ${rankPosition} TOÀN CẦU! ${trophy}`;
             notifyEl.classList.remove('hide');
 
-            // Âm thanh và pháo hoa ăn mừng
             [523, 659, 784, 1047].forEach((f, i) => snd(f * 1.2, 0.2, 'triangle', 0.08, 0, i * 0.08));
             burst(W / 2, 80, '#ffd23f', 50);
         }
     }
 
-// Gắn sự kiện các nút
+    // Gắn sự kiện các nút
     $('play').onclick = () => state === 'paused' ? resume() : promptPlayerName();
     $('confirm-name').onclick = confirmNameAndPlay;
     $('cancel-name').onclick = () => {
@@ -1195,14 +1167,12 @@
         };
     }
 
-// Chọn độ khó màn hình chính
     document.querySelectorAll('#modes button').forEach(b => b.onclick = () => {
         if (state === 'paused') return;
         mode = +b.dataset.m;
         syncSettingsUI();
     });
 
-// Chọn chủ đề màn hình chính
     document.querySelectorAll('#topics button').forEach(b => b.onclick = () => {
         if (state === 'paused') return;
         currentTopic = b.dataset.topic;
@@ -1211,7 +1181,6 @@
         snd(500, .06, 'triangle', .05);
     });
 
-// Chọn chủ đề màn hình Game Over
     document.querySelectorAll('#over-topics button').forEach(b => b.onclick = () => {
         currentTopic = b.dataset.topic;
         WORDS = WORD_PACKS[currentTopic] || WORD_PACKS.all;
@@ -1219,7 +1188,6 @@
         snd(500, .06, 'triangle', .05);
     });
 
-// Chọn độ khó màn hình Game Over
     document.querySelectorAll('#over-modes button').forEach(b => b.onclick = () => {
         mode = +b.dataset.m;
         syncSettingsUI();
@@ -1248,6 +1216,12 @@
     resize();
     initStars();
     reset();
-    fetchTopChamp();
-    (document.fonts && document.fonts.load('700 24px Fredoka') || Promise.resolve()).finally(() => requestAnimationFrame(loop));
+    try { fetchTopChamp(); } catch (e) {}
+
+    // Khởi chạy ngay lập tức không phụ thuộc font chữ
+    requestAnimationFrame(loop);
+
+    if (document.fonts && document.fonts.load) {
+        document.fonts.load('700 24px Fredoka').catch(() => {});
+    }
 })();
