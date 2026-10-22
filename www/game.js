@@ -202,13 +202,14 @@ function spawn() {
     }
 
     // Tỉ lệ khoảng 18% xuất hiện từ đặc biệt
+// Tăng tỉ lệ lên để dễ dàng test các hiệu ứng
     let power = null;
     const rand = Math.random();
-    if (rand < 0.06) {
+    if (rand < 0.15) {
         power = 'bomb';
-    } else if (rand < 0.12) {
+    } else if (rand < 0.30) {
         power = 'freeze';
-    } else if (rand < 0.18) {
+    } else if (rand < 0.45) {
         power = 'heal';
     }
 
@@ -587,38 +588,39 @@ function drawWord(q, t) {
     ctx.scale(sc, sc);
     if (q.sc < -.1) ctx.translate(Math.sin(t / 20) * 4, 0);
 
-    // Xử lý màu sắc viền và shadow theo loại Power-up
+    // Xác định màu sắc và biểu tượng của từ đặc biệt
     let strokeColor = q.col;
-    let fillColor = 'rgba(255,255,255,.12)';
-    let icon = '';
+    let fillColor = isT ? 'rgba(255,210,63,.22)' : 'rgba(255,255,255,.12)';
+    let badge = '';
 
     if (q.power === 'bomb') {
         strokeColor = '#ff4d4d';
-        fillColor = 'rgba(255,77,77,.25)';
-        icon = '💣 ';
+        fillColor = 'rgba(255,77,77,.28)';
+        badge = '💣';
         ctx.shadowColor = '#ff4d4d';
-        ctx.shadowBlur = 14 + Math.sin(t / 80) * 6;
+        ctx.shadowBlur = 16 + Math.sin(t / 80) * 6;
     } else if (q.power === 'freeze') {
         strokeColor = '#5cc8ff';
-        fillColor = 'rgba(92,200,255,.25)';
-        icon = '❄️ ';
+        fillColor = 'rgba(92,200,255,.28)';
+        badge = '❄️';
         ctx.shadowColor = '#5cc8ff';
-        ctx.shadowBlur = 14 + Math.sin(t / 100) * 6;
+        ctx.shadowBlur = 16 + Math.sin(t / 100) * 6;
     } else if (q.power === 'heal') {
         strokeColor = '#ff6fae';
-        fillColor = 'rgba(255,111,174,.25)';
-        icon = '💖 ';
+        fillColor = 'rgba(255,111,174,.28)';
+        badge = '💖';
         ctx.shadowColor = '#ff6fae';
-        ctx.shadowBlur = 14 + Math.sin(t / 100) * 6;
+        ctx.shadowBlur = 16 + Math.sin(t / 100) * 6;
     }
 
     if (isT || q.locked) {
         ctx.shadowColor = q.locked ? '#3ee6b0' : '#ffd23f';
         ctx.shadowBlur = 18 + Math.sin(t / 120) * 6;
-        fillColor = 'rgba(255,210,63,.22)';
+        fillColor = 'rgba(255,210,63,.28)';
         strokeColor = '#ffd23f';
     }
 
+    // Vẽ khung bóng bo tròn
     rr(-q.pw / 2, -h / 2, q.pw, h, h / 2);
     ctx.fillStyle = fillColor;
     ctx.fill();
@@ -627,18 +629,25 @@ function drawWord(q, t) {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Vẽ chữ tiếng Anh kèm icon (nếu có)
+    // Vẽ icon Power-up nổi ở góc trên bên trái khung nếu có
+    if (badge) {
+        ctx.font = `${f * 0.8}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badge, -q.pw / 2 + 10, -h / 2 - 4);
+    }
+
+    // Vẽ chữ tiếng Anh
     ctx.font = `700 ${f}px Fredoka,sans-serif`;
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
-    const fullText = icon + q.w;
-    const a = icon + q.w.slice(0, q.typed);
-    const tw = ctx.measureText(fullText).width, x0 = -tw / 2;
+    const a = q.w.slice(0, q.typed), tw = ctx.measureText(q.w).width, x0 = -tw / 2;
     ctx.fillStyle = '#3ee6b0';
     ctx.fillText(a, x0, 1);
     ctx.fillStyle = '#fff';
     ctx.fillText(q.w.slice(q.typed), x0 + ctx.measureText(a).width, 1);
 
+    // Vẽ nghĩa tiếng Việt
     ctx.textAlign = 'center';
     ctx.font = `500 ${f * .56}px Fredoka,sans-serif`;
     ctx.fillStyle = isT ? '#ffe98a' : 'rgba(255,214,235,.85)';
@@ -1022,7 +1031,7 @@ async function end() {
 
     $('big').textContent = finalScore;
     const acc = hits + misses ? Math.round(hits / (hits + misses) * 100) : 100;
-    $('stats').textContent = (best ? 'Kỷ lục mới! ' : 'Kỷ lục: ' + bestEver + '. ') + `${playerName || 'Người chơi'} hạ ${killed} từ · Chính xác ${acc}%`;
+    $('stats').textContent = `${playerName || 'Người chơi'} hạ ${killed} từ · Chính xác ${acc}%`;
     $('miss').innerHTML = missed.size ? '<b>Từ cần ôn:</b> ' + [...missed].slice(0, 6).map(([w, v]) => w + ' = ' + v).join(' · ') : 'Không bỏ sót từ nào, quá đỉnh!';
 
     checkTopRank(finalScore);
