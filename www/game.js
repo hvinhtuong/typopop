@@ -1,6 +1,6 @@
 // --- Cấu hình Supabase ---
-const SUPABASE_URL = 'https://ksiapqqsxgnctbwdzxzj.supabase.co'; // Thay bằng URL của bạn
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzaWFwcXFzeGduY3Rid2R6eHpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDg5NDcsImV4cCI6MjEwODIyNDk0N30.gf4iMpC28lqfluWtK0Cf2RZfysQQblNDJxB5FvrVdDU';               // Thay bằng anon key của bạn
+const SUPABASE_URL = 'https://ksiapqqsxgnctbwdzxzj.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzaWFwcXFzeGduY3Rid2R6eHpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDg5NDcsImV4cCI6MjEwODIyNDk0N30.gf4iMpC28lqfluWtK0Cf2RZfysQQblNDJxB5FvrVdDU';
 
 let sb = null;
 try {
@@ -38,6 +38,8 @@ const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2
 const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
 const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
 let W = 0, H = 0, DPR = 1, mode = 0, state = 'menu', last = 0;
+
+// KHAI BÁO BIẾN TRẠNG THÁI GAME (CHỈ ĐỂ DUY NHẤT 1 LẦN TẠI ĐÂY)
 let words, parts, bullets, floats, stars, score, lives, combo, level, killed, hits, misses, missed, target, spawnT,
     shake, bestEver = 0, topScores = [], lastRecordTime = 0, playerName = '', rankFrom = 'start', mascot;
 
