@@ -237,7 +237,7 @@ const TELEX_MAP = {
 
 function normalizeChar(ch) {
     ch = ch.toLowerCase();
-    if (/^[a-z'-]\$/.test(ch)) return ch;
+    if (/^[a-z'-]$/.test(ch)) return ch;
     const mapped = TELEX_MAP[ch];
     if (!mapped) return '';
     if (ch === 'ư') {
@@ -310,13 +310,13 @@ addEventListener('keydown', e => {
     if (e.isComposing || e.key === 'Process' || e.keyCode === 229) return;
 
     let ch = '';
-    if (/^Key[A-Z]\$/.test(e.code || '')) {
+    if (/^Key[A-Z]$/.test(e.code || '')) {
         ch = e.code.slice(3).toLowerCase();
     } else if (e.key && e.key.length === 1) {
         ch = normalizeChar(e.key);
     }
 
-    if (ch && /^[a-z'-]\$/.test(ch)) {
+    if (ch && /^[a-z'-]$/.test(ch)) {
         handledByKeydown = true;
         typeChar(ch);
         kb.value = '';
