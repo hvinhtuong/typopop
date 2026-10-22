@@ -206,11 +206,11 @@ function spawn() {
 // Tăng tỉ lệ lên để dễ dàng test các hiệu ứng
     let power = null;
     const rand = Math.random();
-    if (rand < 0.20) {
+    if (rand < 0.12) {
         power = 'bomb';
-    } else if (rand < 0.25) {
+    } else if (rand < 0.30) {
         power = 'freeze';
-    } else if (rand < 0.25) {
+    } else if (rand < 0.42) {
         power = 'heal';
     }
 
