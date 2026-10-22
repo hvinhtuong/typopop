@@ -640,30 +640,36 @@ function drawWord(q, t) {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Vẽ icon Power-up nổi ở góc trên bên trái khung nếu có
-// Vẽ huy hiệu (Badge) nổi bật cho từ đặc biệt
+// --- VẼ HUY HIỆU ICON KỸ NĂNG NỔI BẬT ---
     if (badge) {
-        const badgeRadius = Math.max(14, f * 0.58);
-        const bx = -q.pw / 2 + 6;
-        const by = -h / 2 + 2;
-
         ctx.save();
-        // 1. Vẽ vòng tròn nền cho huy hiệu
+
+        // Tọa độ đặt huy hiệu ở góc trên bên trái khung từ
+        const badgeR = Math.max(16, f * 0.65); // Kích thước vòng tròn to rõ
+        const bx = -q.pw / 2 + 4;
+        const by = -h / 2 - 2;
+
+        // 1. Vẽ vòng tròn nền nổi
         ctx.beginPath();
-        ctx.arc(bx, by, badgeRadius, 0, Math.PI * 2);
+        ctx.arc(bx, by, badgeR, 0, Math.PI * 2);
         ctx.fillStyle = strokeColor;
         ctx.fill();
+
+        // 2. Viền trắng tương phản sắc nét
         ctx.lineWidth = 2.5;
         ctx.strokeStyle = '#ffffff';
         ctx.stroke();
 
-        // 2. Vẽ emoji sắc nét với font chuẩn hệ thống
-        ctx.font = `${badgeRadius * 1.3}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+        // 3. Tắt hoàn toàn shadow và dùng font emoji màu của hệ thống
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.font = `bold ${Math.round(badgeR * 1.35)}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'transparent'; // Tắt bóng mờ để icon nét căng
-        ctx.shadowBlur = 0;
-        ctx.fillText(badge, bx, by + 1);
+
+        // Vẽ icon (nhích xuống 1px để cân giữa vòng tròn)
+        ctx.fillText(badge, bx, by + 1.5);
+
         ctx.restore();
     }
 
@@ -1072,12 +1078,15 @@ async function end() {
 
 // Kiểm tra điểm số hiện tại với Top 5
 // Kiểm tra vị trí xếp hạng chính xác khi kết thúc ván
+// Kiểm tra vị trí xếp hạng chính xác khi kết thúc ván
 async function checkTopRank(currentScore) {
     if (currentScore <= 0) return;
-    const notifyEl = $('top-notify');
+    const notifyEl = \$('top-notify');
+    if (notifyEl) notifyEl.classList.add('hide'); // Luôn ẩn mặc định trước
+
     let rankPosition = null;
 
-    // 1. Kiểm tra thứ hạng trên Supabase
+    // 1. Kiểm tra trên Supabase
     if (sb) {
         try {
             const { data, error } = await sb
@@ -1087,45 +1096,37 @@ async function checkTopRank(currentScore) {
                 .limit(5);
 
             if (!error && data) {
-                // Tìm vị trí của điểm số hiện tại trong danh sách Top 5
-                let rank = 1;
-                for (const item of data) {
-                    if (currentScore < item.score) {
-                        rank++;
-                    } else {
-                        break;
-                    }
+                // Tìm vị trí: đếm số người có điểm cao hơn điểm hiện tại
+                const higherCount = data.filter(item => item.score > currentScore).length;
+
+                // Nếu số người cao hơn ít hơn 5, tức là ta lọt vào Top (vị trí = higherCount + 1)
+                if (higherCount < 5) {
+                    rankPosition = higherCount + 1;
                 }
-                if (rank <= 5) rankPosition = rank;
             }
         } catch (e) {
             console.warn('Lỗi kiểm tra rank Supabase:', e);
         }
     }
 
-    // 2. Dự phòng kiểm tra theo bộ nhớ máy (local) nếu offline hoặc lỗi mạng
-    if (!rankPosition) {
+    // 2. Dự phòng kiểm tra local nếu không có Supabase
+    if (!rankPosition && typeof topScores !== 'undefined') {
         try {
             const localTop = JSON.parse(localStorage.getItem('mtv-top5') || '[]');
-            let rank = 1;
-            for (const item of localTop) {
-                if (currentScore < item.score) {
-                    rank++;
-                } else {
-                    break;
-                }
+            const higherCount = localTop.filter(item => item.score > currentScore).length;
+            if (higherCount < 5 && localTop.length > 0) {
+                rankPosition = higherCount + 1;
             }
-            if (rank <= 5) rankPosition = rank;
         } catch (e) {}
     }
 
-    // 3. Hiển thị thông báo tương ứng với thứ hạng đạt được
-    if (rankPosition && notifyEl) {
+    // 3. Chỉ hiển thị khi thực sự nằm từ Top 1 đến Top 5
+    if (rankPosition && rankPosition <= 5 && notifyEl) {
         const trophy = rankPosition === 1 ? '👑' : '🏆';
         notifyEl.innerHTML = `${trophy} XUẤT SẮC! BẠN ĐÃ ĐẠT TOP ${rankPosition} TOÀN CẦU! ${trophy}`;
         notifyEl.classList.remove('hide');
 
-        // Hiệu ứng âm thanh và pháo hoa chúc mừng
+        // Âm thanh và hiệu ứng ăn mừng
         [523, 659, 784, 1047].forEach((f, i) => snd(f * 1.2, 0.2, 'triangle', 0.08, 0, i * 0.08));
         burst(W / 2, 80, '#ffd23f', 50);
     }
