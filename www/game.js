@@ -41,8 +41,8 @@ let W = 0, H = 0, DPR = 1, mode = 0, state = 'menu', last = 0;
 
 // KHAI BÁO BIẾN TRẠNG THÁI GAME (CHỈ ĐỂ DUY NHẤT 1 LẦN TẠI ĐÂY)
 let words, parts, bullets, floats, stars, score, lives, combo, level, killed, hits, misses, missed, target, spawnT,
-    shake, bestEver = 0, topScores = [], lastRecordTime = 0, playerName = '', rankFrom = 'start', mascot;
-
+    shake, bestEver = 0, topScores = [], lastRecordTime = 0, playerName = '', rankFrom = 'start', mascot,
+    freezeTimer = 0;
 try {
     bestEver = +localStorage.getItem('mtv-best') || 0;
     playerName = localStorage.getItem('mtv-name') || '';
@@ -160,6 +160,7 @@ function reset() {
     target = null;
     spawnT = .4;
     shake = 0;
+    freezeTimer = 0;
     mascot = { x: 0, sq: 0, look: 0, mouth: 0 };
     hud();
 }
@@ -190,7 +191,7 @@ function spawn() {
         pool = WORDS.filter(o => o.w.length <= maxLen && !words.some(x => x.w === o.w)),
         o = pool[Math.random() * pool.length | 0] || WORDS[0];
     ctx.font = `700 ${fs()}px Fredoka,sans-serif`;
-    const w = ctx.measureText(o.w).width + 28, m = w / 2 + 10;
+    const w = ctx.measureText(o.w).width + 36, m = w / 2 + 10;
     let x = m + Math.random() * (W - 2 * m);
     for (let i = 0; i < 8; i++) {
         const c = m + Math.random() * (W - 2 * m);
@@ -199,6 +200,18 @@ function spawn() {
             break;
         }
     }
+
+    // Tỉ lệ khoảng 18% xuất hiện từ đặc biệt
+    let power = null;
+    const rand = Math.random();
+    if (rand < 0.06) {
+        power = 'bomb';
+    } else if (rand < 0.12) {
+        power = 'freeze';
+    } else if (rand < 0.18) {
+        power = 'heal';
+    }
+
     words.push({
         w: o.w,
         vi: o.vi,
@@ -210,7 +223,8 @@ function spawn() {
         ph: Math.random() * 6,
         col: COL[Math.random() * COL.length | 0],
         locked: false,
-        sc: 0
+        sc: 0,
+        power // 'bomb' | 'freeze' | 'heal' | null
     });
 }
 
@@ -381,13 +395,54 @@ function kill(q) {
     score += gain;
     burst(q.x, q.y, q.col, 30);
     say('+' + gain + ' · ' + q.vi, q.x, q.y - 10, '#ffd23f', 22);
-    if (combo >= 3) say(['Tuyệt!', 'Giỏi quá!', 'Siêu sao!', 'Bất bại!'][Math.min(combo - 3, 3)] + ' x' + combo, q.x, q.y - 44, '#ff6fae', 22);
+
+    // --- KÍCH HOẠT HIỆU ỨNG POWER-UP ---
+    if (q.power === 'bomb') {
+        // Nổ bom: Tiêu diệt toàn bộ từ còn lại trên màn hình
+        say('💣 BOOM !!! - CLEAR ALL', W / 2, H * .4, '#ff5d6c', 30);
+        snd(120, .4, 'sawtooth', .12, .3);
+        burst(W / 2, H / 2, '#ff5d6c', 80);
+        shake = reduce ? 0 : .6;
+
+        // Quét sạch các từ khác
+        const others = words.filter(w => w !== q && !w.locked);
+        others.forEach(w => {
+            killed++;
+            score += Math.round(w.w.length * 8);
+            burst(w.x, w.y, '#ffd23f', 16);
+            words.splice(words.indexOf(w), 1);
+        });
+        target = null;
+    } else if (q.power === 'freeze') {
+        // Đóng băng: Làm chậm 60% tốc độ rơi trong 5 giây
+        freezeTimer = 5;
+        say('❄️ FREEZE -ĐÓNG BĂNG 5s!', q.x, q.y - 40, '#5cc8ff', 24);
+        [600, 800, 1000].forEach((f, i) => snd(f, .15, 'sine', .08, 0, i * .06));
+    } else if (q.power === 'heal') {
+        // Hồi máu: Tăng 1 tim (tối đa 5)
+        if (lives < 5) {
+            lives++;
+            say('💖 +1 HEART!', q.x, q.y - 40, '#ff6fae', 26);
+            [440, 554, 659].forEach((f, i) => snd(f, .15, 'triangle', .08, 0, i * .08));
+        } else {
+            say('+500 POINT!', q.x, q.y - 40, '#ff6fae', 22);
+            score += 500;
+        }
+    }
+
+    if (combo >= 3 && !q.power) {
+        say(['GREATE!', 'GOOD!', 'MASTER!', 'UNSTOPPABLE!'][Math.min(combo - 3, 3)] + ' x' + combo, q.x, q.y - 44, '#ff6fae', 22);
+    }
     sPop(combo);
     speak(q.w);
-    words.splice(words.indexOf(q), 1);
+
+    // Loại bỏ từ vừa bị tiêu diệt
+    const idx = words.indexOf(q);
+    if (idx !== -1) words.splice(idx, 1);
+
     if (killed % 10 === 0) {
         level++;
-        say('Cấp ' + level + '!', W / 2, H * .4, '#3ee6b0', Math.min(64, W / 7));
+        say('Level ' + level + '!', W / 2, H * .4, '#3ee6b0', Math.min(64, W / 7));
         burst(W / 2, H * .4, '#3ee6b0', 60);
         [392, 523, 659, 784].forEach((f, i) => snd(f, .2, 'square', .05, 0, i * .09));
     }
@@ -399,7 +454,7 @@ function lose(q) {
     combo = 0;
     shake = reduce ? 0 : .5;
     burst(q.x, H - 60, '#ff5d6c', 26, false);
-    say('Ối!', q.x, H - 110, '#ff5d6c');
+    say('Opps!', q.x, H - 110, '#ff5d6c');
     snd(220, .35, 'square', .06, .4);
     if (!missed.has(q.w)) missed.set(q.w, q.vi);
     if (target === q) target = null;
@@ -410,15 +465,24 @@ function lose(q) {
 
 /* ---------- vòng lặp ---------- */
 function update(dt) {
+    // Đếm ngược thời gian đóng băng
+    if (freezeTimer > 0) {
+        freezeTimer = Math.max(0, freezeTimer - dt);
+    }
+
     spawnT -= dt;
     if (spawnT <= 0 && words.length < 4 + level) {
         spawn();
         spawnT = Math.max(.9, 2.6 - level * .18 - mode * .3) + Math.random() * .6;
     }
+
+    // Nếu đang bị đóng băng, tốc độ rơi giảm xuống còn 35%
+    const freezeSlowFactor = freezeTimer > 0 ? 0.35 : 1.0;
+
     for (const q of words.slice()) {
         q.ph += dt * 2;
         const nearBottom = q === target && q.y > H - 150;
-        const speedFactor = q.locked ? 0.1 : (nearBottom ? 0.65 : 1);
+        const speedFactor = (q.locked ? 0.1 : (nearBottom ? 0.65 : 1)) * freezeSlowFactor;
         q.y += q.vy * speedFactor * dt;
         if (q.locked && q.y > H - 95) q.y = H - 95;
         q.sc *= .88;
@@ -522,25 +586,59 @@ function drawWord(q, t) {
     ctx.translate(x, y);
     ctx.scale(sc, sc);
     if (q.sc < -.1) ctx.translate(Math.sin(t / 20) * 4, 0);
+
+    // Xử lý màu sắc viền và shadow theo loại Power-up
+    let strokeColor = q.col;
+    let fillColor = 'rgba(255,255,255,.12)';
+    let icon = '';
+
+    if (q.power === 'bomb') {
+        strokeColor = '#ff4d4d';
+        fillColor = 'rgba(255,77,77,.25)';
+        icon = '💣 ';
+        ctx.shadowColor = '#ff4d4d';
+        ctx.shadowBlur = 14 + Math.sin(t / 80) * 6;
+    } else if (q.power === 'freeze') {
+        strokeColor = '#5cc8ff';
+        fillColor = 'rgba(92,200,255,.25)';
+        icon = '❄️ ';
+        ctx.shadowColor = '#5cc8ff';
+        ctx.shadowBlur = 14 + Math.sin(t / 100) * 6;
+    } else if (q.power === 'heal') {
+        strokeColor = '#ff6fae';
+        fillColor = 'rgba(255,111,174,.25)';
+        icon = '💖 ';
+        ctx.shadowColor = '#ff6fae';
+        ctx.shadowBlur = 14 + Math.sin(t / 100) * 6;
+    }
+
     if (isT || q.locked) {
         ctx.shadowColor = q.locked ? '#3ee6b0' : '#ffd23f';
         ctx.shadowBlur = 18 + Math.sin(t / 120) * 6;
+        fillColor = 'rgba(255,210,63,.22)';
+        strokeColor = '#ffd23f';
     }
+
     rr(-q.pw / 2, -h / 2, q.pw, h, h / 2);
-    ctx.fillStyle = isT ? 'rgba(255,210,63,.22)' : 'rgba(255,255,255,.12)';
+    ctx.fillStyle = fillColor;
     ctx.fill();
     ctx.lineWidth = isT ? 3 : 2;
-    ctx.strokeStyle = isT ? '#ffd23f' : q.col;
+    ctx.strokeStyle = strokeColor;
     ctx.stroke();
     ctx.shadowBlur = 0;
+
+    // Vẽ chữ tiếng Anh kèm icon (nếu có)
     ctx.font = `700 ${f}px Fredoka,sans-serif`;
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
-    const a = q.w.slice(0, q.typed), tw = ctx.measureText(q.w).width, x0 = -tw / 2;
+    const fullText = icon + q.w;
+    const a = icon + q.w.slice(0, q.typed);
+    const tw = ctx.measureText(fullText).width, x0 = -tw / 2;
     ctx.fillStyle = '#3ee6b0';
     ctx.fillText(a, x0, 1);
     ctx.fillStyle = '#fff';
     ctx.fillText(q.w.slice(q.typed), x0 + ctx.measureText(a).width, 1);
+
     ctx.textAlign = 'center';
     ctx.font = `500 ${f * .56}px Fredoka,sans-serif`;
     ctx.fillStyle = isT ? '#ffe98a' : 'rgba(255,214,235,.85)';
@@ -607,6 +705,11 @@ function draw(t) {
     ctx.save();
     if (shake > 0) ctx.translate((Math.random() - .5) * shake * 22, (Math.random() - .5) * shake * 22);
     drawBg(t);
+    // Phủ hiệu ứng sương tuyết xanh khi đang kích hoạt Đóng băng
+    if (freezeTimer > 0) {
+        ctx.fillStyle = `rgba(92, 200, 255, ${Math.min(0.25, freezeTimer * 0.05)})`;
+        ctx.fillRect(0, 0, W, H);
+    }
     if (target && !target.locked) {
         ctx.strokeStyle = 'rgba(255,210,63,.25)';
         ctx.setLineDash([4, 8]);
