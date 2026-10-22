@@ -1024,6 +1024,11 @@ function begin() {
     $('modes').style.display = '';$('btn-rank-start').style.display = '';
     $('start').classList.add('hide');$('name-modal').classList.add('hide');
     $('over').classList.add('hide');$('rank').classList.add('hide');
+    const notifyEl = $('top-notify');
+    if (notifyEl) {
+        notifyEl.classList.add('hide');
+        notifyEl.innerHTML = '';
+    }
     mascot.x = W / 2;
     refocus();
     snd(660, .15, 'triangle', .07, 1.5);
