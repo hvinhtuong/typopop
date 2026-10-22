@@ -676,44 +676,59 @@ function loop(t) {
 
 /* ---------- luồng game ---------- */
 // Tải và hiển thị vinh danh người chơi cao điểm nhất toàn cầu ở màn hình Home
-async function fetchTopChamp(){
+async function fetchTopChamp() {
     const el = $('top-champ');
-    if(!el) return;
+    if (!el) return;
 
     let top1 = null;
+    const pad = n => String(n).padStart(2, '0');
 
     // 1. Thử lấy từ Supabase
     if (sb) {
         try {
             const { data, error } = await sb
                 .from('leaderboard')
-                .select('name, score')
+                .select('name, score, created_at')
                 .order('score', { ascending: false })
                 .limit(1);
 
             if (!error && data && data.length > 0) {
-                top1 = data[0];
+                const d = new Date(data[0].created_at);
+                top1 = {
+                    name: data[0].name,
+                    score: data[0].score,
+                    timeStr: `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+                };
             }
-        } catch(e) {
+        } catch (e) {
             console.warn('Lỗi Supabase khi lấy Top 1:', e);
         }
     }
 
-    // 2. Nếu Supabase chưa có hoặc lỗi mạng, lấy từ kỷ lục máy (local)
+    // 2. Nếu không có kết quả từ Supabase, lấy từ bộ nhớ máy (local)
     if (!top1) {
         try {
             const localTop = JSON.parse(localStorage.getItem('mtv-top5') || '[]');
             if (localTop.length > 0 && localTop[0].score > 0) {
-                top1 = localTop[0];
+                top1 = {
+                    name: localTop[0].name,
+                    score: localTop[0].score,
+                    timeStr: localTop[0].date || ''
+                };
             } else if (bestEver > 0) {
-                top1 = { name: playerName || 'Người chơi', score: bestEver };
+                top1 = {
+                    name: playerName || 'Người chơi',
+                    score: bestEver,
+                    timeStr: 'Hôm nay'
+                };
             }
-        } catch(e) {}
+        } catch (e) {}
     }
 
-    // 3. Cập nhật trực tiếp lên giao diện
+    // 3. Hiển thị thông tin kèm thời gian
     if (top1 && top1.score > 0) {
-        el.innerHTML = `👑 Kỷ lục số 1: <b>${escapeHtml(top1.name || 'Người chơi')}</b> (⭐ ${top1.score})`;
+        const timeBadge = top1.timeStr ? `<span class="champ-time">🕒 ${top1.timeStr}</span>` : '';
+        el.innerHTML = `👑 Top 1: <b>${escapeHtml(top1.name || 'Người chơi')}</b> (⭐ ${top1.score}) ${timeBadge}`;
         el.classList.remove('hide');
     } else {
         el.innerHTML = `👑 Hãy là người đầu tiên lập kỷ lục!`;
