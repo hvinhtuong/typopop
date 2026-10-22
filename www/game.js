@@ -691,21 +691,26 @@ async function fetchTopChamp(){
             if(!error && data && data.length > 0){
                 top1 = data[0];
             }
-        }catch(e){}
+        }catch(e){
+            console.warn('Lỗi lấy Top 1 từ Supabase:', e);
+        }
     }
 
-    if(!top1 && topScores.length > 0){
+    // Nếu Supabase chưa có dữ liệu hoặc offline, lấy từ kỷ lục máy (local)
+    if(!top1 && typeof topScores !== 'undefined' && topScores.length > 0){
         top1 = topScores[0];
     }
 
+    // Cập nhật giao diện
     if(top1 && top1.score > 0){
-        el.innerHTML = `👑 Kỷ lục số 1: <b>${escapeHtml(top1.name)}</b> (⭐ ${top1.score})`;
+        el.innerHTML = `👑 Kỷ lục số 1: <b>${escapeHtml(top1.name || 'Người chơi')}</b> (⭐ ${top1.score})`;
         el.classList.remove('hide');
     } else {
-        el.classList.add('hide');
+        // Nếu chưa có ai lập kỷ lục, hiện lời kêu gọi thay vì kẹt chữ "Đang nạp kỷ lục..."
+        el.innerHTML = `👑 Hãy là người đầu tiên lập kỷ lục!`;
+        el.classList.remove('hide');
     }
 }
-
 async function saveScore(sc) {
     if (sc <= 0) return;
     lastRecordTime = Date.now();
