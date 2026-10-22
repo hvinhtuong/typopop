@@ -641,11 +641,30 @@ function drawWord(q, t) {
     ctx.shadowBlur = 0;
 
     // Vẽ icon Power-up nổi ở góc trên bên trái khung nếu có
+// Vẽ huy hiệu (Badge) nổi bật cho từ đặc biệt
     if (badge) {
-        ctx.font = `${f * 0.8}px sans-serif`;
+        const badgeRadius = Math.max(14, f * 0.58);
+        const bx = -q.pw / 2 + 6;
+        const by = -h / 2 + 2;
+
+        ctx.save();
+        // 1. Vẽ vòng tròn nền cho huy hiệu
+        ctx.beginPath();
+        ctx.arc(bx, by, badgeRadius, 0, Math.PI * 2);
+        ctx.fillStyle = strokeColor;
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        // 2. Vẽ emoji sắc nét với font chuẩn hệ thống
+        ctx.font = `${badgeRadius * 1.3}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(badge, -q.pw / 2 + 10, -h / 2 - 4);
+        ctx.shadowColor = 'transparent'; // Tắt bóng mờ để icon nét căng
+        ctx.shadowBlur = 0;
+        ctx.fillText(badge, bx, by + 1);
+        ctx.restore();
     }
 
     // Vẽ chữ tiếng Anh
