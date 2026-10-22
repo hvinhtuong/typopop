@@ -13,20 +13,21 @@ try {
 
 const WORD_PACKS = {
     all: [],
-    it: `developer:lập trình viên|software:phần mềm|hardware:phần cứng|database:cơ sở dữ liệu|network:mạng máy tính|security:bảo mật|cloud:điện toán đám mây|framework:khung làm việc|deployment:triển khai|repository:kho lưu trữ|algorithm:thuật toán|debugging:gỡ lỗi|interface:giao diện|compile:biên dịch|terminal:cửa sổ lệnh|variable:biến|function:hàm|syntax:cú pháp|server:máy chủ|client:máy khách`.split('|').map(s => {
+    it: `code:mã nguồn|data:dữ liệu|bug:lỗi|file:tập tin|host:máy chủ|node:nút mạng|user:người dùng|byte:byte|link:liên kết|port:cổng mạng|developer:lập trình viên|software:phần mềm|hardware:phần cứng|database:cơ sở dữ liệu|network:mạng máy tính|security:bảo mật|cloud:điện toán đám mây|framework:khung làm việc|deployment:triển khai|repository:kho lưu trữ|algorithm:thuật toán|debugging:gỡ lỗi|interface:giao diện|compile:biên dịch|terminal:cửa sổ lệnh|variable:biến|function:hàm|syntax:cú pháp|server:máy chủ|client:máy khách|backend:phía máy chủ|frontend:giao diện người dùng|fullstack:toàn diện|pipeline:quy trình tự động|container:vỏ đóng gói|docker:nền tảng ảo hóa|cluster:cụm máy chủ|memory:bộ nhớ|storage:lưu trữ|cache:bộ nhớ đệm|binary:nhị phân|protocol:giao thức|endpoint:điểm cuối api|payload:dữ liệu truyền tải|query:truy vấn|thread:luồng xử lý|process:tiến trình|exception:ngoại lệ lỗi|parameter:tham số|argument:đối số|compiler:trình biên dịch|runtime:thời gian chạy|library:thư viện mã|package:gói phần mềm|firewall:tường lửa|encryption:mã hóa|decryption:giải mã|token:mã xác thực|session:phiên làm việc|cookie:dữ liệu duyệt web|router:thiết bị định tuyến|bandwidth:băng thông|latency:độ trễ mạng|backup:sao lưu dự phòng|restore:phục hồi|virtual:ảo hóa|instance:thực thể máy chủ|scalable:khả năng mở rộng|monitoring:giám sát|performance:hiệu năng`.split('|').map(s => {
         const [a, b] = s.split(':');
         return { w: a, vi: b };
     }),
-    travel: `airport:sân bay|passport:hộ chiếu|luggage:hành lý|hotel:khách sạn|ticket:vé xe máy bay|reservation:đặt chỗ|destination:điểm đến|souvenir:quà lưu niệm|guidebook:sách hướng dẫn|itinerary:lịch trình|adventure:cuộc phiêu lưu|landscape:phong cảnh|island:hòn đảo|beach:bãi biển|mountain:ngọn núi|journey:chuyến đi|sightseeing:vãn cảnh|passport:hộ chiếu|customs:hải quan|vacation:kỳ nghỉ`.split('|').map(s => {
+    travel: `map:bản đồ|bus:xe buýt|trip:chuyến đi|camp:cắm trại|tent:cái lều|tour:chuyến tham quan|pack:đóng gói|boat:con thuyền|stay:lưu trú|walk:đi dạo|airport:sân bay|passport:hộ chiếu|luggage:hành lý|hotel:khách sạn|ticket:vé đi lại|reservation:đặt chỗ|destination:điểm đến|souvenir:quà lưu niệm|guidebook:sách hướng dẫn|itinerary:lịch trình|adventure:cuộc phiêu lưu|landscape:phong cảnh|island:hòn đảo|beach:bãi biển|mountain:ngọn núi|journey:chuyến đi xa|sightseeing:ngắm cảnh|customs:hải quan|vacation:kỳ nghỉ|boarding:lên máy bay|departure:khởi hành|arrival:hạ cánh đến nơi|terminal:nhà ga sân bay|flight:chuyến bay|passenger:hành khách|suitcase:va-li|backpack:ba-lô du lịch|resort:khu nghỉ dưỡng|hostel:nhà nghỉ tập thể|motel:nhà nghỉ ven đường|reception:quầy lễ tân|checkout:trả phòng|homestay:nhà dân bản địa|scenery:cảnh quan thiên nhiên|valley:thung lũng|waterfall:thác nước|forest:khu rừng|desert:sa mạc|canyon:hẻm núi|monument:tượng đài di tích|museum:viện bảo tàng|temple:ngôi đền|palace:cung điện|explore:khám phá|culture:văn hóa bản địa|cuisine:ẩm thực vùng miền|excursion:chuyến dã ngoại|expedition:chuyến thám hiểm|cruising:du ngoạn bằng tàu|currency:tiền tệ|exchange:đổi ngoại tệ`.split('|').map(s => {
         const [a, b] = s.split(':');
         return { w: a, vi: b };
     }),
-    daily: `chef:đầu bếp|soap:xà phòng|laughter:tiếng cười|human:con người|monkey:con khỉ|running:đang chạy|tip:mẹo|mirror:cái gương|temperature:nhiệt độ|better:tốt hơn|cat:con mèo|sun:mặt trời|book:quyển sách|milk:sữa|tree:cái cây|fish:con cá|happy:vui vẻ|water:nước|friend:bạn bè|apple:quả táo|window:cửa sổ|garden:khu vườn|family:gia đình|bridge:cây cầu|season:mùa|library:thư viện|hungry:đói bụng|answer:câu trả lời|breakfast:bữa sáng|weather:thời tiết|holiday:kỳ nghỉ|kitchen:nhà bếp|delicious:ngon tuyệt|beautiful:xinh đẹp|dangerous:nguy hiểm|important:quan trọng|different:khác biệt|information:thông tin|education:giáo dục|dictionary:từ điển|vegetable:rau củ|exercise:bài tập|language:ngôn ngữ|neighbor:hàng xóm|umbrella:cái ô|treasure:kho báu|rainbow:cầu vồng|elephant:con voi|computer:máy tính|customer:khách hàng|chocolate:sô-cô-la|butterfly:con bướm|restaurant:nhà hàng|pronounce:phát âm|comfortable:thoải mái|opportunity:cơ hội`.split('|').map(s => {
+    daily: `cat:con mèo|sun:mặt trời|book:quyển sách|milk:sữa tươi|tree:cái cây|fish:con cá|rain:cơn mưa|door:cánh cửa|road:con đường|time:thời gian|chef:đầu bếp|soap:xà phòng|laughter:tiếng cười|human:con người|monkey:con khỉ|running:đang chạy|tip:mẹo nhỏ|mirror:cái gương|temperature:nhiệt độ|better:tốt hơn|happy:vui vẻ|water:nước uống|friend:bạn bè|apple:quả táo|window:cửa sổ|garden:khu vườn|family:gia đình|bridge:cây cầu|season:mùa trong năm|library:thư viện|hungry:đói bụng|answer:câu trả lời|breakfast:bữa sáng|weather:thời tiết|holiday:ngày lễ|kitchen:nhà bếp|delicious:ngon miệng|beautiful:xinh đẹp|dangerous:nguy hiểm|important:quan trọng|different:khác biệt|information:thông tin|education:giáo dục|dictionary:từ điển|vegetable:rau củ quả|exercise:tập thể dục|language:ngôn ngữ|neighbor:hàng xóm|umbrella:cái ô che|treasure:kho báu|rainbow:cầu vồng|elephant:con voi|computer:máy tính|customer:khách hàng|chocolate:sô-cô-la|butterfly:con bướm|restaurant:nhà hàng|pronounce:phát âm|comfortable:thoải mái|opportunity:cơ hội|celebrate:ăn mừng|hospital:bệnh viện|medicine:thuốc men|schedule:lịch trình|morning:buổi sáng|evening:buổi tối|midnight:nửa đêm|whisper:thì thầm|laughter:tiếng cười|promise:lời hứa|bicycle:xe đạp|furniture:nội thất|sandwich:bánh mì kẹp|apartment:căn hộ chung cư|supermarket:siêu thị`.split('|').map(s => {
         const [a, b] = s.split(':');
         return { w: a, vi: b };
     })
 };
 
+// Tự động gộp và lọc trùng cho danh mục 'Tất cả'
 const allMap = new Map();
 [...WORD_PACKS.it, ...WORD_PACKS.travel, ...WORD_PACKS.daily].forEach(o => allMap.set(o.w, o));
 WORD_PACKS.all = [...allMap.values()];
@@ -205,11 +206,11 @@ function spawn() {
 // Tăng tỉ lệ lên để dễ dàng test các hiệu ứng
     let power = null;
     const rand = Math.random();
-    if (rand < 0.15) {
+    if (rand < 0.20) {
         power = 'bomb';
-    } else if (rand < 0.30) {
+    } else if (rand < 0.25) {
         power = 'freeze';
-    } else if (rand < 0.45) {
+    } else if (rand < 0.25) {
         power = 'heal';
     }
 
