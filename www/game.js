@@ -34,8 +34,8 @@
 
     let currentTopic = 'all';
     let WORDS = WORD_PACKS.all;
-    let currentRankPeriod = 'today'; // 'today' | 'week' | 'all'
-    let currentRankTopic = 'all';    // 'all' | 'it' | 'travel' | 'daily'
+    let currentRankPeriod = 'today';
+    let currentRankTopic = 'all';
 
     const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
     const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
@@ -44,7 +44,7 @@
 
     let words, parts, bullets, floats, stars, score, lives, combo, level, killed, hits, misses, missed, target, spawnT,
         shake, bestEver = 0, topScores = [], lastRecordTime = 0, playerName = '', rankFrom = 'start', mascot,
-        freezeTimer = 0;
+        freezeTimer = 0, isFever = false;
 
     try {
         bestEver = +localStorage.getItem('mtv-best') || 0;
@@ -135,13 +135,12 @@
         visualViewport.addEventListener('scroll', () => window.scrollTo(0, 0));
     }
 
-    /* ---------- khởi tạo ---------- */
     function fs() {
         return Math.max(20, Math.min(30, W / 17));
     }
 
     function initStars() {
-        stars = Array.from({length: 110}, () => ({
+        stars = Array.from({length: 120}, () => ({
             x: Math.random(),
             y: Math.random(),
             r: Math.random() * 1.8 + .4,
@@ -167,7 +166,9 @@
         spawnT = .4;
         shake = 0;
         freezeTimer = 0;
+        isFever = false;
         mascot = {x: 0, sq: 0, look: 0, mouth: 0};
+        document.body.classList.remove('fever-active');
         hud();
     }
 
@@ -175,12 +176,33 @@
         if ($('score')) $('score').textContent = '⭐ ' + Math.round(score);
         if ($('lvl')) $('lvl').textContent = 'Cấp ' + level;
         if ($('hearts')) $('hearts').textContent = '💗'.repeat(Math.max(lives, 0)) + '🤍'.repeat(5 - Math.max(lives, 0));
+
         const c = $('combo');
         if (c) {
             c.style.visibility = combo >= 2 ? 'visible' : 'hidden';
             c.textContent = 'x' + combo + ' 🔥';
             c.classList.add('pop');
             setTimeout(() => c.classList.remove('pop'), 150);
+        }
+
+        // Bật/tắt thanh Fever Mode
+        const feverPill = $('fever-pill');
+        if (feverPill) {
+            if (combo >= 10) {
+                if (!isFever) {
+                    isFever = true;
+                    document.body.classList.add('fever-active');
+                    say('🔥 FEVER MODE ACTIVE! x2 POINT 🔥', W / 2, H * .35, '#ff007f', 32);
+                    [523, 659, 784, 1047, 1318].forEach((f, i) => snd(f * 1.2, .18, 'sawtooth', .08, 0, i * .06));
+                    burst(W / 2, H * .35, '#ff007f', 60);
+                }
+                feverPill.style.display = 'block';
+                feverPill.textContent = `🔥 FEVER x${Math.min(combo, 99)} 🔥`;
+            } else {
+                isFever = false;
+                document.body.classList.remove('fever-active');
+                feverPill.style.display = 'none';
+            }
         }
     }
 
@@ -212,13 +234,9 @@
 
         let power = null;
         const rand = Math.random();
-        if (rand < 0.12) {
-            power = 'bomb';
-        } else if (rand < 0.25) {
-            power = 'freeze';
-        } else if (rand < 0.35) {
-            power = 'heal';
-        }
+        if (rand < 0.12) power = 'bomb';
+        else if (rand < 0.25) power = 'freeze';
+        else if (rand < 0.35) power = 'heal';
 
         words.push({
             w: o.w,
@@ -301,8 +319,16 @@
         t.sc = 1;
         mascot.sq = 1;
         mascot.mouth = 1;
-        bullets.push({x: mascot.x, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: []});
-        snd(520 + t.typed * 45, .09, 'triangle', .06);
+
+        // Bắn đạn laser kép nếu đang Fever
+        if (isFever) {
+            bullets.push({x: mascot.x - 12, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
+            bullets.push({x: mascot.x + 12, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
+            snd(650 + t.typed * 55, .08, 'sawtooth', .08);
+        } else {
+            bullets.push({x: mascot.x, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: []});
+            snd(520 + t.typed * 45, .09, 'triangle', .06);
+        }
 
         if (t.typed === t.w.length) {
             t.locked = true;
@@ -376,7 +402,7 @@
     /* ---------- hiệu ứng ---------- */
     function burst(x, y, col, n = 24, star = true) {
         for (let i = 0; i < n; i++) {
-            const a = Math.random() * 6.283, s = 90 + Math.random() * 260;
+            const a = Math.random() * 6.283, s = 90 + Math.random() * 280;
             parts.push({
                 x,
                 y,
@@ -384,9 +410,9 @@
                 vy: Math.sin(a) * s - 90,
                 l: 0,
                 m: .6 + Math.random() * .6,
-                c: Math.random() < .6 ? col : COL[Math.random() * COL.length | 0],
-                r: 3 + Math.random() * 5,
-                star: star && Math.random() < .5,
+                c: isFever ? (Math.random() < .5 ? '#ff007f' : '#00f2fe') : (Math.random() < .6 ? col : COL[Math.random() * COL.length | 0]),
+                r: 3 + Math.random() * 6,
+                star: star && Math.random() < .6,
                 rot: Math.random() * 6
             });
         }
@@ -399,10 +425,15 @@
     function kill(q) {
         killed++;
         combo++;
-        const gain = Math.round(q.w.length * 10 * (1 + Math.min(combo, 10) * .15));
+
+        // Điểm số nhân đôi khi vào Fever
+        const feverMultiplier = isFever ? 2 : 1;
+        const gain = Math.round(q.w.length * 10 * (1 + Math.min(combo, 12) * .15)) * feverMultiplier;
         score += gain;
-        burst(q.x, q.y, q.col, 30);
-        say('+' + gain + ' · ' + q.vi, q.x, q.y - 10, '#ffd23f', 22);
+        burst(q.x, q.y, q.col, isFever ? 45 : 30);
+
+        const pointText = isFever ? `🔥 +${gain} (x2) · ${q.vi}` : `+${gain} · ${q.vi}`;
+        say(pointText, q.x, q.y - 10, isFever ? '#ff007f' : '#ffd23f', isFever ? 25 : 22);
 
         if (q.power === 'bomb') {
             say('💣 BOOM !!! - CLEAR ALL', W / 2, H * .4, '#ff5d6c', 30);
@@ -413,7 +444,7 @@
             const others = words.filter(w => w !== q && !w.locked);
             others.forEach(w => {
                 killed++;
-                score += Math.round(w.w.length * 8);
+                score += Math.round(w.w.length * 8) * feverMultiplier;
                 burst(w.x, w.y, '#ffd23f', 16);
                 words.splice(words.indexOf(w), 1);
             });
@@ -428,12 +459,12 @@
                 say('💖 +1 HEART!', q.x, q.y - 40, '#ff6fae', 26);
                 [440, 554, 659].forEach((f, i) => snd(f, .15, 'triangle', .08, 0, i * .08));
             } else {
-                say('+500 POINT!', q.x, q.y - 40, '#ff6fae', 22);
-                score += 500;
+                say('+1000 POINT!', q.x, q.y - 40, '#ff6fae', 22);
+                score += 1000;
             }
         }
 
-        if (combo >= 3 && !q.power) {
+        if (combo >= 3 && !q.power && !isFever) {
             say(['GREAT!', 'GOOD!', 'MASTER!', 'UNSTOPPABLE!'][Math.min(combo - 3, 3)] + ' x' + combo, q.x, q.y - 44, '#ff6fae', 22);
         }
         sPop(combo);
@@ -495,12 +526,12 @@
                 b.lx = t.x;
                 b.ly = t.y;
             }
-            const dx = b.lx - b.x, dy = b.ly - b.y, d = Math.hypot(dx, dy), s = 1100 * dt;
+            const dx = b.lx - b.x, dy = b.ly - b.y, d = Math.hypot(dx, dy), s = (b.isFever ? 1400 : 1100) * dt;
             b.tr.push([b.x, b.y]);
-            if (b.tr.length > 6) b.tr.shift();
+            if (b.tr.length > (b.isFever ? 8 : 6)) b.tr.shift();
             if (d <= s + 8) {
                 b.done = true;
-                burst(b.lx, b.ly, b.t.col, b.kill ? 0 : 6);
+                burst(b.lx, b.ly, b.t.col, b.kill ? 0 : (b.isFever ? 10 : 6));
                 if (b.kill && !b.t.dead) {
                     b.t.dead = true;
                     kill(b.t);
@@ -532,9 +563,11 @@
         mascot.mouth *= .9;
         shake = Math.max(0, shake - dt);
 
+        // Tốc độ sao bay tăng gấp đôi khi ở trạng thái Fever
+        const starSpeedMultiplier = isFever ? 2.5 : 1.0;
         for (const s of stars) {
-            s.t += dt * s.s * 3;
-            s.y += dt * s.s * .012 * (1 + level * .1);
+            s.t += dt * s.s * 3 * starSpeedMultiplier;
+            s.y += dt * s.s * .012 * (1 + level * .1) * starSpeedMultiplier;
             if (s.y > 1) s.y = 0;
         }
     }
@@ -545,7 +578,7 @@
         ctx.arcTo(x + w, y, x + w, y + h, r);
         ctx.arcTo(x + w, y + h, x, y + h, r);
         ctx.arcTo(x, y + h, x, y, r);
-        ctx.arcTo(x, y, x + w, y, r);
+        ctx.arcTo(x, y + w, y, r);
         ctx.closePath();
     }
 
@@ -558,14 +591,24 @@
         ctx.closePath();
     }
 
+    /* ---------- Vẽ nền Neon Cyberpunk khi Fever ---------- */
     function drawBg(t) {
         const g = ctx.createLinearGradient(0, 0, 0, H);
-        g.addColorStop(0, '#2a1a6e');
-        g.addColorStop(.6, '#1a1245');
-        g.addColorStop(1, '#0f0a30');
+        if (isFever) {
+            g.addColorStop(0, '#3d0a4e');
+            g.addColorStop(.6, '#20083b');
+            g.addColorStop(1, '#0c021c');
+        } else {
+            g.addColorStop(0, '#2a1a6e');
+            g.addColorStop(.6, '#1a1245');
+            g.addColorStop(1, '#0f0a30');
+        }
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, W, H);
-        for (const [cx, cy, c, r] of [[.2, .25, 'rgba(255,111,174,.16)', .45], [.85, .6, 'rgba(92,200,255,.14)', .5], [.5, .9, 'rgba(183,156,255,.14)', .5]]) {
+
+        const aura1 = isFever ? 'rgba(255,0,128,.28)' : 'rgba(255,111,174,.16)';
+        const aura2 = isFever ? 'rgba(0,242,254,.24)' : 'rgba(92,200,255,.14)';
+        for (const [cx, cy, c, r] of [[.2, .25, aura1, .45], [.85, .6, aura2, .5], [.5, .9, 'rgba(183,156,255,.14)', .5]]) {
             const x = cx * W + Math.sin(t / 4000 + cx * 9) * 30, y = cy * H + Math.cos(t / 5000 + cy * 9) * 30,
                 rg = ctx.createRadialGradient(x, y, 0, x, y, r * Math.max(W, H) * .6);
             rg.addColorStop(0, c);
@@ -575,9 +618,9 @@
         }
         for (const s of stars) {
             ctx.globalAlpha = .4 + .6 * Math.abs(Math.sin(s.t));
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = isFever ? '#ffc2eb' : '#fff';
             ctx.beginPath();
-            ctx.arc(s.x * W, s.y * H, s.r, 0, 6.283);
+            ctx.arc(s.x * W, s.y * H, s.r * (isFever ? 1.4 : 1), 0, 6.283);
             ctx.fill();
         }
         ctx.globalAlpha = 1;
@@ -617,10 +660,10 @@
         }
 
         if (isT || q.locked) {
-            ctx.shadowColor = q.locked ? '#3ee6b0' : '#ffd23f';
-            ctx.shadowBlur = 18 + Math.sin(t / 120) * 6;
-            fillColor = 'rgba(255,210,63,.28)';
-            strokeColor = '#ffd23f';
+            ctx.shadowColor = q.locked ? '#3ee6b0' : (isFever ? '#ff007f' : '#ffd23f');
+            ctx.shadowBlur = 20 + Math.sin(t / 120) * 8;
+            fillColor = isFever ? 'rgba(255,0,128,.32)' : 'rgba(255,210,63,.28)';
+            strokeColor = isFever ? '#ff007f' : '#ffd23f';
         }
 
         rr(-q.pw / 2, -h / 2, q.pw, h, h / 2);
@@ -649,24 +692,27 @@
         ctx.textBaseline = 'middle';
         ctx.textAlign = 'left';
         const a = q.w.slice(0, q.typed), tw = ctx.measureText(q.w).width, x0 = -tw / 2;
-        ctx.fillStyle = '#3ee6b0';
+        ctx.fillStyle = isFever ? '#00f2fe' : '#3ee6b0';
         ctx.fillText(a, x0, 1);
         ctx.fillStyle = '#fff';
         ctx.fillText(q.w.slice(q.typed), x0 + ctx.measureText(a).width, 1);
 
         ctx.textAlign = 'center';
         ctx.font = `500 ${f * .56}px Fredoka,sans-serif`;
-        ctx.fillStyle = isT ? '#ffe98a' : 'rgba(255,214,235,.85)';
+        ctx.fillStyle = isT ? (isFever ? '#ff85e0' : '#ffe98a') : 'rgba(255,214,235,.85)';
         ctx.fillText(q.vi, 0, h / 2 + f * .4);
         ctx.restore();
     }
 
+    /* ---------- Vẽ Mascot + Kính Râm Cyberpunk khi Fever ---------- */
     function drawMascot(t) {
         const m = mascot, x = m.x, y = H - 52 + Math.sin(t / 300) * 3, s = 1 + m.sq * .18, k = 1 - m.sq * .14;
         ctx.save();
         ctx.translate(x, y);
         ctx.scale(s * k, s / k * 1.0);
-        ctx.fillStyle = '#ffb347';
+        ctx.fillStyle = isFever ? '#ff79c6' : '#ffb347';
+
+        // Tai mèo
         for (const d of [-1, 1]) {
             ctx.beginPath();
             ctx.moveTo(d * 14, -22);
@@ -675,32 +721,73 @@
             ctx.closePath();
             ctx.fill();
         }
+
+        // Mặt mèo
         const g = ctx.createRadialGradient(-8, -14, 4, 0, 0, 40);
-        g.addColorStop(0, '#ffe98a');
-        g.addColorStop(1, '#ffb347');
+        if (isFever) {
+            g.addColorStop(0, '#ff92d0');
+            g.addColorStop(1, '#ff3b9d');
+        } else {
+            g.addColorStop(0, '#ffe98a');
+            g.addColorStop(1, '#ffb347');
+        }
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.ellipse(0, 0, 38, 32, 0, 0, 6.283);
         ctx.fill();
+
+        // Má hồng
         ctx.fillStyle = 'rgba(255,111,174,.6)';
         for (const d of [-1, 1]) {
             ctx.beginPath();
             ctx.ellipse(d * 23, 8, 7, 4.5, 0, 0, 6.283);
             ctx.fill();
         }
+
         let lx = 0, ly = 0;
         if (target) {
             const dx = target.x - x, dy = target.y - y, d = Math.hypot(dx, dy) || 1;
             lx = dx / d * 4;
             ly = dy / d * 3;
         }
-        const blink = Math.sin(t / 900) > .97 ? .15 : 1;
-        ctx.fillStyle = '#3a1250';
-        for (const d of [-1, 1]) {
+
+        if (isFever) {
+            // ĐEO KÍNH RÂM CYBER SHADES KHI VÀO FEVER
+            ctx.save();
+            ctx.fillStyle = '#111';
+            ctx.shadowColor = '#00f2fe';
+            ctx.shadowBlur = 12;
             ctx.beginPath();
-            ctx.ellipse(d * 13 + lx, -4 + ly, 5, 6 * blink, 0, 0, 6.283);
+            // Gọng kính ngầu
+            ctx.moveTo(-24, -10);
+            ctx.lineTo(24, -10);
+            ctx.lineTo(18, 4);
+            ctx.lineTo(-18, 4);
+            ctx.closePath();
             ctx.fill();
+
+            // Vệt phản quang neon chạy trên tròng kính
+            ctx.strokeStyle = '#00f2fe';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-16, -2);
+            ctx.lineTo(-6, -2);
+            ctx.moveTo(6, -2);
+            ctx.lineTo(16, -2);
+            ctx.stroke();
+            ctx.restore();
+        } else {
+            // Mắt bình thường
+            const blink = Math.sin(t / 900) > .97 ? .15 : 1;
+            ctx.fillStyle = '#3a1250';
+            for (const d of [-1, 1]) {
+                ctx.beginPath();
+                ctx.ellipse(d * 13 + lx, -4 + ly, 5, 6 * blink, 0, 0, 6.283);
+                ctx.fill();
+            }
         }
+
+        // Miệng
         ctx.strokeStyle = '#3a1250';
         ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
@@ -725,9 +812,9 @@
             ctx.fillRect(0, 0, W, H);
         }
         if (target && !target.locked) {
-            ctx.strokeStyle = 'rgba(255,210,63,.25)';
+            ctx.strokeStyle = isFever ? 'rgba(0, 242, 254, .45)' : 'rgba(255,210,63,.25)';
             ctx.setLineDash([4, 8]);
-            ctx.lineWidth = 2;
+            ctx.lineWidth = isFever ? 3 : 2;
             ctx.beginPath();
             ctx.moveTo(mascot.x, H - 80);
             ctx.lineTo(target.x, target.y + 18);
@@ -735,22 +822,26 @@
             ctx.setLineDash([]);
         }
         for (const q of words) drawWord(q, t);
+
+        // Vẽ đạn laser
         for (const b of bullets) {
             for (let i = 0; i < b.tr.length; i++) {
-                ctx.globalAlpha = i / b.tr.length * .5;
-                ctx.fillStyle = '#ffd23f';
+                ctx.globalAlpha = i / b.tr.length * .6;
+                ctx.fillStyle = b.isFever ? '#ff007f' : '#ffd23f';
                 ctx.beginPath();
-                ctx.arc(b.tr[i][0], b.tr[i][1], 3 + i * .6, 0, 6.283);
+                ctx.arc(b.tr[i][0], b.tr[i][1], 3 + i * .7, 0, 6.283);
                 ctx.fill();
             }
             ctx.globalAlpha = 1;
-            ctx.fillStyle = '#fff';
-            ctx.shadowColor = '#ffd23f';
-            ctx.shadowBlur = 14;
-            starPath(b.x, b.y, 10, t / 80);
+            ctx.fillStyle = b.isFever ? '#00f2fe' : '#fff';
+            ctx.shadowColor = b.isFever ? '#00f2fe' : '#ffd23f';
+            ctx.shadowBlur = b.isFever ? 20 : 14;
+            starPath(b.x, b.y, b.isFever ? 13 : 10, t / 70);
             ctx.fill();
             ctx.shadowBlur = 0;
         }
+
+        // Vẽ hạt pháo hoa
         for (const p of parts) {
             ctx.globalAlpha = 1 - p.l / p.m;
             ctx.fillStyle = p.c;
@@ -765,6 +856,7 @@
         }
         ctx.globalAlpha = 1;
         drawMascot(t);
+
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         for (const f of floats) {
@@ -1258,7 +1350,6 @@
         }
     });
 
-    // Gắn sự kiện tab lọc an toàn
     function initRankTabs() {
         const timeBtns = document.querySelectorAll('#rank-time-tabs button');
         timeBtns.forEach(btn => {
@@ -1300,7 +1391,6 @@
         fetchTopChamp();
     } catch (e) {}
 
-    // Bắt đầu vòng lặp game lập tức
     requestAnimationFrame(loop);
 
     if (document.fonts && document.fonts.load) {

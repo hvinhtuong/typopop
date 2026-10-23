@@ -517,3 +517,23 @@ h1 {
     flex-direction: column;
     gap: 6px;
 }
+/* --- HIỆU ỨNG FEVER MODE --- */
+#fever-pill {
+    background: linear-gradient(135deg, #ff007f, #7928ca, #00f2fe);
+    background-size: 200% 200%;
+    animation: feverGlow 1.2s ease infinite alternate;
+    font-weight: 700;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(255, 0, 127, 0.7);
+    display: none;
+}
+
+@keyframes feverGlow {
+    0% { background-position: 0% 50%; box-shadow: 0 0 10px #ff007f; }
+    100% { background-position: 100% 50%; box-shadow: 0 0 25px #00f2fe; }
+}
+
+/* Rung màn hình nhẹ theo nhịp bass khi Fever */
+.fever-active #app {
+    box-shadow: inset 0 0 35px rgba(255, 0, 128, 0.45);
+}
