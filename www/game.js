@@ -119,10 +119,13 @@
     /* ---------- kích thước ---------- */
     function resize() {
         const vv = window.visualViewport;
-        W = window.innerWidth;
-        H = vv ? vv.height : window.innerHeight;
+        W = window.innerWidth || document.documentElement.clientWidth || 360;
+        H = (vv ? vv.height : window.innerHeight) || document.documentElement.clientHeight || 640;
         DPR = Math.min(window.devicePixelRatio || 1, 2);
-        if ($('app')) $('app').style.height = H + 'px';
+
+        const appEl = $('app');
+        if (appEl) appEl.style.height = H + 'px';
+
         cv.width = W * DPR;
         cv.height = H * DPR;
         ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -517,7 +520,7 @@
             q.y += q.vy * speedFactor * dt;
             if (q.locked && q.y > H - 95) q.y = H - 95;
             q.sc *= .88;
-            if (!q.locked && q.y > H - 92) lose(q);
+            if (!q.locked && H > 200 && q.y > H - 92) lose(q);
         }
 
         for (const b of bullets) {
