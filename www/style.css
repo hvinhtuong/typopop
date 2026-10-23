@@ -715,3 +715,19 @@ h1 {
 .btn-skin-action:active:not(.equipped) {
     transform: scale(0.95);
 }
+/* Đảm bảo class hide có quyền ưu tiên cao nhất */
+.hide {
+    display: none !important;
+}
+
+/* Đảm bảo modal phủ toàn màn hình và nhận click */
+.ov {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: auto;
+}

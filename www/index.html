@@ -15,10 +15,11 @@
         <div class="pill" id="combo" style="visibility:hidden">x1</div>
         <div class="pill" id="fever-pill">🔥 FEVER x2 🔥</div>
         <div class="pill" id="lvl">Cấp 1</div>
-        <div class="pill" id="hearts">💗💗💗💗💗💗</div>
+        <div class="pill" id="hearts">💗💗💗💗💗</div>
         <button class="pill" id="mute" aria-label="Bật tắt âm thanh">🔊</button>
     </div>
     <div id="game-tip" class="hide">💡 Mẹo: Đạt chuỗi Combo 10x🔥 để kích hoạt FEVER MODE: bắn đạn kép & x2 điểm!</div>
+
     <!-- Cảnh báo & Thanh máu Boss Battle -->
     <div id="boss-warning" class="hide">⚠️ WARNING: BOSS INCOMING! ⚠️</div>
     <div id="boss-hud" class="hide">
@@ -31,10 +32,7 @@
     <!-- Màn hình chính (Menu) -->
     <div class="ov" id="start">
         <h1>Typo Pop</h1>
-
-        <!-- Dòng vinh danh người chơi cao điểm nhất toàn cầu -->
         <div id="top-champ" class="top-champ">👑 Hãy là người đầu tiên lập kỷ lục!</div>
-
         <p>Gõ đúng từ tiếng Anh đang rơi để bắn hạ chúng trước khi chạm đất.</p>
 
         <!-- Chọn độ khó -->
@@ -60,9 +58,11 @@
         </div>
 
         <button class="btn" id="play">Play</button>
-        <button class="btn btn-sub" id="btn-rank-start">🏆 Rank</button>
-        <button class="btn btn-sub" id="btn-shop-start">🛍️ Cửa hàng</button>
-        <button class="btn btn-sub" id="btn-notebook-start">📖 Sổ tay</button>
+        <div class="actions">
+            <button class="btn btn-sub" id="btn-rank-start">🏆 Rank</button>
+            <button class="btn btn-sub" id="btn-shop-start">🛍️ Cửa hàng</button>
+            <button class="btn btn-sub" id="btn-notebook-start">📖 Sổ tay</button>
+        </div>
         <p style="font-size:14px;opacity:.8">Trên điện thoại: chạm vào màn hình để mở bàn phím, chạm vào từ để chọn.</p>
     </div>
 
@@ -83,9 +83,7 @@
         <h1 style="font-size:clamp(28px,8vw,42px);margin-bottom:6px">🛍️ Cửa Hàng Skin</h1>
         <p style="font-size:14px;margin-bottom:4px">Dùng số từ đã hạ gục tích lũy để mở khóa ngoại trang</p>
         <div id="shop-coins-display" class="pill" style="margin-bottom:12px;color:var(--sun)">🪙 Số từ tích lũy: 0</div>
-
         <div id="shop-skin-grid"></div>
-
         <div class="actions" style="margin-top:14px">
             <button class="btn btn-sub" id="close-shop">Quay lại</button>
         </div>
@@ -125,22 +123,17 @@
     <!-- Màn hình Bảng xếp hạng linh hoạt -->
     <div class="ov hide" id="rank">
         <h1 style="font-size:clamp(26px,8vw,42px);margin-bottom:8px">🏆 Bảng Xếp Hạng</h1>
-
-        <!-- Bộ lọc thời gian: Hôm nay / Tuần này / Mọi lúc -->
         <div class="lv" id="rank-time-tabs" style="margin-bottom:8px">
             <button data-period="today" class="on">Hôm nay</button>
             <button data-period="week">Tuần này</button>
             <button data-period="all">Mọi lúc</button>
         </div>
-
-        <!-- Bộ lọc chủ đề -->
         <div class="lv" id="rank-topic-tabs" style="margin-bottom:12px">
             <button data-topic="all" class="on">Tất cả</button>
             <button data-topic="it">Công nghệ</button>
             <button data-topic="travel">Du lịch</button>
             <button data-topic="daily">Giao tiếp</button>
         </div>
-
         <div id="rank-list"></div>
         <button class="btn" id="close-rank" style="margin-top:12px">Quay lại</button>
     </div>
@@ -149,9 +142,7 @@
     <div class="ov hide" id="notebook-modal">
         <h1 style="font-size:clamp(26px,8vw,40px);margin-bottom:6px">📖 Sổ Tay Từ Vựng</h1>
         <p style="font-size:14px;margin-bottom:8px">Danh sách các từ bạn từng bỏ lỡ hoặc gõ sai</p>
-
         <div id="notebook-list"></div>
-
         <div class="actions" style="margin-top:10px">
             <button class="btn" id="btn-revenge">⚔️ Phục thù</button>
             <button class="btn btn-sub" id="btn-clear-notebook">🗑️ Xoá sổ</button>
@@ -159,7 +150,7 @@
         </div>
     </div>
 
-    <!-- Thẻ input ảo nhận phím gõ (BẮT BUỘC PHẢI CÓ) -->
+    <!-- Thẻ input ảo nhận phím gõ -->
     <input id="kb" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
            inputmode="text" aria-label="Gõ từ tại đây">
 </div>

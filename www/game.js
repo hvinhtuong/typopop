@@ -1912,7 +1912,8 @@
 
     const btnShopStart = $('btn-shop-start');
     if (btnShopStart) {
-        btnShopStart.onclick = () => {
+        btnShopStart.onclick = (e) => {
+            if (e) e.stopPropagation();
             renderShop();
             if ($('start')) $('start').classList.add('hide');
             if ($('shop-modal')) $('shop-modal').classList.remove('hide');
@@ -1922,7 +1923,8 @@
 
     const closeShop = $('close-shop');
     if (closeShop) {
-        closeShop.onclick = () => {
+        closeShop.onclick = (e) => {
+            if (e) e.stopPropagation();
             if ($('shop-modal')) $('shop-modal').classList.add('hide');
             if ($('start')) $('start').classList.remove('hide');
             snd(480, .08, 'triangle', .06);
