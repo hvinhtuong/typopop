@@ -53,8 +53,7 @@
         if (!topScores.length && bestEver > 0) {
             topScores = [{name: playerName || 'Người chơi', score: bestEver, lvl: 1, mode: 0, date: 'Kỷ lục cũ', t: 0}];
         }
-    } catch (e) {
-    }
+    } catch (e) {}
 
     /* ---------- âm thanh & phát âm ---------- */
     let AC, muted = false, enVoice = null;
@@ -84,8 +83,7 @@
                 u.rate = 1.0;
                 speechSynthesis.speak(u);
                 return;
-            } catch (e) {
-            }
+            } catch (e) {}
         }
         [523, 659, 784].forEach((f, i) => snd(f, 0.1, 'triangle', 0.08, 0, i * 0.06));
     }
@@ -104,17 +102,19 @@
             g.connect(AC.destination);
             o.start(t);
             o.stop(t + d);
-        } catch (e) {
-        }
+        } catch (e) {}
     }
 
     const sPop = n => [523, 659, 784, 1047].forEach((f, i) => snd(f * (1 + Math.min(n, 8) * .03), .14, 'triangle', .07, 0, i * .05));
-    $('mute').onclick = e => {
-        muted = !muted;
-        if (muted && 'speechSynthesis' in window) speechSynthesis.cancel();
-        e.target.textContent = muted ? '🔇' : '🔊';
-        refocus();
-    };
+
+    if ($('mute')) {
+        $('mute').onclick = e => {
+            muted = !muted;
+            if (muted && 'speechSynthesis' in window) speechSynthesis.cancel();
+            e.target.textContent = muted ? '🔇' : '🔊';
+            refocus();
+        };
+    }
 
     /* ---------- kích thước ---------- */
     function resize() {
@@ -122,7 +122,7 @@
         W = window.innerWidth;
         H = vv ? vv.height : window.innerHeight;
         DPR = Math.min(window.devicePixelRatio || 1, 2);
-        $('app').style.height = H + 'px';
+        if ($('app')) $('app').style.height = H + 'px';
         cv.width = W * DPR;
         cv.height = H * DPR;
         ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -172,18 +172,20 @@
     }
 
     function hud() {
-        $('score').textContent = '⭐ ' + Math.round(score);
-        $('lvl').textContent = 'Cấp ' + level;
-        $('hearts').textContent = '💗'.repeat(Math.max(lives, 0)) + '🤍'.repeat(5 - Math.max(lives, 0));
+        if ($('score')) $('score').textContent = '⭐ ' + Math.round(score);
+        if ($('lvl')) $('lvl').textContent = 'Cấp ' + level;
+        if ($('hearts')) $('hearts').textContent = '💗'.repeat(Math.max(lives, 0)) + '🤍'.repeat(5 - Math.max(lives, 0));
         const c = $('combo');
-        c.style.visibility = combo >= 2 ? 'visible' : 'hidden';
-        c.textContent = 'x' + combo + ' 🔥';
-        c.classList.add('pop');
-        setTimeout(() => c.classList.remove('pop'), 150);
+        if (c) {
+            c.style.visibility = combo >= 2 ? 'visible' : 'hidden';
+            c.textContent = 'x' + combo + ' 🔥';
+            c.classList.add('pop');
+            setTimeout(() => c.classList.remove('pop'), 150);
+        }
     }
 
     function refocus() {
-        if (state === 'play') {
+        if (state === 'play' && kb) {
             try {
                 kb.focus({preventScroll: true});
             } catch (e) {
@@ -308,12 +310,14 @@
         }
     }
 
-    kb.addEventListener('input', () => {
-        const v = kb.value;
-        kb.value = '';
-        if (!v) return;
-        for (const ch of v) typeChar(ch);
-    });
+    if (kb) {
+        kb.addEventListener('input', () => {
+            const v = kb.value;
+            kb.value = '';
+            if (!v) return;
+            for (const ch of v) typeChar(ch);
+        });
+    }
 
     addEventListener('keydown', e => {
         if (state !== 'play') return;
@@ -324,7 +328,7 @@
                 target.typed = 0;
                 target = null;
             }
-            kb.value = '';
+            if (kb) kb.value = '';
             e.preventDefault();
             return;
         }
@@ -340,7 +344,7 @@
 
         if (ch && /^[a-z'-]$/.test(ch)) {
             typeChar(ch);
-            kb.value = '';
+            if (kb) kb.value = '';
             e.preventDefault();
         }
     });
@@ -627,7 +631,6 @@
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // --- VẼ EMOJI NỔI BẬT KHÔNG VIỀN KHÔNG BACKGROUND ---
         if (badge) {
             ctx.save();
             const ex = -q.pw / 2 + 8;
@@ -833,8 +836,7 @@
                         timeStr: 'Hôm nay'
                     };
                 }
-            } catch (e) {
-            }
+            } catch (e) {}
         }
 
         if (top1 && top1.score > 0) {
@@ -847,11 +849,9 @@
         }
     }
 
-    // Chuỗi bí mật: Đảm bảo trùng khớp 100% với trigger SQL trên Postgres
     const CLIENT_SALT = 'typopop_secret_salt_2026';
 
     async function generateScoreSignature(name, score, level, killed) {
-        // Ép kiểu chính xác: name đã trim, score/level/killed là số nguyên
         const payload = `${name}:${score}:${level}:${killed}:${CLIENT_SALT}`;
         const msgBuffer = new TextEncoder().encode(payload);
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -872,7 +872,6 @@
         const pad = n => String(n).padStart(2, '0');
         const dateStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
-        // Lưu tạm vào bộ nhớ máy
         topScores.push({
             name: player,
             score: finalScore,
@@ -886,10 +885,8 @@
         topScores = topScores.slice(0, 5);
         try {
             localStorage.setItem('mtv-top5', JSON.stringify(topScores));
-        } catch (e) {
-        }
+        } catch (e) {}
 
-        // Gửi lên Supabase kèm chữ ký mã băm
         if (sb) {
             try {
                 const sig = await generateScoreSignature(player, finalScore, finalLevel, finalKilled);
@@ -927,26 +924,25 @@
 
     async function renderRank() {
         const rankBox = $('rank-list');
+        if (!rankBox) return;
         rankBox.innerHTML = '<p style="opacity:.8;padding:18px">Đang tải bảng xếp hạng...</p>';
 
         const medals = ['🥇', '🥈', '🥉', '4.', '5.'];
         const modeNames = ['Dễ', 'Vừa', 'Khó'];
         let list = [];
 
-        // Xác định mốc thời gian lọc
         let timeThreshold = null;
         const now = new Date();
         if (currentRankPeriod === 'today') {
             timeThreshold = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
         } else if (currentRankPeriod === 'week') {
             const startOfWeek = new Date(now);
-            const day = startOfWeek.getDay() || 7; // Thứ 2 là ngày đầu tuần
+            const day = startOfWeek.getDay() || 7;
             startOfWeek.setHours(0, 0, 0, 0);
             startOfWeek.setDate(startOfWeek.getDate() - (day - 1));
             timeThreshold = startOfWeek.toISOString();
         }
 
-        // 1. Lấy dữ liệu từ Supabase theo bộ lọc
         if (sb) {
             try {
                 let query = sb
@@ -955,12 +951,10 @@
                     .order('score', {ascending: false})
                     .limit(5);
 
-                // Lọc theo mốc thời gian
                 if (timeThreshold) {
                     query = query.gte('created_at', timeThreshold);
                 }
 
-                // Lọc theo chủ đề
                 if (currentRankTopic !== 'all') {
                     query = query.eq('topic', currentRankTopic);
                 }
@@ -987,7 +981,6 @@
             }
         }
 
-        // 2. Fallback sang local cache nếu offline
         if (!list.length && typeof topScores !== 'undefined') {
             list = topScores.filter(r => {
                 if (currentRankTopic !== 'all' && r.topic && r.topic !== currentRankTopic) return false;
@@ -1002,71 +995,72 @@
             }));
         }
 
-        // 3. Hiển thị kết quả ra giao diện
         if (!list.length) {
             rankBox.innerHTML = '<p style="opacity:.8;padding:24px 0">Chưa có kỷ lục nào trong mục này.<br>Hãy là người đầu tiên ghi danh!</p>';
             return;
         }
 
         rankBox.innerHTML = list.map((r, i) => `
-    <div class="rk-row ${i === 0 ? 'top1' : ''} ${r.isCurrent ? 'new' : ''}">
-      <div class="rk-left">
-        <span>${medals[i]}</span>
-        <span class="rk-name">${escapeHtml(r.name || 'Người chơi')}</span>
-        <span class="rk-score">⭐ ${r.score}</span>
-      </div>
-      <div class="rk-meta">
-        <div>Cấp ${r.lvl} · ${modeNames[r.mode] || modeNames[0]}</div>
-        <div>${r.date || ''}</div>
-      </div>
-    </div>
-  `).join('');
+            <div class="rk-row ${i === 0 ? 'top1' : ''} ${r.isCurrent ? 'new' : ''}">
+              <div class="rk-left">
+                <span>${medals[i]}</span>
+                <span class="rk-name">${escapeHtml(r.name || 'Người chơi')}</span>
+                <span class="rk-score">⭐ ${r.score}</span>
+              </div>
+              <div class="rk-meta">
+                <div>Cấp ${r.lvl} · ${modeNames[r.mode] || modeNames[0]}</div>
+                <div>${r.date || ''}</div>
+              </div>
+            </div>
+        `).join('');
     }
 
     function openRank(fromScreen) {
         rankFrom = fromScreen;
         renderRank();
-        $(fromScreen).classList.add('hide');
-        $('rank').classList.remove('hide');
+        if ($(fromScreen)) $(fromScreen).classList.add('hide');
+        if ($('rank')) $('rank').classList.remove('hide');
         snd(600, .08, 'triangle', .06);
     }
 
     function promptPlayerName() {
         state = 'name';
-        $('start').classList.add('hide');
-        $('name-err').classList.add('hide');
-        $('name-modal').classList.remove('hide');
+        if ($('start')) $('start').classList.add('hide');
+        if ($('name-err')) $('name-err').classList.add('hide');
+        if ($('name-modal')) $('name-modal').classList.remove('hide');
         const inp = $('player-name');
-        inp.value = playerName;
-        setTimeout(() => {
-            inp.focus();
-            inp.select();
-        }, 50);
+        if (inp) {
+            inp.value = playerName;
+            setTimeout(() => {
+                inp.focus();
+                inp.select();
+            }, 50);
+        }
         snd(520, .08, 'triangle', .06);
     }
 
     function confirmNameAndPlay() {
-        const val = $('player-name').value.trim();
+        const inp = $('player-name');
+        const val = inp ? inp.value.trim() : '';
         if (!val) {
-            $('name-err').classList.remove('hide');
+            if ($('name-err')) $('name-err').classList.remove('hide');
             snd(180, .18, 'sawtooth', .06, .6);
-            $('player-name').focus();
+            if (inp) inp.focus();
             return;
         }
         playerName = val;
         try {
             localStorage.setItem('mtv-name', playerName);
-        } catch (e) {
-        }
-        $('name-modal').classList.add('hide');
+        } catch (e) {}
+        if ($('name-modal')) $('name-modal').classList.add('hide');
         begin();
     }
 
     function resume() {
         state = 'play';
-        $('start').classList.add('hide');
-        $('modes').style.display = '';
-        $('btn-rank-start').style.display = '';
+        if ($('start')) $('start').classList.add('hide');
+        if ($('modes')) $('modes').style.display = '';
+        if ($('btn-rank-start')) $('btn-rank-start').style.display = '';
         refocus();
     }
 
@@ -1078,16 +1072,15 @@
                 const u = new SpeechSynthesisUtterance('');
                 u.volume = 0;
                 speechSynthesis.speak(u);
-            } catch (e) {
-            }
+            } catch (e) {}
         }
-        $('play').textContent = 'Play';
-        $('modes').style.display = '';
-        $('btn-rank-start').style.display = '';
-        $('start').classList.add('hide');
-        $('name-modal').classList.add('hide');
-        $('over').classList.add('hide');
-        $('rank').classList.add('hide');
+        if ($('play')) $('play').textContent = 'Play';
+        if ($('modes')) $('modes').style.display = '';
+        if ($('btn-rank-start')) $('btn-rank-start').style.display = '';
+        if ($('start')) $('start').classList.add('hide');
+        if ($('name-modal')) $('name-modal').classList.add('hide');
+        if ($('over')) $('over').classList.add('hide');
+        if ($('rank')) $('rank').classList.add('hide');
 
         const notifyEl = $('top-notify');
         if (notifyEl) {
@@ -1115,8 +1108,7 @@
             bestEver = finalScore;
             try {
                 localStorage.setItem('mtv-best', bestEver);
-            } catch (e) {
-            }
+            } catch (e) {}
         }
 
         const notifyEl = $('top-notify');
@@ -1128,15 +1120,17 @@
         await saveScore(finalScore);
         syncSettingsUI();
 
-        $('big').textContent = finalScore;
+        if ($('big')) $('big').textContent = finalScore;
         const acc = hits + misses ? Math.round(hits / (hits + misses) * 100) : 100;
-        $('stats').textContent = `${playerName || 'Người chơi'} hạ ${killed} từ · Chính xác ${acc}%`;
-        $('miss').innerHTML = missed.size ? '<b>Từ cần ôn:</b> ' + [...missed].slice(0, 6).map(([w, v]) => w + ' = ' + v).join(' · ') : 'Không bỏ sót từ nào, quá đỉnh!';
+        if ($('stats')) $('stats').textContent = `${playerName || 'Người chơi'} hạ ${killed} từ · Chính xác ${acc}%`;
+        if ($('miss')) $('miss').innerHTML = missed.size ? '<b>Từ cần ôn:</b> ' + [...missed].slice(0, 6).map(([w, v]) => w + ' = ' + v).join(' · ') : 'Không bỏ sót từ nào, quá đỉnh!';
 
         checkTopRank(finalScore);
 
         [523, 440, 349, 262].forEach((f, i) => snd(f, .25, 'triangle', .07, 0, i * .15));
-        setTimeout(() => $('over').classList.remove('hide'), 500);
+        setTimeout(() => {
+            if ($('over')) $('over').classList.remove('hide');
+        }, 500);
     }
 
     async function checkTopRank(currentScore) {
@@ -1176,8 +1170,7 @@
                 if (higherCount < 5 && localTop.length > 0) {
                     rankPosition = higherCount + 1;
                 }
-            } catch (e) {
-            }
+            } catch (e) {}
         }
 
         if (rankPosition && rankPosition <= 5) {
@@ -1190,24 +1183,26 @@
         }
     }
 
-    // Gắn sự kiện các nút
-    $('play').onclick = () => state === 'paused' ? resume() : promptPlayerName();
-    $('confirm-name').onclick = confirmNameAndPlay;
-    $('cancel-name').onclick = () => {
+    // Gắn sự kiện các nút cơ bản
+    if ($('play')) $('play').onclick = () => state === 'paused' ? resume() : promptPlayerName();
+    if ($('confirm-name')) $('confirm-name').onclick = confirmNameAndPlay;
+    if ($('cancel-name')) $('cancel-name').onclick = () => {
         state = 'menu';
-        $('name-modal').classList.add('hide');
-        $('start').classList.remove('hide');
+        if ($('name-modal')) $('name-modal').classList.add('hide');
+        if ($('start')) $('start').classList.remove('hide');
         snd(480, .08, 'triangle', .06);
     };
-    $('player-name').addEventListener('input', () => $('name-err').classList.add('hide'));
+    if ($('player-name')) $('player-name').addEventListener('input', () => {
+        if ($('name-err')) $('name-err').classList.add('hide');
+    });
 
-    $('again').onclick = begin;
+    if ($('again')) $('again').onclick = begin;
 
-    $('btn-rank-start').onclick = () => openRank('start');
-    $('btn-rank-over').onclick = () => openRank('over');
-    $('close-rank').onclick = () => {
-        $('rank').classList.add('hide');
-        $(rankFrom).classList.remove('hide');
+    if ($('btn-rank-start')) $('btn-rank-start').onclick = () => openRank('start');
+    if ($('btn-rank-over')) $('btn-rank-over').onclick = () => openRank('over');
+    if ($('close-rank')) $('close-rank').onclick = () => {
+        if ($('rank')) $('rank').classList.add('hide');
+        if ($(rankFrom)) $(rankFrom).classList.remove('hide');
         snd(480, .08, 'triangle', .06);
     };
 
@@ -1215,11 +1210,11 @@
     if (btnHome) {
         btnHome.onclick = () => {
             state = 'menu';
-            $('over').classList.add('hide');
-            $('start').classList.remove('hide');
-            $('modes').style.display = '';
-            $('btn-rank-start').style.display = '';
-            $('play').textContent = 'Play';
+            if ($('over')) $('over').classList.add('hide');
+            if ($('start')) $('start').classList.remove('hide');
+            if ($('modes')) $('modes').style.display = '';
+            if ($('btn-rank-start')) $('btn-rank-start').style.display = '';
+            if ($('play')) $('play').textContent = 'Play';
             syncSettingsUI();
             fetchTopChamp();
             snd(480, .08, 'triangle', .06);
@@ -1256,34 +1251,38 @@
     document.addEventListener('visibilitychange', () => {
         if (document.hidden && state === 'play') {
             state = 'paused';
-            $('modes').style.display = 'none';
-            $('btn-rank-start').style.display = 'none';
-            $('play').textContent = 'Chơi tiếp';
-            $('start').classList.remove('hide');
+            if ($('modes')) $('modes').style.display = 'none';
+            if ($('btn-rank-start')) $('btn-rank-start').style.display = 'none';
+            if ($('play')) $('play').textContent = 'Chơi tiếp';
+            if ($('start')) $('start').classList.remove('hide');
         }
     });
 
-    // Bắt sự kiện lọc theo Thời gian
-    document.querySelectorAll('#rank-time-tabs button').forEach(btn => {
-        btn.onclick = () => {
-            document.querySelectorAll('#rank-time-tabs button').forEach(b => b.classList.remove('on'));
-            btn.classList.add('on');
-            currentRankPeriod = btn.dataset.period;
-            renderRank();
-            snd(520, .06, 'triangle', .05);
-        };
-    });
+    // Gắn sự kiện tab lọc an toàn
+    function initRankTabs() {
+        const timeBtns = document.querySelectorAll('#rank-time-tabs button');
+        timeBtns.forEach(btn => {
+            btn.onclick = () => {
+                timeBtns.forEach(b => b.classList.remove('on'));
+                btn.classList.add('on');
+                currentRankPeriod = btn.dataset.period;
+                renderRank();
+                snd(520, .06, 'triangle', .05);
+            };
+        });
 
-// Bắt sự kiện lọc theo Chủ đề
-    document.querySelectorAll('#rank-topic-tabs button').forEach(btn => {
-        btn.onclick = () => {
-            document.querySelectorAll('#rank-topic-tabs button').forEach(b => b.classList.remove('on'));
-            btn.classList.add('on');
-            currentRankTopic = btn.dataset.topic;
-            renderRank();
-            snd(520, .06, 'triangle', .05);
-        };
-    });
+        const topicBtns = document.querySelectorAll('#rank-topic-tabs button');
+        topicBtns.forEach(btn => {
+            btn.onclick = () => {
+                topicBtns.forEach(b => b.classList.remove('on'));
+                btn.classList.add('on');
+                currentRankTopic = btn.dataset.topic;
+                renderRank();
+                snd(520, .06, 'triangle', .05);
+            };
+        });
+    }
+    initRankTabs();
 
     addEventListener('keydown', e => {
         if (e.key === 'Enter') {
@@ -1299,14 +1298,12 @@
     reset();
     try {
         fetchTopChamp();
-    } catch (e) {
-    }
+    } catch (e) {}
 
-    // Khởi chạy ngay lập tức không phụ thuộc font chữ
+    // Bắt đầu vòng lặp game lập tức
     requestAnimationFrame(loop);
 
     if (document.fonts && document.fonts.load) {
-        document.fonts.load('700 24px Fredoka').catch(() => {
-        });
+        document.fonts.load('700 24px Fredoka').catch(() => {});
     }
 })();
