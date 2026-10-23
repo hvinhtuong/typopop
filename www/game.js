@@ -53,7 +53,8 @@
         '🔥 Đạt chuỗi Combo 10 để kích hoạt FEVER MODE: bắn đạn kép & x2 điểm!',
         '⌨️ Gõ sai từ sẽ làm mất toàn bộ Combo và thoát trạng thái Fever!',
         '🎯 Nhấn phím Backspace hoặc Escape để bỏ chọn từ đang gõ dở dang.',
-        '📱 Trên điện thoại: bạn có thể chạm thẳng vào từ để chọn nhanh mục tiêu.'
+        '📱 Trên điện thoại: bạn có thể chạm thẳng vào từ để chọn nhanh mục tiêu.',
+        'BOSS sẽ xuất hiện sau mỗi 5 level!'
     ];
 
     try {
@@ -156,7 +157,6 @@
         cv.width = Math.floor(W * DPR);
         cv.height = Math.floor(H * DPR);
 
-        // Reset và áp dụng scale chuẩn theo DPR
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(DPR, DPR);
 
@@ -264,7 +264,6 @@
 
         let pool;
         if (isRevengeMode && reviewNotebook.size > 0) {
-            // Chỉ bốc các từ có trong sổ tay
             const revengeWords = [...reviewNotebook.entries()].map(([w, data]) => ({ w, vi: data.vi }));
             pool = revengeWords.filter(o => !words.some(x => x.w === o.w));
             if (pool.length === 0) pool = revengeWords;
@@ -383,7 +382,7 @@
             bullets.push({x: mascot.x + 12, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
             snd(650 + t.typed * 55, .08, 'sawtooth', .08);
         } else {
-            bullets.push({x: mascot.x, y: H - 79, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: []});
+            bullets.push({x: mascot.x, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: []});
             snd(520 + t.typed * 45, .09, 'triangle', .06);
         }
 
@@ -607,7 +606,7 @@
             freezeTimer = Math.max(0, freezeTimer - dt);
         }
 
-        // Sửa dòng kiểm tra spawn:
+        // Chỉ spawn từ thường khi không có Boss
         if (!boss && bossWarningTimer <= 0) {
             spawnT -= dt;
             if (spawnT <= 0 && words.length < 4 + level) {
@@ -615,12 +614,21 @@
                 spawnT = Math.max(.9, 2.6 - level * .18 - mode * .3) + Math.random() * .6;
             }
         }
+
+        // Chuyển động của Boss
         if (boss) {
             boss.x += boss.vx * dt;
-            if (boss.x < 70 || boss.x > W - 70) boss.vx = -boss.vx;
+            if (boss.x < 80) {
+                boss.x = 80;
+                boss.vx = Math.abs(boss.vx);
+            } else if (boss.x > W - 80) {
+                boss.x = W - 80;
+                boss.vx = -Math.abs(boss.vx);
+            }
+
             if (boss.hitTimer > 0) boss.hitTimer -= dt;
 
-            // Nếu từ bảo vệ bị bắn hết mà Boss vẫn còn máu, sinh tiếp từ mới
+            // Nếu từ bảo vệ bị hạ gục, Boss chuẩn bị thả từ tiếp theo
             if (!words.some(q => q.isBossMinion)) {
                 spawnBossWord();
             }
@@ -636,7 +644,6 @@
             if (q.locked && q.y > H - 95) q.y = H - 95;
             q.sc *= .88;
 
-            // Bắt buộc H > 250 và từ rơi quá đáy màn hình mới tính thua
             if (!q.locked && H > 250 && q.y > H - 95) {
                 lose(q);
             }
@@ -702,12 +709,11 @@
 
         tipTimer -= dt;
         if (tipTimer <= 0) {
-            // Đổi sang câu mẹo kế tiếp
             currentTipIdx = (currentTipIdx + 1) % GAME_TIPS.length;
             tipEl.innerHTML = '💡 ' + GAME_TIPS[currentTipIdx];
             tipEl.classList.remove('hide');
             tipEl.classList.add('show');
-            tipTimer = 9; // Hiển thị 9 giây trước khi đổi câu khác
+            tipTimer = 9;
         }
     }
 
@@ -718,7 +724,7 @@
         ctx.arcTo(x + w, y, x + w, y + h, r);
         ctx.arcTo(x + w, y + h, x, y + h, r);
         ctx.arcTo(x, y + h, x, y, r);
-        ctx.arcTo(x, y, x + w, y, r); // Đã bổ sung tham số 'r' thứ 5
+        ctx.arcTo(x, y, x + w, y, r);
         ctx.closePath();
     }
 
@@ -942,20 +948,30 @@
     function draw(t) {
         ctx.save();
         try {
-            // Vẽ Phi thuyền Boss
+            if (shake > 0) ctx.translate((Math.random() - .5) * shake * 20, (Math.random() - .5) * shake * 20);
+
+            // 1. Vẽ nền vũ trụ
+            drawBg(t);
+
+            // 2. Vẽ Phi thuyền Boss Cyber Mothership (VẼ SAU NỀN ĐỂ KHÔNG BỊ ĐÈ)
             if (boss) {
                 ctx.save();
-                ctx.translate(boss.x, boss.y);
-                if (boss.hitTimer > 0) ctx.translate((Math.random() - .5) * 6, (Math.random() - .5) * 6);
+                const floatY = boss.y + Math.sin(t / 250) * 5;
+                ctx.translate(boss.x, floatY);
 
-                // Đèn hào quang đỏ quanh phi thuyền
+                if (boss.hitTimer > 0) {
+                    ctx.translate((Math.random() - .5) * 8, (Math.random() - .5) * 8);
+                }
+
+                // Hào quang phản lực
                 ctx.shadowColor = '#ff2a5f';
-                ctx.shadowBlur = 18 + Math.sin(t / 80) * 8;
+                ctx.shadowBlur = 22 + Math.sin(t / 80) * 8;
 
                 // Thân phi thuyền mẹ
-                ctx.fillStyle = boss.hitTimer > 0 ? '#ffffff' : '#2b1042';
+                ctx.fillStyle = boss.hitTimer > 0 ? '#ffffff' : '#220b3b';
                 ctx.strokeStyle = '#ff2a5f';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 3.5;
+
                 ctx.beginPath();
                 ctx.moveTo(-boss.w / 2, 0);
                 ctx.lineTo(-boss.w / 4, -boss.h / 2);
@@ -967,17 +983,27 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // Lõi năng lượng nhấp nháy giữa Boss
+                // Cánh năng lượng hai bên
+                ctx.fillStyle = '#ff007f';
+                for (const side of [-1, 1]) {
+                    ctx.beginPath();
+                    ctx.moveTo(side * (boss.w / 2), 0);
+                    ctx.lineTo(side * (boss.w / 2 + 18), -10);
+                    ctx.lineTo(side * (boss.w / 2 - 10), 18);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Lõi năng lượng Neon ở trung tâm
                 ctx.fillStyle = '#00f2fe';
+                ctx.shadowColor = '#00f2fe';
+                ctx.shadowBlur = 15;
                 ctx.beginPath();
-                ctx.arc(0, 4, 12 + Math.sin(t / 100) * 3, 0, 6.283);
+                ctx.arc(0, 4, 11 + Math.sin(t / 90) * 3, 0, 6.283);
                 ctx.fill();
+
                 ctx.restore();
             }
-
-            if (shake > 0) ctx.translate((Math.random() - .5) * shake * 20, (Math.random() - .5) * shake * 20);
-
-            drawBg(t);
 
             if (freezeTimer > 0) {
                 ctx.fillStyle = `rgba(92, 200, 255, ${Math.min(0.25, freezeTimer * 0.05)})`;
@@ -1043,7 +1069,7 @@
             }
             ctx.globalAlpha = 1;
         } finally {
-            ctx.restore(); // ĐẢM BẢO LUÔN ĐƯỢC GỌI, KHÔNG BAO GIỜ LỆCH MATRIX
+            ctx.restore();
         }
     }
 
@@ -1059,12 +1085,18 @@
         requestAnimationFrame(loop);
     }
 
+    /* ---------- LOGIC BOSS BATTLE ---------- */
     function triggerBossBattle() {
-        bossWarningTimer = 2.5; // Hiện cảnh báo 2.5s
+        bossWarningTimer = 2.5;
         const warnEl = $('boss-warning');
         if (warnEl) warnEl.classList.remove('hide');
 
-        // Còi báo động
+        // Quét sạch từ thường đang rơi để dọn sàn đấu
+        words.forEach(q => burst(q.x, q.y, '#ff5277', 14));
+        words = [];
+        target = null;
+
+        // Còi báo động dồn dập
         [220, 293, 220, 293].forEach((f, i) => snd(f, .18, 'sawtooth', .1, 0, i * .2));
 
         setTimeout(() => {
@@ -1074,14 +1106,13 @@
             const maxHp = 4 + Math.floor(level / 2);
             boss = {
                 x: W / 2,
-                y: 95,
-                vx: 75,
-                w: 120,
-                h: 55,
+                y: 130, // Đặt thấp hơn thanh HUD để không bị che
+                vx: 80,
+                w: 130,
+                h: 60,
                 hp: maxHp,
                 maxHp: maxHp,
-                hitTimer: 0,
-                shootTimer: 1.0
+                hitTimer: 0
             };
 
             const bossHud = $('boss-hud');
@@ -1111,9 +1142,9 @@
             w: o.w,
             vi: o.vi,
             x: boss.x,
-            y: boss.y + 40,
+            y: boss.y + 45, // Thả ra từ đáy phi thuyền
             pw: w,
-            vy: 18 + mode * 8, // Rơi chậm hơn để người chơi tập trung dứt điểm Boss
+            vy: 22 + mode * 8,
             typed: 0,
             ph: 0,
             col: '#ff4d4d',
@@ -1121,6 +1152,8 @@
             sc: 0,
             isBossMinion: true
         });
+
+        snd(300, .15, 'sawtooth', .08, .5);
     }
 
     /* ---------- LUỒNG CHÍNH VÀ LEADERBOARD ---------- */
@@ -1392,7 +1425,7 @@
         }
         resize();
         reset();
-        tipTimer = 2; // Sau 2 giây vào game sẽ hiện mẹo đầu tiên
+        tipTimer = 2;
         const tipEl = $('game-tip');
         if (tipEl) {
             tipEl.classList.remove('hide');
@@ -1687,7 +1720,6 @@
         snd(560, .08, 'triangle', .06);
     }
 
-// Gắn sự kiện nút Sổ tay
     const btnNbStart = $('btn-notebook-start');
     if (btnNbStart) btnNbStart.onclick = () => openNotebook('start');
 
@@ -1703,7 +1735,6 @@
         };
     }
 
-// Xóa sạch sổ tay
     const clearNb = $('btn-clear-notebook');
     if (clearNb) {
         clearNb.onclick = () => {
@@ -1716,7 +1747,6 @@
         };
     }
 
-    // Bắt đầu Chế độ Phục thù
     const btnRevenge = $('btn-revenge');
     if (btnRevenge) {
         btnRevenge.onclick = () => {
