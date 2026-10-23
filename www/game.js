@@ -348,11 +348,11 @@
         mascot.mouth = 1;
 
         if (isFever) {
-            bullets.push({x: mascot.x - 12, y: H - 75, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
-            bullets.push({x: mascot.x + 12, y: H - 75, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
+            bullets.push({x: mascot.x - 12, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
+            bullets.push({x: mascot.x + 12, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
             snd(650 + t.typed * 55, .08, 'sawtooth', .08);
         } else {
-            bullets.push({x: mascot.x, y: H - 75, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: []});
+            bullets.push({x: mascot.x, y: H - 79, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: []});
             snd(520 + t.typed * 45, .09, 'triangle', .06);
         }
 
@@ -865,7 +865,7 @@
                 ctx.setLineDash([4, 8]);
                 ctx.lineWidth = isFever ? 3 : 2;
                 ctx.beginPath();
-                ctx.moveTo(mascot.x, H - 75);
+                ctx.moveTo(mascot.x, H - 95);
                 ctx.lineTo(target.x, target.y + 18);
                 ctx.stroke();
                 ctx.setLineDash([]);
