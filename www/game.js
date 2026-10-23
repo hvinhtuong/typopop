@@ -9,7 +9,7 @@
             sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         }
     } catch (e) {
-        console.warn('Lỗi khởi tạo Supabase, game chuyển sang chế độ offline:', e);
+        console.warn('Lỗi khởi tạo Supabase:', e);
     }
 
     const WORD_PACKS = {
@@ -41,10 +41,11 @@
     const cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
     const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
     const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
-    let W = 400, H = 700, DPR = 1, mode = 0, state = 'menu', last = 0;
+
+    let W = window.innerWidth || 400, H = window.innerHeight || 700, DPR = 1, mode = 0, state = 'menu', last = 0;
 
     let words = [], parts = [], bullets = [], floats = [], stars = [], score = 0, lives = 5, combo = 0, level = 1,
-        killed = 0, hits = 0, misses = 0, missed = new Map(), target = null, spawnT = 0.4,
+        killed = 0, hits = 0, misses = 0, missed = new Map(), target = null, spawnT = 0.5,
         shake = 0, bestEver = 0, topScores = [], lastRecordTime = 0, playerName = '', rankFrom = 'start',
         mascot = {x: 200, sq: 0, look: 0, mouth: 0}, freezeTimer = 0, isFever = false;
 
@@ -57,7 +58,7 @@
         }
     } catch (e) {}
 
-    /* ---------- âm thanh & phát âm ---------- */
+    /* ---------- âm thanh ---------- */
     let AC, muted = false, enVoice = null;
 
     function loadVoice() {
@@ -75,8 +76,7 @@
 
     function speak(word) {
         if (muted) return;
-        const isMessenger = /FBAN|FBAV/i.test(navigator.userAgent);
-        if (!isMessenger && 'speechSynthesis' in window) {
+        if ('speechSynthesis' in window) {
             try {
                 speechSynthesis.cancel();
                 const u = new SpeechSynthesisUtterance(word);
@@ -118,19 +118,22 @@
         };
     }
 
-    /* ---------- kích thước ---------- */
+    /* ---------- KÍCH THƯỚC CHUẨN XÁC KHÔNG LỆCH MATRIX ---------- */
     function resize() {
         const vv = window.visualViewport;
-        W = window.innerWidth || document.documentElement.clientWidth || 360;
-        H = (vv ? vv.height : window.innerHeight) || document.documentElement.clientHeight || 640;
+        W = vv ? vv.width : window.innerWidth;
+        H = vv ? vv.height : window.innerHeight;
         DPR = Math.min(window.devicePixelRatio || 1, 2);
 
         if ($('app')) $('app').style.height = H + 'px';
-        cv.width = W * DPR;
-        cv.height = H * DPR;
-        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        cv.width = Math.floor(W * DPR);
+        cv.height = Math.floor(H * DPR);
 
-        if (!mascot || isNaN(mascot.x) || mascot.x === 0) {
+        // Reset và áp dụng scale chuẩn theo DPR
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(DPR, DPR);
+
+        if (!mascot || isNaN(mascot.x)) {
             mascot = {x: W / 2, sq: 0, look: 0, mouth: 0};
         }
     }
@@ -138,7 +141,6 @@
     addEventListener('resize', resize);
     if (window.visualViewport) {
         visualViewport.addEventListener('resize', resize);
-        visualViewport.addEventListener('scroll', () => window.scrollTo(0, 0));
     }
 
     function fs() {
@@ -146,7 +148,7 @@
     }
 
     function initStars() {
-        stars = Array.from({length: 120}, () => ({
+        stars = Array.from({length: 100}, () => ({
             x: Math.random(),
             y: Math.random(),
             r: Math.random() * 1.8 + .4,
@@ -156,7 +158,6 @@
     }
 
     function reset() {
-        resize();
         words = [];
         parts = [];
         bullets = [];
@@ -170,7 +171,7 @@
         misses = 0;
         missed = new Map();
         target = null;
-        spawnT = 0.4;
+        spawnT = 0.5;
         shake = 0;
         freezeTimer = 0;
         isFever = false;
@@ -198,9 +199,9 @@
                 if (!isFever) {
                     isFever = true;
                     document.body.classList.add('fever-active');
-                    say('🔥 FEVER MODE ACTIVE! x2 POINT 🔥', W / 2, H * .35, '#ff007f', 32);
-                    [523, 659, 784, 1047, 1318].forEach((f, i) => snd(f * 1.2, .18, 'sawtooth', .08, 0, i * .06));
-                    burst(W / 2, H * .35, '#ff007f', 60);
+                    say('🔥 FEVER ACTIVE! x2 POINT 🔥', W / 2, H * .35, '#ff007f', 30);
+                    [523, 659, 784, 1047].forEach((f, i) => snd(f * 1.2, .15, 'sawtooth', .08, 0, i * .06));
+                    burst(W / 2, H * .35, '#ff007f', 50);
                 }
                 feverPill.style.display = 'block';
                 feverPill.textContent = `🔥 FEVER x${Math.min(combo, 99)} 🔥`;
@@ -222,7 +223,7 @@
         }
     }
 
-    /* ---------- từ ---------- */
+    /* ---------- SINH TỪ VỰNG ---------- */
     function spawn() {
         if (!WORDS || WORDS.length === 0) {
             WORDS = WORD_PACKS.all.length > 0 ? WORD_PACKS.all : WORD_PACKS.it;
@@ -235,13 +236,13 @@
         const o = pool[Math.random() * pool.length | 0] || {w: 'star', vi: 'ngôi sao'};
 
         ctx.font = `700 ${fs()}px Fredoka,sans-serif`;
-        const textMetric = ctx.measureText(o.w || 'test');
+        const textMetric = ctx.measureText(o.w || 'word');
         const w = (textMetric ? textMetric.width : 60) + 36;
         const m = w / 2 + 10;
 
-        let x = m + Math.random() * Math.max(10, W - 2 * m);
+        let x = m + Math.random() * Math.max(20, W - 2 * m);
         for (let i = 0; i < 8; i++) {
-            const c = m + Math.random() * Math.max(10, W - 2 * m);
+            const c = m + Math.random() * Math.max(20, W - 2 * m);
             if (!words.some(q => q.y < 90 && Math.abs(q.x - c) < (q.pw + w) / 2 + 10)) {
                 x = c;
                 break;
@@ -258,9 +259,9 @@
             w: o.w,
             vi: o.vi,
             x: Math.max(m, Math.min(W - m, x)),
-            y: -35,
+            y: -30,
             pw: w,
-            vy: (26 + level * 5 + Math.random() * 14 + mode * 10) * Math.max(.8, H / 700),
+            vy: (28 + level * 5 + Math.random() * 12 + mode * 10) * Math.max(.85, H / 700),
             typed: 0,
             ph: Math.random() * 6,
             col: COL[Math.random() * COL.length | 0],
@@ -276,7 +277,7 @@
         return b;
     }
 
-    /* ---------- gõ phím ---------- */
+    /* ---------- GÕ PHÍM ---------- */
     const TELEX_MAP = {
         'ă': 'aw', 'â': 'aa', 'đ': 'dd', 'ê': 'ee', 'ô': 'oo', 'ơ': 'ow', 'ư': 'w',
         'á': 'as', 'à': 'af', 'ả': 'ar', 'ã': 'ax', 'ạ': 'aj',
@@ -337,11 +338,11 @@
         mascot.mouth = 1;
 
         if (isFever) {
-            bullets.push({x: mascot.x - 12, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
-            bullets.push({x: mascot.x + 12, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
+            bullets.push({x: mascot.x - 12, y: H - 75, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
+            bullets.push({x: mascot.x + 12, y: H - 75, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
             snd(650 + t.typed * 55, .08, 'sawtooth', .08);
         } else {
-            bullets.push({x: mascot.x, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: []});
+            bullets.push({x: mascot.x, y: H - 75, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: []});
             snd(520 + t.typed * 45, .09, 'triangle', .06);
         }
 
@@ -414,10 +415,10 @@
         e.preventDefault();
     });
 
-    /* ---------- hiệu ứng ---------- */
+    /* ---------- HIỆU ỨNG ---------- */
     function burst(x, y, col, n = 24, star = true) {
         for (let i = 0; i < n; i++) {
-            const a = Math.random() * 6.283, s = 90 + Math.random() * 280;
+            const a = Math.random() * 6.283, s = 90 + Math.random() * 260;
             parts.push({
                 x,
                 y,
@@ -500,8 +501,8 @@
         lives--;
         combo = 0;
         shake = reduce ? 0 : .5;
-        burst(q.x, H - 60, '#ff5d6c', 26, false);
-        say('Oops!', q.x, H - 110, '#ff5d6c');
+        burst(q.x, H - 75, '#ff5d6c', 26, false);
+        say('Oops!', q.x, H - 120, '#ff5d6c');
         snd(220, .35, 'square', .06, .4);
         if (!missed.has(q.w)) missed.set(q.w, q.vi);
         if (target === q) target = null;
@@ -510,7 +511,7 @@
         if (lives <= 0) end();
     }
 
-    /* ---------- vòng lặp ---------- */
+    /* ---------- CẬP NHẬT TỌA ĐỘ VÀ VẬT LÝ ---------- */
     function update(dt) {
         if (freezeTimer > 0) {
             freezeTimer = Math.max(0, freezeTimer - dt);
@@ -518,7 +519,7 @@
 
         spawnT -= dt;
         if (spawnT <= 0 && words.length < 4 + level) {
-            try { spawn(); } catch (e) { console.error('Lỗi spawn từ:', e); }
+            try { spawn(); } catch (e) {}
             spawnT = Math.max(.9, 2.6 - level * .18 - mode * .3) + Math.random() * .6;
         }
 
@@ -532,7 +533,8 @@
             if (q.locked && q.y > H - 95) q.y = H - 95;
             q.sc *= .88;
 
-            if (!q.locked && H > 200 && q.y > H - 92) {
+            // Bắt buộc H > 250 và từ rơi quá đáy màn hình mới tính thua
+            if (!q.locked && H > 250 && q.y > H - 95) {
                 lose(q);
             }
         }
@@ -609,6 +611,7 @@
         ctx.closePath();
     }
 
+    /* ---------- VẼ NỀN & KHÔNG GIAN ---------- */
     function drawBg(t) {
         const g = ctx.createLinearGradient(0, 0, 0, H);
         if (isFever) {
@@ -724,7 +727,7 @@
     function drawMascot(t) {
         const m = mascot;
         const x = isNaN(m.x) ? W / 2 : m.x;
-        const y = H - 52 + Math.sin(t / 300) * 3;
+        const y = H - 56 + Math.sin(t / 300) * 3;
         const s = 1 + (m.sq || 0) * .18, k = 1 - (m.sq || 0) * .14;
 
         ctx.save();
@@ -815,71 +818,80 @@
         ctx.restore();
     }
 
+    /* ---------- HÀM RENDER AN TOÀN TUYỆT ĐỐI (TRY...FINALLY) ---------- */
     function draw(t) {
         ctx.save();
-        if (shake > 0) ctx.translate((Math.random() - .5) * shake * 22, (Math.random() - .5) * shake * 22);
-        drawBg(t);
-        if (freezeTimer > 0) {
-            ctx.fillStyle = `rgba(92, 200, 255, ${Math.min(0.25, freezeTimer * 0.05)})`;
-            ctx.fillRect(0, 0, W, H);
-        }
-        if (target && !target.locked) {
-            ctx.strokeStyle = isFever ? 'rgba(0, 242, 254, .45)' : 'rgba(255,210,63,.25)';
-            ctx.setLineDash([4, 8]);
-            ctx.lineWidth = isFever ? 3 : 2;
-            ctx.beginPath();
-            ctx.moveTo(mascot.x, H - 80);
-            ctx.lineTo(target.x, target.y + 18);
-            ctx.stroke();
-            ctx.setLineDash([]);
-        }
-        for (const q of words) drawWord(q, t);
+        try {
+            if (shake > 0) ctx.translate((Math.random() - .5) * shake * 20, (Math.random() - .5) * shake * 20);
 
-        for (const b of bullets) {
-            for (let i = 0; i < b.tr.length; i++) {
-                ctx.globalAlpha = i / b.tr.length * .6;
-                ctx.fillStyle = b.isFever ? '#ff007f' : '#ffd23f';
+            drawBg(t);
+
+            if (freezeTimer > 0) {
+                ctx.fillStyle = `rgba(92, 200, 255, ${Math.min(0.25, freezeTimer * 0.05)})`;
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            if (target && !target.locked) {
+                ctx.strokeStyle = isFever ? 'rgba(0, 242, 254, .45)' : 'rgba(255,210,63,.25)';
+                ctx.setLineDash([4, 8]);
+                ctx.lineWidth = isFever ? 3 : 2;
                 ctx.beginPath();
-                ctx.arc(b.tr[i][0], b.tr[i][1], 3 + i * .7, 0, 6.283);
+                ctx.moveTo(mascot.x, H - 75);
+                ctx.lineTo(target.x, target.y + 18);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            for (const q of words) drawWord(q, t);
+
+            for (const b of bullets) {
+                for (let i = 0; i < b.tr.length; i++) {
+                    ctx.globalAlpha = i / b.tr.length * .6;
+                    ctx.fillStyle = b.isFever ? '#ff007f' : '#ffd23f';
+                    ctx.beginPath();
+                    ctx.arc(b.tr[i][0], b.tr[i][1], 3 + i * .7, 0, 6.283);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = b.isFever ? '#00f2fe' : '#fff';
+                ctx.shadowColor = b.isFever ? '#00f2fe' : '#ffd23f';
+                ctx.shadowBlur = b.isFever ? 20 : 14;
+                starPath(b.x, b.y, b.isFever ? 13 : 10, t / 70);
                 ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            for (const p of parts) {
+                ctx.globalAlpha = 1 - p.l / p.m;
+                ctx.fillStyle = p.c;
+                if (p.star) {
+                    starPath(p.x, p.y, p.r * 1.6, p.rot);
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, 6.283);
+                    ctx.fill();
+                }
             }
             ctx.globalAlpha = 1;
-            ctx.fillStyle = b.isFever ? '#00f2fe' : '#fff';
-            ctx.shadowColor = b.isFever ? '#00f2fe' : '#ffd23f';
-            ctx.shadowBlur = b.isFever ? 20 : 14;
-            starPath(b.x, b.y, b.isFever ? 13 : 10, t / 70);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-        }
 
-        for (const p of parts) {
-            ctx.globalAlpha = 1 - p.l / p.m;
-            ctx.fillStyle = p.c;
-            if (p.star) {
-                starPath(p.x, p.y, p.r * 1.6, p.rot);
-                ctx.fill();
-            } else {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, 6.283);
-                ctx.fill();
+            drawMascot(t);
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            for (const f of floats) {
+                ctx.globalAlpha = 1 - f.l;
+                ctx.font = `700 ${f.size * (1 + Math.max(0, .3 - f.l))}px Fredoka,sans-serif`;
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = 'rgba(26,18,69,.8)';
+                ctx.strokeText(f.t, f.x, f.y);
+                ctx.fillStyle = f.c;
+                ctx.fillText(f.t, f.x, f.y);
             }
+            ctx.globalAlpha = 1;
+        } finally {
+            ctx.restore(); // ĐẢM BẢO LUÔN ĐƯỢC GỌI, KHÔNG BAO GIỜ LỆCH MATRIX
         }
-        ctx.globalAlpha = 1;
-        drawMascot(t);
-
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        for (const f of floats) {
-            ctx.globalAlpha = 1 - f.l;
-            ctx.font = `700 ${f.size * (1 + Math.max(0, .3 - f.l))}px Fredoka,sans-serif`;
-            ctx.lineWidth = 5;
-            ctx.strokeStyle = 'rgba(26,18,69,.8)';
-            ctx.strokeText(f.t, f.x, f.y);
-            ctx.fillStyle = f.c;
-            ctx.fillText(f.t, f.x, f.y);
-        }
-        ctx.globalAlpha = 1;
-        ctx.restore();
     }
 
     function loop(t) {
@@ -894,7 +906,7 @@
         requestAnimationFrame(loop);
     }
 
-    /* ---------- luồng game ---------- */
+    /* ---------- LUỒNG CHÍNH VÀ LEADERBOARD ---------- */
     async function fetchTopChamp() {
         const el = $('top-champ');
         if (!el) return;
@@ -918,9 +930,7 @@
                         timeStr: `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`
                     };
                 }
-            } catch (e) {
-                console.warn('Lỗi Supabase khi lấy Top 1:', e);
-            }
+            } catch (e) {}
         }
 
         if (!top1) {
@@ -993,7 +1003,7 @@
         if (sb) {
             try {
                 const sig = await generateScoreSignature(player, finalScore, finalLevel, finalKilled);
-                const {data, error} = await sb.from('leaderboard').insert([
+                await sb.from('leaderboard').insert([
                     {
                         name: player,
                         score: finalScore,
@@ -1004,14 +1014,7 @@
                         signature: sig
                     }
                 ]);
-                if (error) {
-                    console.error('❌ Supabase từ chối bản ghi:', error.message, error.details || '');
-                } else {
-                    console.log('✅ Đã lưu điểm lên Supabase thành công!');
-                }
-            } catch (err) {
-                console.error('❌ Lỗi ngoại lệ khi gửi điểm lên Supabase:', err);
-            }
+            } catch (err) {}
         }
     }
 
@@ -1079,9 +1082,7 @@
                         };
                     });
                 }
-            } catch (err) {
-                console.warn('Không tải được Supabase, chuyển sang cache local:', err);
-            }
+            } catch (err) {}
         }
 
         if (!list.length && typeof topScores !== 'undefined') {
@@ -1169,9 +1170,10 @@
     }
 
     function begin() {
+        resize();
         reset();
         state = 'play';
-        last = performance.now(); // Đồng bộ thời gian để dt không bị vọt ở frame đầu
+        last = performance.now();
 
         if (!muted && 'speechSynthesis' in window) {
             try {
@@ -1264,9 +1266,7 @@
                         rankPosition = higherCount + 1;
                     }
                 }
-            } catch (e) {
-                console.warn('Lỗi kiểm tra rank Supabase:', e);
-            }
+            } catch (e) {}
         }
 
         if (!rankPosition && typeof topScores !== 'undefined') {
@@ -1289,13 +1289,13 @@
         }
     }
 
-    // Gắn sự kiện các nút cơ bản
+    // Gắn sự kiện các nút
     if ($('play')) {
         $('play').onclick = () => {
             if (state === 'paused') {
                 resume();
             } else if (playerName) {
-                begin(); // Đã có tên từ trước thì vào chơi ngay lập tức
+                begin();
             } else {
                 promptPlayerName();
             }
@@ -1415,6 +1415,7 @@
         }
     });
 
+    // KHỞI ĐỘNG
     resize();
     initStars();
     reset();
