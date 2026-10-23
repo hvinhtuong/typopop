@@ -50,6 +50,22 @@
         '🎯 Nhấn phím Backspace hoặc Escape để bỏ chọn từ đang gõ dở dang.',
         '📱 Trên điện thoại: bạn có thể chạm thẳng vào từ để chọn nhanh mục tiêu.'
     ];
+
+    let reviewNotebook = new Map();
+    let isRevengeMode = false;
+    let notebookFromScreen = 'start';
+
+    try {
+        const savedNb = JSON.parse(localStorage.getItem('mtv-notebook') || '[]');
+        savedNb.forEach(([w, data]) => reviewNotebook.set(w, data));
+    } catch (e) {}
+
+    function saveNotebookToLocal() {
+        try {
+            localStorage.setItem('mtv-notebook', JSON.stringify([...reviewNotebook]));
+        } catch (e) {}
+    }
+
     let tipTimer = 0, currentTipIdx = 0;
 
     let W = window.innerWidth || 400, H = window.innerHeight || 700, DPR = 1, mode = 0, state = 'menu', last = 0;
@@ -239,9 +255,17 @@
             WORDS = WORD_PACKS.all.length > 0 ? WORD_PACKS.all : WORD_PACKS.it;
         }
 
-        const maxLen = [5, 7, 9][mode] + Math.floor(level * 1.2);
-        let pool = WORDS.filter(o => o && o.w && o.w.length <= maxLen && !words.some(x => x.w === o.w));
-        if (pool.length === 0) pool = WORDS;
+        let pool;
+        if (isRevengeMode && reviewNotebook.size > 0) {
+            // Chỉ bốc các từ có trong sổ tay
+            const revengeWords = [...reviewNotebook.entries()].map(([w, data]) => ({ w, vi: data.vi }));
+            pool = revengeWords.filter(o => !words.some(x => x.w === o.w));
+            if (pool.length === 0) pool = revengeWords;
+        } else {
+            const maxLen = [5, 7, 9][mode] + Math.floor(level * 1.2);
+            pool = WORDS.filter(o => o && o.w && o.w.length <= maxLen && !words.some(x => x.w === o.w));
+            if (pool.length === 0) pool = WORDS;
+        }
 
         const o = pool[Math.random() * pool.length | 0] || {w: 'star', vi: 'ngôi sao'};
 
@@ -504,6 +528,12 @@
             burst(W / 2, H * .4, '#3ee6b0', 60);
             [392, 523, 659, 784].forEach((f, i) => snd(f, .2, 'square', .05, 0, i * .09));
         }
+        if (isRevengeMode && reviewNotebook.has(q.w)) {
+            const item = reviewNotebook.get(q.w);
+            item.count--;
+            if (item.count <= 0) reviewNotebook.delete(q.w);
+            saveNotebookToLocal();
+        }
         hud();
     }
 
@@ -515,6 +545,14 @@
         say('Oops!', q.x, H - 120, '#ff5d6c');
         snd(220, .35, 'square', .06, .4);
         if (!missed.has(q.w)) missed.set(q.w, q.vi);
+
+        // Lưu từ vào sổ tay ôn tập
+        const existing = reviewNotebook.get(q.w) || { vi: q.vi, count: 0 };
+        existing.count++;
+        existing.vi = q.vi;
+        reviewNotebook.set(q.w, existing);
+        saveNotebookToLocal();
+
         if (target === q) target = null;
         words.splice(words.indexOf(q), 1);
         hud();
@@ -1199,6 +1237,9 @@
     }
 
     function begin() {
+        if ($('play') && !isRevengeMode) {
+            isRevengeMode = false;
+        }
         resize();
         reset();
         tipTimer = 2; // Sau 2 giây vào game sẽ hiện mẹo đầu tiên
@@ -1452,6 +1493,90 @@
             }
         }
     });
+
+    function renderNotebook() {
+        const box = $('notebook-list');
+        const revengeBtn = $('btn-revenge');
+        if (!box) return;
+
+        if (reviewNotebook.size === 0) {
+            box.innerHTML = '<p style="opacity:.8;padding:24px 0">Sổ tay trống!<br>Bạn chưa bỏ sót từ nào hoặc đã chinh phục hết.</p>';
+            if (revengeBtn) revengeBtn.style.display = 'none';
+            return;
+        }
+
+        if (revengeBtn) revengeBtn.style.display = '';
+
+        box.innerHTML = [...reviewNotebook.entries()].map(([w, data]) => `
+        <div class="nb-item">
+            <div class="nb-word">
+                <span>${escapeHtml(w)}</span>
+                <span class="nb-vi">${escapeHtml(data.vi)}</span>
+            </div>
+            <div class="nb-actions">
+                <span class="nb-count">Hỏng ${data.count}x</span>
+                <button class="nb-btn-speak" data-word="${escapeHtml(w)}" title="Phát âm">🔊</button>
+            </div>
+        </div>
+    `).join('');
+
+        box.querySelectorAll('.nb-btn-speak').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                speak(btn.dataset.word);
+            };
+        });
+    }
+
+    function openNotebook(fromScreen) {
+        notebookFromScreen = fromScreen;
+        renderNotebook();
+        if ($(fromScreen)) $(fromScreen).classList.add('hide');
+        if ($('notebook-modal')) $('notebook-modal').classList.remove('hide');
+        snd(560, .08, 'triangle', .06);
+    }
+
+// Gắn sự kiện nút Sổ tay
+    const btnNbStart = $('btn-notebook-start');
+    if (btnNbStart) btnNbStart.onclick = () => openNotebook('start');
+
+    const btnNbOver = $('btn-notebook-over');
+    if (btnNbOver) btnNbOver.onclick = () => openNotebook('over');
+
+    const closeNb = $('close-notebook');
+    if (closeNb) {
+        closeNb.onclick = () => {
+            if ($('notebook-modal')) $('notebook-modal').classList.add('hide');
+            if ($(notebookFromScreen)) $(notebookFromScreen).classList.remove('hide');
+            snd(480, .08, 'triangle', .06);
+        };
+    }
+
+// Xóa sạch sổ tay
+    const clearNb = $('btn-clear-notebook');
+    if (clearNb) {
+        clearNb.onclick = () => {
+            if (confirm('Bạn có chắc muốn xoá hết từ trong sổ tay ôn tập?')) {
+                reviewNotebook.clear();
+                saveNotebookToLocal();
+                renderNotebook();
+                snd(200, .15, 'sawtooth', .06);
+            }
+        };
+    }
+
+    // Bắt đầu Chế độ Phục thù
+    const btnRevenge = $('btn-revenge');
+    if (btnRevenge) {
+        btnRevenge.onclick = () => {
+            if (reviewNotebook.size === 0) return;
+            isRevengeMode = true;
+            if ($('notebook-modal')) $('notebook-modal').classList.add('hide');
+            begin();
+            say('⚔️ REVENGE MODE!', W / 2, H * .4, '#ffd23f', 32);
+            [440, 554, 659, 880].forEach((f, i) => snd(f, .18, 'sawtooth', .08, 0, i * .08));
+        };
+    }
 
     // KHỞI ĐỘNG
     resize();

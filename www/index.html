@@ -53,6 +53,7 @@
 
         <button class="btn" id="play">Play</button>
         <button class="btn btn-sub" id="btn-rank-start">🏆 Rank</button>
+        <button class="btn btn-sub" id="btn-notebook-start">📖 Sổ tay</button>
         <p style="font-size:14px;opacity:.8">Trên điện thoại: chạm vào màn hình để mở bàn phím, chạm vào từ để chọn.</p>
     </div>
 
@@ -92,7 +93,8 @@
         </div>
 
         <div class="actions" style="margin-top:8px">
-            <button class="btn" id="again">Play</button>
+            <button class="btn" id="again">Replay</button>
+            <button class="btn btn-sub" id="btn-notebook-over">📖 Sổ tay</button>
             <button class="btn btn-sub" id="btn-rank-over">🏆 Rank</button>
             <button class="btn btn-sub" id="btn-home">🏠 Home</button>
         </div>
@@ -119,6 +121,20 @@
 
         <div id="rank-list"></div>
         <button class="btn" id="close-rank" style="margin-top:12px">Quay lại</button>
+    </div>
+
+    <!-- Màn hình Sổ tay từ vựng & Phục thù -->
+    <div class="ov hide" id="notebook-modal">
+        <h1 style="font-size:clamp(26px,8vw,40px);margin-bottom:6px">📖 Sổ Tay Từ Vựng</h1>
+        <p style="font-size:14px;margin-bottom:8px">Danh sách các từ bạn từng bỏ lỡ hoặc gõ sai</p>
+
+        <div id="notebook-list"></div>
+
+        <div class="actions" style="margin-top:10px">
+            <button class="btn" id="btn-revenge">⚔️ Phục thù</button>
+            <button class="btn btn-sub" id="btn-clear-notebook">🗑️ Xoá sổ</button>
+            <button class="btn btn-sub" id="close-notebook">Quay lại</button>
+        </div>
     </div>
 
     <!-- Thẻ input ảo nhận phím gõ (BẮT BUỘC PHẢI CÓ) -->

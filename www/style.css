@@ -486,3 +486,81 @@ h1 {
     align-items: center;
     gap: 4px;
 }
+/* --- SỔ TAY TỪ VỰNG & PHỤC THÙ --- */
+#notebook-list {
+    width: min(92vw, 420px);
+    max-height: 48vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 6px 4px;
+}
+
+#notebook-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#notebook-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+}
+
+.nb-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.09);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-size: clamp(14px, 3.8vw, 16px);
+}
+
+.nb-word {
+    font-weight: 700;
+    color: var(--mint);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.nb-vi {
+    font-size: 13px;
+    color: #ffd23f;
+    font-weight: 500;
+}
+
+.nb-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nb-btn-speak {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
+    cursor: pointer;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nb-btn-speak:active {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.nb-count {
+    font-size: 11px;
+    background: rgba(255, 111, 174, 0.25);
+    color: var(--pink);
+    border-radius: 999px;
+    padding: 2px 7px;
+    font-weight: 700;
+}
