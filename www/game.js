@@ -756,7 +756,7 @@
     function drawMascot(t) {
         const m = mascot;
         const x = isNaN(m.x) ? W / 2 : m.x;
-        const y = H - 56 + Math.sin(t / 300) * 3;
+        const y = H - 78 + Math.sin(t / 300) * 3;
         const s = 1 + (m.sq || 0) * .18, k = 1 - (m.sq || 0) * .14;
 
         ctx.save();

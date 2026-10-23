@@ -440,29 +440,29 @@ h1 {
 /* --- GỢI Ý MẸO CHƠI (GAMEPLAY TIPS) --- */
 #game-tip {
     position: absolute;
-    /* Đặt cố định ở sát mép dưới màn hình */
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 14px) !important;
+    /* Đặt sát mép đáy màn hình, dưới chân con mèo */
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 4px) !important;
     top: auto !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
 
     background: rgba(14, 8, 40, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    padding: 5px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 3px 14px;
     border-radius: 999px;
-    font-size: clamp(12px, 3.2vw, 13px);
+    font-size: clamp(11px, 2.8vw, 12.5px);
     color: #e2dcff;
     white-space: nowrap;
     pointer-events: none;
-    z-index: 4;
+    z-index: 1; /* Nằm dưới lớp vẽ của con mèo */
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
 #game-tip.show {
-    opacity: 0.95;
+    opacity: 0.9;
 }
 
 /* Thẻ tóm tắt mẹo ở màn hình Home */
