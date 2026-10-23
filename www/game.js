@@ -36,6 +36,11 @@
     let WORDS = WORD_PACKS.all.length > 0 ? WORD_PACKS.all : WORD_PACKS.it;
     let currentRankPeriod = 'today';
     let currentRankTopic = 'all';
+    let boss = null;
+    let reviewNotebook = new Map();
+    let isRevengeMode = false;
+    let notebookFromScreen = 'start';
+    let bossWarningTimer = 0;
 
     const $ = id => document.getElementById(id);
     const cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
@@ -50,10 +55,6 @@
         '🎯 Nhấn phím Backspace hoặc Escape để bỏ chọn từ đang gõ dở dang.',
         '📱 Trên điện thoại: bạn có thể chạm thẳng vào từ để chọn nhanh mục tiêu.'
     ];
-
-    let reviewNotebook = new Map();
-    let isRevengeMode = false;
-    let notebookFromScreen = 'start';
 
     try {
         const savedNb = JSON.parse(localStorage.getItem('mtv-notebook') || '[]');
@@ -202,6 +203,12 @@
         freezeTimer = 0;
         isFever = false;
         mascot = {x: W / 2, sq: 0, look: 0, mouth: 0};
+        boss = null;
+        bossWarningTimer = 0;
+        const warnEl = $('boss-warning');
+        if (warnEl) warnEl.classList.add('hide');
+        const bossHud = $('boss-hud');
+        if (bossHud) bossHud.classList.add('hide');
         document.body.classList.remove('fever-active');
         hud();
     }
@@ -522,12 +529,45 @@
         const idx = words.indexOf(q);
         if (idx !== -1) words.splice(idx, 1);
 
-        if (killed % 10 === 0) {
-            level++;
-            say('Level ' + level + '!', W / 2, H * .4, '#3ee6b0', Math.min(64, W / 7));
-            burst(W / 2, H * .4, '#3ee6b0', 60);
-            [392, 523, 659, 784].forEach((f, i) => snd(f, .2, 'square', .05, 0, i * .09));
+        if (boss && q.isBossMinion) {
+            boss.hp--;
+            boss.hitTimer = 0.2;
+            updateBossHpBar();
+            burst(boss.x, boss.y, '#ff2a5f', 35);
+            snd(160, .25, 'sawtooth', .14, .4);
+
+            if (boss.hp <= 0) {
+                // BOSS DEFEATED!
+                say('💥 BOSS DEFEATED! +2000 💥', W / 2, H * .4, '#ffd23f', 34);
+                score += 2000;
+                burst(boss.x, boss.y, '#ffd23f', 90);
+                burst(boss.x, boss.y, '#ff2a5f', 90);
+                shake = reduce ? 0 : 0.8;
+                [392, 523, 659, 784, 1047].forEach((f, i) => snd(f * 1.3, .2, 'triangle', .09, 0, i * .08));
+
+                boss = null;
+                const bossHud = $('boss-hud');
+                if (bossHud) bossHud.classList.add('hide');
+
+                level++;
+                hud();
+            }
         }
+
+        if (!boss && killed > 0 && killed % 10 === 0) {
+            if (level % 5 === 4) { // Cứ trước khi lên Level 5, 10... sẽ gọi Boss
+                level++;
+                hud();
+                triggerBossBattle();
+            } else {
+                level++;
+                say('Level ' + level + '!', W / 2, H * .4, '#3ee6b0', Math.min(64, W / 7));
+                burst(W / 2, H * .4, '#3ee6b0', 60);
+                [392, 523, 659, 784].forEach((f, i) => snd(f, .2, 'square', .05, 0, i * .09));
+                hud();
+            }
+        }
+
         if (isRevengeMode && reviewNotebook.has(q.w)) {
             const item = reviewNotebook.get(q.w);
             item.count--;
@@ -567,10 +607,23 @@
             freezeTimer = Math.max(0, freezeTimer - dt);
         }
 
-        spawnT -= dt;
-        if (spawnT <= 0 && words.length < 4 + level) {
-            try { spawn(); } catch (e) {}
-            spawnT = Math.max(.9, 2.6 - level * .18 - mode * .3) + Math.random() * .6;
+        // Sửa dòng kiểm tra spawn:
+        if (!boss && bossWarningTimer <= 0) {
+            spawnT -= dt;
+            if (spawnT <= 0 && words.length < 4 + level) {
+                try { spawn(); } catch (e) {}
+                spawnT = Math.max(.9, 2.6 - level * .18 - mode * .3) + Math.random() * .6;
+            }
+        }
+        if (boss) {
+            boss.x += boss.vx * dt;
+            if (boss.x < 70 || boss.x > W - 70) boss.vx = -boss.vx;
+            if (boss.hitTimer > 0) boss.hitTimer -= dt;
+
+            // Nếu từ bảo vệ bị bắn hết mà Boss vẫn còn máu, sinh tiếp từ mới
+            if (!words.some(q => q.isBossMinion)) {
+                spawnBossWord();
+            }
         }
 
         const freezeSlowFactor = freezeTimer > 0 ? 0.35 : 1.0;
@@ -889,6 +942,39 @@
     function draw(t) {
         ctx.save();
         try {
+            // Vẽ Phi thuyền Boss
+            if (boss) {
+                ctx.save();
+                ctx.translate(boss.x, boss.y);
+                if (boss.hitTimer > 0) ctx.translate((Math.random() - .5) * 6, (Math.random() - .5) * 6);
+
+                // Đèn hào quang đỏ quanh phi thuyền
+                ctx.shadowColor = '#ff2a5f';
+                ctx.shadowBlur = 18 + Math.sin(t / 80) * 8;
+
+                // Thân phi thuyền mẹ
+                ctx.fillStyle = boss.hitTimer > 0 ? '#ffffff' : '#2b1042';
+                ctx.strokeStyle = '#ff2a5f';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(-boss.w / 2, 0);
+                ctx.lineTo(-boss.w / 4, -boss.h / 2);
+                ctx.lineTo(boss.w / 4, -boss.h / 2);
+                ctx.lineTo(boss.w / 2, 0);
+                ctx.lineTo(boss.w / 3, boss.h / 2);
+                ctx.lineTo(-boss.w / 3, boss.h / 2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Lõi năng lượng nhấp nháy giữa Boss
+                ctx.fillStyle = '#00f2fe';
+                ctx.beginPath();
+                ctx.arc(0, 4, 12 + Math.sin(t / 100) * 3, 0, 6.283);
+                ctx.fill();
+                ctx.restore();
+            }
+
             if (shake > 0) ctx.translate((Math.random() - .5) * shake * 20, (Math.random() - .5) * shake * 20);
 
             drawBg(t);
@@ -971,6 +1057,70 @@
         }
         draw(t);
         requestAnimationFrame(loop);
+    }
+
+    function triggerBossBattle() {
+        bossWarningTimer = 2.5; // Hiện cảnh báo 2.5s
+        const warnEl = $('boss-warning');
+        if (warnEl) warnEl.classList.remove('hide');
+
+        // Còi báo động
+        [220, 293, 220, 293].forEach((f, i) => snd(f, .18, 'sawtooth', .1, 0, i * .2));
+
+        setTimeout(() => {
+            if (state !== 'play') return;
+            if (warnEl) warnEl.classList.add('hide');
+
+            const maxHp = 4 + Math.floor(level / 2);
+            boss = {
+                x: W / 2,
+                y: 95,
+                vx: 75,
+                w: 120,
+                h: 55,
+                hp: maxHp,
+                maxHp: maxHp,
+                hitTimer: 0,
+                shootTimer: 1.0
+            };
+
+            const bossHud = $('boss-hud');
+            if (bossHud) bossHud.classList.remove('hide');
+            updateBossHpBar();
+            spawnBossWord();
+        }, 2500);
+    }
+
+    function updateBossHpBar() {
+        const bar = $('boss-hp-bar');
+        if (bar && boss) {
+            const pct = Math.max(0, (boss.hp / boss.maxHp) * 100);
+            bar.style.width = pct + '%';
+        }
+    }
+
+    function spawnBossWord() {
+        if (!boss || state !== 'play') return;
+        const pool = WORDS.filter(o => o.w.length >= 4 && o.w.length <= 8);
+        const o = pool[Math.random() * pool.length | 0] || WORDS[0];
+
+        ctx.font = `700 ${fs()}px Fredoka,sans-serif`;
+        const w = ctx.measureText(o.w).width + 38;
+
+        words.push({
+            w: o.w,
+            vi: o.vi,
+            x: boss.x,
+            y: boss.y + 40,
+            pw: w,
+            vy: 18 + mode * 8, // Rơi chậm hơn để người chơi tập trung dứt điểm Boss
+            typed: 0,
+            ph: 0,
+            col: '#ff4d4d',
+            locked: false,
+            sc: 0,
+            isBossMinion: true
+        });
     }
 
     /* ---------- LUỒNG CHÍNH VÀ LEADERBOARD ---------- */
