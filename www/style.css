@@ -504,3 +504,16 @@ h1 {
     display: inline-block;
     vertical-align: middle;
 }
+#rank-time-tabs button, #rank-topic-tabs button {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 14px;
+}
+#rank-list {
+    width: 100%;
+    max-width: 420px;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}

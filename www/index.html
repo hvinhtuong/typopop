@@ -89,15 +89,28 @@
         </div>
     </div>
 
-    <!-- Màn hình Bảng xếp hạng Top 5 -->
+    <!-- Màn hình Bảng xếp hạng linh hoạt -->
     <div class="ov hide" id="rank">
-        <h1 style="font-size:clamp(30px,9vw,48px)">🏆 Top 5 Kỷ Lục</h1>
-        <div id="rank-list"></div>
-        <button class="btn" id="close-rank">Quay lại</button>
-    </div>
+        <h1 style="font-size:clamp(26px,8vw,42px);margin-bottom:8px">🏆 Bảng Xếp Hạng</h1>
 
-    <input id="kb" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
-           inputmode="text" aria-label="Gõ từ tại đây">
+        <!-- Bộ lọc thời gian: Hôm nay / Tuần này / Mọi lúc -->
+        <div class="lv" id="rank-time-tabs" style="margin-bottom:8px">
+            <button data-period="today" class="on">Hôm nay</button>
+            <button data-period="week">Tuần này</button>
+            <button data-period="all">Mọi lúc</button>
+        </div>
+
+        <!-- Bộ lọc chủ đề -->
+        <div class="lv" id="rank-topic-tabs" style="margin-bottom:12px">
+            <button data-topic="all" class="on">Tất cả</button>
+            <button data-topic="it">Công nghệ</button>
+            <button data-topic="travel">Du lịch</button>
+            <button data-topic="daily">Giao tiếp</button>
+        </div>
+
+        <div id="rank-list"></div>
+        <button class="btn" id="close-rank" style="margin-top:12px">Quay lại</button>
+    </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="game.js"></script>

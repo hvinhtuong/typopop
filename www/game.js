@@ -16,15 +16,15 @@
         all: [],
         it: `code:mã nguồn|data:dữ liệu|bug:lỗi|file:tập tin|host:máy chủ|node:nút mạng|user:người dùng|byte:byte|link:liên kết|port:cổng mạng|developer:lập trình viên|software:phần mềm|hardware:phần cứng|database:cơ sở dữ liệu|network:mạng máy tính|security:bảo mật|cloud:điện toán đám mây|framework:khung làm việc|deployment:triển khai|repository:kho lưu trữ|algorithm:thuật toán|debugging:gỡ lỗi|interface:giao diện|compile:biên dịch|terminal:cửa sổ lệnh|variable:biến|function:hàm|syntax:cú pháp|server:máy chủ|client:máy khách|backend:phía máy chủ|frontend:giao diện người dùng|fullstack:toàn diện|pipeline:quy trình tự động|container:vỏ đóng gói|docker:nền tảng ảo hóa|cluster:cụm máy chủ|memory:bộ nhớ|storage:lưu trữ|cache:bộ nhớ đệm|binary:nhị phân|protocol:giao thức|endpoint:điểm cuối api|payload:dữ liệu truyền tải|query:truy vấn|thread:luồng xử lý|process:tiến trình|exception:ngoại lệ lỗi|parameter:tham số|argument:đối số|compiler:trình biên dịch|runtime:thời gian chạy|library:thư viện mã|package:gói phần mềm|firewall:tường lửa|encryption:mã hóa|decryption:giải mã|token:mã xác thực|session:phiên làm việc|cookie:dữ liệu duyệt web|router:thiết bị định tuyến|bandwidth:băng thông|latency:độ trễ mạng|backup:sao lưu dự phòng|restore:phục hồi|virtual:ảo hóa|instance:thực thể máy chủ|scalable:khả năng mở rộng|monitoring:giám sát|performance:hiệu năng`.split('|').map(s => {
             const [a, b] = s.split(':');
-            return { w: a, vi: b };
+            return {w: a, vi: b};
         }),
         travel: `map:bản đồ|bus:xe buýt|trip:chuyến đi|camp:cắm trại|tent:cái lều|tour:chuyến tham quan|pack:đóng gói|boat:con thuyền|stay:lưu trú|walk:đi dạo|airport:sân bay|passport:hộ chiếu|luggage:hành lý|hotel:khách sạn|ticket:vé đi lại|reservation:đặt chỗ|destination:điểm đến|souvenir:quà lưu niệm|guidebook:sách hướng dẫn|itinerary:lịch trình|adventure:cuộc phiêu lưu|landscape:phong cảnh|island:hòn đảo|beach:bãi biển|mountain:ngọn núi|journey:chuyến đi xa|sightseeing:ngắm cảnh|customs:hải quan|vacation:kỳ nghỉ|boarding:lên máy bay|departure:khởi hành|arrival:hạ cánh đến nơi|terminal:nhà ga sân bay|flight:chuyến bay|passenger:hành khách|suitcase:va-li|backpack:ba-lô du lịch|resort:khu nghỉ dưỡng|hostel:nhà nghỉ tập thể|motel:nhà nghỉ ven đường|reception:quầy lễ tân|checkout:trả phòng|homestay:nhà dân bản địa|scenery:cảnh quan thiên nhiên|valley:thung lũng|waterfall:thác nước|forest:khu rừng|desert:sa mạc|canyon:hẻm núi|monument:tượng đài di tích|museum:viện bảo tàng|temple:ngôi đền|palace:cung điện|explore:khám phá|culture:văn hóa bản địa|cuisine:ẩm thực vùng miền|excursion:chuyến dã ngoại|expedition:chuyến thám hiểm|cruising:du ngoạn bằng tàu|currency:tiền tệ|exchange:đổi ngoại tệ`.split('|').map(s => {
             const [a, b] = s.split(':');
-            return { w: a, vi: b };
+            return {w: a, vi: b};
         }),
         daily: `cat:con mèo|sun:mặt trời|book:quyển sách|milk:sữa tươi|tree:cái cây|fish:con cá|rain:cơn mưa|door:cánh cửa|road:con đường|time:thời gian|chef:đầu bếp|soap:xà phòng|laughter:tiếng cười|human:con người|monkey:con khỉ|running:đang chạy|tip:mẹo nhỏ|mirror:cái gương|temperature:nhiệt độ|better:tốt hơn|happy:vui vẻ|water:nước uống|friend:bạn bè|apple:quả táo|window:cửa sổ|garden:khu vườn|family:gia đình|bridge:cây cầu|season:mùa trong năm|library:thư viện|hungry:đói bụng|answer:câu trả lời|breakfast:bữa sáng|weather:thời tiết|holiday:ngày lễ|kitchen:nhà bếp|delicious:ngon miệng|beautiful:xinh đẹp|dangerous:nguy hiểm|important:quan trọng|different:khác biệt|information:thông tin|education:giáo dục|dictionary:từ điển|vegetable:rau củ quả|exercise:tập thể dục|language:ngôn ngữ|neighbor:hàng xóm|umbrella:cái ô che|treasure:kho báu|rainbow:cầu vồng|elephant:con voi|computer:máy tính|customer:khách hàng|chocolate:sô-cô-la|butterfly:con bướm|restaurant:nhà hàng|pronounce:phát âm|comfortable:thoải mái|opportunity:cơ hội|celebrate:ăn mừng|hospital:bệnh viện|medicine:thuốc men|schedule:lịch trình|morning:buổi sáng|evening:buổi tối|midnight:nửa đêm|whisper:thì thầm|laughter:tiếng cười|promise:lời hứa|bicycle:xe đạp|furniture:nội thất|sandwich:bánh mì kẹp|apartment:căn hộ chung cư|supermarket:siêu thị`.split('|').map(s => {
             const [a, b] = s.split(':');
-            return { w: a, vi: b };
+            return {w: a, vi: b};
         })
     };
 
@@ -34,6 +34,8 @@
 
     let currentTopic = 'all';
     let WORDS = WORD_PACKS.all;
+    let currentRankPeriod = 'today'; // 'today' | 'week' | 'all'
+    let currentRankTopic = 'all';    // 'all' | 'it' | 'travel' | 'daily'
 
     const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
     const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
@@ -49,9 +51,10 @@
         playerName = localStorage.getItem('mtv-name') || '';
         topScores = JSON.parse(localStorage.getItem('mtv-top5') || '[]');
         if (!topScores.length && bestEver > 0) {
-            topScores = [{ name: playerName || 'Người chơi', score: bestEver, lvl: 1, mode: 0, date: 'Kỷ lục cũ', t: 0 }];
+            topScores = [{name: playerName || 'Người chơi', score: bestEver, lvl: 1, mode: 0, date: 'Kỷ lục cũ', t: 0}];
         }
-    } catch (e) {}
+    } catch (e) {
+    }
 
     /* ---------- âm thanh & phát âm ---------- */
     let AC, muted = false, enVoice = null;
@@ -81,7 +84,8 @@
                 u.rate = 1.0;
                 speechSynthesis.speak(u);
                 return;
-            } catch (e) {}
+            } catch (e) {
+            }
         }
         [523, 659, 784].forEach((f, i) => snd(f, 0.1, 'triangle', 0.08, 0, i * 0.06));
     }
@@ -100,7 +104,8 @@
             g.connect(AC.destination);
             o.start(t);
             o.stop(t + d);
-        } catch (e) {}
+        } catch (e) {
+        }
     }
 
     const sPop = n => [523, 659, 784, 1047].forEach((f, i) => snd(f * (1 + Math.min(n, 8) * .03), .14, 'triangle', .07, 0, i * .05));
@@ -136,7 +141,7 @@
     }
 
     function initStars() {
-        stars = Array.from({ length: 110 }, () => ({
+        stars = Array.from({length: 110}, () => ({
             x: Math.random(),
             y: Math.random(),
             r: Math.random() * 1.8 + .4,
@@ -162,7 +167,7 @@
         spawnT = .4;
         shake = 0;
         freezeTimer = 0;
-        mascot = { x: 0, sq: 0, look: 0, mouth: 0 };
+        mascot = {x: 0, sq: 0, look: 0, mouth: 0};
         hud();
     }
 
@@ -180,7 +185,7 @@
     function refocus() {
         if (state === 'play') {
             try {
-                kb.focus({ preventScroll: true });
+                kb.focus({preventScroll: true});
             } catch (e) {
                 kb.focus();
             }
@@ -294,7 +299,7 @@
         t.sc = 1;
         mascot.sq = 1;
         mascot.mouth = 1;
-        bullets.push({ x: mascot.x, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [] });
+        bullets.push({x: mascot.x, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: []});
         snd(520 + t.typed * 45, .09, 'triangle', .06);
 
         if (t.typed === t.w.length) {
@@ -384,7 +389,7 @@
     }
 
     function say(t, x, y, c, size = 26) {
-        floats.push({ t, x, y, c, l: 0, size });
+        floats.push({t, x, y, c, l: 0, size});
     }
 
     function kill(q) {
@@ -793,10 +798,10 @@
 
         if (sb) {
             try {
-                const { data, error } = await sb
+                const {data, error} = await sb
                     .from('leaderboard')
                     .select('name, score, created_at')
-                    .order('score', { ascending: false })
+                    .order('score', {ascending: false})
                     .limit(1);
 
                 if (!error && data && data.length > 0) {
@@ -828,7 +833,8 @@
                         timeStr: 'Hôm nay'
                     };
                 }
-            } catch (e) {}
+            } catch (e) {
+            }
         }
 
         if (top1 && top1.score > 0) {
@@ -867,16 +873,27 @@
         const dateStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
         // Lưu tạm vào bộ nhớ máy
-        topScores.push({ name: player, score: finalScore, lvl: finalLevel, mode, topic: topicName, date: dateStr, t: lastRecordTime });
+        topScores.push({
+            name: player,
+            score: finalScore,
+            lvl: finalLevel,
+            mode,
+            topic: topicName,
+            date: dateStr,
+            t: lastRecordTime
+        });
         topScores.sort((a, b) => b.score - a.score);
         topScores = topScores.slice(0, 5);
-        try { localStorage.setItem('mtv-top5', JSON.stringify(topScores)); } catch (e) {}
+        try {
+            localStorage.setItem('mtv-top5', JSON.stringify(topScores));
+        } catch (e) {
+        }
 
         // Gửi lên Supabase kèm chữ ký mã băm
         if (sb) {
             try {
                 const sig = await generateScoreSignature(player, finalScore, finalLevel, finalKilled);
-                const { data, error } = await sb.from('leaderboard').insert([
+                const {data, error} = await sb.from('leaderboard').insert([
                     {
                         name: player,
                         score: finalScore,
@@ -899,34 +916,67 @@
     }
 
     function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+        return String(s).replace(/[&<>"']/g, m => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[m]));
     }
 
     async function renderRank() {
         const rankBox = $('rank-list');
-        rankBox.innerHTML = '<p style="opacity:.8">Đang tải bảng xếp hạng...</p>';
+        rankBox.innerHTML = '<p style="opacity:.8;padding:18px">Đang tải bảng xếp hạng...</p>';
 
         const medals = ['🥇', '🥈', '🥉', '4.', '5.'];
         const modeNames = ['Dễ', 'Vừa', 'Khó'];
         let list = [];
 
+        // Xác định mốc thời gian lọc
+        let timeThreshold = null;
+        const now = new Date();
+        if (currentRankPeriod === 'today') {
+            timeThreshold = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        } else if (currentRankPeriod === 'week') {
+            const startOfWeek = new Date(now);
+            const day = startOfWeek.getDay() || 7; // Thứ 2 là ngày đầu tuần
+            startOfWeek.setHours(0, 0, 0, 0);
+            startOfWeek.setDate(startOfWeek.getDate() - (day - 1));
+            timeThreshold = startOfWeek.toISOString();
+        }
+
+        // 1. Lấy dữ liệu từ Supabase theo bộ lọc
         if (sb) {
             try {
-                const { data, error } = await sb
+                let query = sb
                     .from('leaderboard')
                     .select('*')
-                    .order('score', { ascending: false })
+                    .order('score', {ascending: false})
                     .limit(5);
 
+                // Lọc theo mốc thời gian
+                if (timeThreshold) {
+                    query = query.gte('created_at', timeThreshold);
+                }
+
+                // Lọc theo chủ đề
+                if (currentRankTopic !== 'all') {
+                    query = query.eq('topic', currentRankTopic);
+                }
+
+                const {data, error} = await query;
+
                 if (!error && data && data.length > 0) {
+                    const pad = n => String(n).padStart(2, '0');
                     list = data.map(item => {
                         const d = new Date(item.created_at);
-                        const pad = n => String(n).padStart(2, '0');
                         return {
                             name: item.name,
                             score: item.score,
                             lvl: item.level,
                             mode: item.mode,
+                            topic: item.topic,
                             date: `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`,
                             isCurrent: item.name === playerName && item.score === Math.round(score)
                         };
@@ -937,8 +987,12 @@
             }
         }
 
-        if (!list.length) {
-            list = topScores.map(r => ({
+        // 2. Fallback sang local cache nếu offline
+        if (!list.length && typeof topScores !== 'undefined') {
+            list = topScores.filter(r => {
+                if (currentRankTopic !== 'all' && r.topic && r.topic !== currentRankTopic) return false;
+                return true;
+            }).slice(0, 5).map(r => ({
                 name: r.name,
                 score: r.score,
                 lvl: r.lvl,
@@ -948,8 +1002,9 @@
             }));
         }
 
+        // 3. Hiển thị kết quả ra giao diện
         if (!list.length) {
-            rankBox.innerHTML = '<p style="opacity:.8">Chưa có kỷ lục nào. Hãy là người đầu tiên ghi danh!</p>';
+            rankBox.innerHTML = '<p style="opacity:.8;padding:24px 0">Chưa có kỷ lục nào trong mục này.<br>Hãy là người đầu tiên ghi danh!</p>';
             return;
         }
 
@@ -1001,7 +1056,8 @@
         playerName = val;
         try {
             localStorage.setItem('mtv-name', playerName);
-        } catch (e) {}
+        } catch (e) {
+        }
         $('name-modal').classList.add('hide');
         begin();
     }
@@ -1022,7 +1078,8 @@
                 const u = new SpeechSynthesisUtterance('');
                 u.volume = 0;
                 speechSynthesis.speak(u);
-            } catch (e) {}
+            } catch (e) {
+            }
         }
         $('play').textContent = 'Play';
         $('modes').style.display = '';
@@ -1058,7 +1115,8 @@
             bestEver = finalScore;
             try {
                 localStorage.setItem('mtv-best', bestEver);
-            } catch (e) {}
+            } catch (e) {
+            }
         }
 
         const notifyEl = $('top-notify');
@@ -1094,10 +1152,10 @@
 
         if (sb) {
             try {
-                const { data, error } = await sb
+                const {data, error} = await sb
                     .from('leaderboard')
                     .select('score')
-                    .order('score', { ascending: false })
+                    .order('score', {ascending: false})
                     .limit(5);
 
                 if (!error && data) {
@@ -1118,7 +1176,8 @@
                 if (higherCount < 5 && localTop.length > 0) {
                     rankPosition = higherCount + 1;
                 }
-            } catch (e) {}
+            } catch (e) {
+            }
         }
 
         if (rankPosition && rankPosition <= 5) {
@@ -1204,6 +1263,28 @@
         }
     });
 
+    // Bắt sự kiện lọc theo Thời gian
+    document.querySelectorAll('#rank-time-tabs button').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('#rank-time-tabs button').forEach(b => b.classList.remove('on'));
+            btn.classList.add('on');
+            currentRankPeriod = btn.dataset.period;
+            renderRank();
+            snd(520, .06, 'triangle', .05);
+        };
+    });
+
+// Bắt sự kiện lọc theo Chủ đề
+    document.querySelectorAll('#rank-topic-tabs button').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('#rank-topic-tabs button').forEach(b => b.classList.remove('on'));
+            btn.classList.add('on');
+            currentRankTopic = btn.dataset.topic;
+            renderRank();
+            snd(520, .06, 'triangle', .05);
+        };
+    });
+
     addEventListener('keydown', e => {
         if (e.key === 'Enter') {
             if (state === 'menu') promptPlayerName();
@@ -1216,12 +1297,16 @@
     resize();
     initStars();
     reset();
-    try { fetchTopChamp(); } catch (e) {}
+    try {
+        fetchTopChamp();
+    } catch (e) {
+    }
 
     // Khởi chạy ngay lập tức không phụ thuộc font chữ
     requestAnimationFrame(loop);
 
     if (document.fonts && document.fonts.load) {
-        document.fonts.load('700 24px Fredoka').catch(() => {});
+        document.fonts.load('700 24px Fredoka').catch(() => {
+        });
     }
 })();
