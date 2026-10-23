@@ -33,18 +33,19 @@
     WORD_PACKS.all = [...allMap.values()];
 
     let currentTopic = 'all';
-    let WORDS = WORD_PACKS.all;
+    let WORDS = WORD_PACKS.all.length > 0 ? WORD_PACKS.all : WORD_PACKS.it;
     let currentRankPeriod = 'today';
     let currentRankTopic = 'all';
 
     const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
     const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
     const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
-    let W = 0, H = 0, DPR = 1, mode = 0, state = 'menu', last = 0;
+    let W = window.innerWidth || 400, H = window.innerHeight || 700, DPR = 1, mode = 0, state = 'menu', last = 0;
 
-    let words, parts, bullets, floats, stars, score, lives, combo, level, killed, hits, misses, missed, target, spawnT,
-        shake, bestEver = 0, topScores = [], lastRecordTime = 0, playerName = '', rankFrom = 'start', mascot,
-        freezeTimer = 0, isFever = false;
+    let words = [], parts = [], bullets = [], floats = [], stars = [], score = 0, lives = 5, combo = 0, level = 1,
+        killed = 0, hits = 0, misses = 0, missed = new Map(), target = null, spawnT = 0.5,
+        shake = 0, bestEver = 0, topScores = [], lastRecordTime = 0, playerName = '', rankFrom = 'start',
+        mascot = {x: 200, sq: 0, look: 0, mouth: 0}, freezeTimer = 0, isFever = false;
 
     try {
         bestEver = +localStorage.getItem('mtv-best') || 0;
@@ -123,13 +124,15 @@
         H = (vv ? vv.height : window.innerHeight) || document.documentElement.clientHeight || 640;
         DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-        const appEl = $('app');
-        if (appEl) appEl.style.height = H + 'px';
-
+        if ($('app')) $('app').style.height = H + 'px';
         cv.width = W * DPR;
         cv.height = H * DPR;
         ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
         window.scrollTo(0, 0);
+
+        if (!mascot || isNaN(mascot.x) || mascot.x === 0) {
+            mascot = {x: W / 2, sq: 0, look: 0, mouth: 0};
+        }
     }
 
     addEventListener('resize', resize);
@@ -153,6 +156,7 @@
     }
 
     function reset() {
+        resize();
         words = [];
         parts = [];
         bullets = [];
@@ -166,11 +170,11 @@
         misses = 0;
         missed = new Map();
         target = null;
-        spawnT = .4;
+        spawnT = 0.4;
         shake = 0;
         freezeTimer = 0;
         isFever = false;
-        mascot = {x: 0, sq: 0, look: 0, mouth: 0};
+        mascot = {x: W / 2, sq: 0, look: 0, mouth: 0};
         document.body.classList.remove('fever-active');
         hud();
     }
@@ -188,7 +192,6 @@
             setTimeout(() => c.classList.remove('pop'), 150);
         }
 
-        // Bật/tắt thanh Fever Mode
         const feverPill = $('fever-pill');
         if (feverPill) {
             if (combo >= 10) {
@@ -221,15 +224,25 @@
 
     /* ---------- từ ---------- */
     function spawn() {
-        const maxLen = [5, 7, 9][mode] + Math.floor(level * 1.2),
-            pool = WORDS.filter(o => o.w.length <= maxLen && !words.some(x => x.w === o.w)),
-            o = pool[Math.random() * pool.length | 0] || WORDS[0];
+        if (!WORDS || WORDS.length === 0) {
+            WORDS = WORD_PACKS.all.length > 0 ? WORD_PACKS.all : WORD_PACKS.it;
+        }
+
+        const maxLen = [5, 7, 9][mode] + Math.floor(level * 1.2);
+        let pool = WORDS.filter(o => o && o.w && o.w.length <= maxLen && !words.some(x => x.w === o.w));
+        if (pool.length === 0) pool = WORDS;
+
+        const o = pool[Math.random() * pool.length | 0] || {w: 'star', vi: 'ngôi sao'};
+
         ctx.font = `700 ${fs()}px Fredoka,sans-serif`;
-        const w = ctx.measureText(o.w).width + 36, m = w / 2 + 10;
-        let x = m + Math.random() * (W - 2 * m);
+        const textMetric = ctx.measureText(o.w || 'test');
+        const w = (textMetric ? textMetric.width : 60) + 36;
+        const m = w / 2 + 10;
+
+        let x = m + Math.random() * Math.max(10, W - 2 * m);
         for (let i = 0; i < 8; i++) {
-            const c = m + Math.random() * (W - 2 * m);
-            if (!words.some(q => q.y < 90 && Math.abs(q.x - c) < (q.w + w) / 2 + 10)) {
+            const c = m + Math.random() * Math.max(10, W - 2 * m);
+            if (!words.some(q => q.y < 90 && Math.abs(q.x - c) < (q.pw + w) / 2 + 10)) {
                 x = c;
                 break;
             }
@@ -244,8 +257,8 @@
         words.push({
             w: o.w,
             vi: o.vi,
-            x,
-            y: -30,
+            x: Math.max(m, Math.min(W - m, x)),
+            y: -35,
             pw: w,
             vy: (26 + level * 5 + Math.random() * 14 + mode * 10) * Math.max(.8, H / 700),
             typed: 0,
@@ -259,7 +272,7 @@
 
     function pickByChar(ch) {
         let b = null;
-        for (const q of words) if (!q.locked && q.w[0] === ch && (!b || q.y > b.y)) b = q;
+        for (const q of words) if (!q.locked && q.w && q.w[0] === ch && (!b || q.y > b.y)) b = q;
         return b;
     }
 
@@ -323,7 +336,6 @@
         mascot.sq = 1;
         mascot.mouth = 1;
 
-        // Bắn đạn laser kép nếu đang Fever
         if (isFever) {
             bullets.push({x: mascot.x - 12, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
             bullets.push({x: mascot.x + 12, y: H - 70, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
@@ -429,7 +441,6 @@
         killed++;
         combo++;
 
-        // Điểm số nhân đôi khi vào Fever
         const feverMultiplier = isFever ? 2 : 1;
         const gain = Math.round(q.w.length * 10 * (1 + Math.min(combo, 12) * .15)) * feverMultiplier;
         score += gain;
@@ -505,9 +516,10 @@
             freezeTimer = Math.max(0, freezeTimer - dt);
         }
 
+        // Sinh từ an toàn
         spawnT -= dt;
         if (spawnT <= 0 && words.length < 4 + level) {
-            spawn();
+            try { spawn(); } catch (e) { console.error('Lỗi spawn từ:', e); }
             spawnT = Math.max(.9, 2.6 - level * .18 - mode * .3) + Math.random() * .6;
         }
 
@@ -520,7 +532,11 @@
             q.y += q.vy * speedFactor * dt;
             if (q.locked && q.y > H - 95) q.y = H - 95;
             q.sc *= .88;
-            if (!q.locked && H > 200 && q.y > H - 92) lose(q);
+
+            // Chỉ tính thua khi màn hình đã render xong (H > 200) và từ rơi chạm sàn (q.y > H - 92)
+            if (!q.locked && H > 200 && q.y > H - 92) {
+                lose(q);
+            }
         }
 
         for (const b of bullets) {
@@ -561,12 +577,14 @@
         }
         floats = floats.filter(f => f.l < 1);
 
-        mascot.x += ((target ? target.x : W / 2) - mascot.x) * Math.min(1, dt * 8);
+        // Bảo vệ mascot.x không bao giờ bị NaN
+        const targetX = target ? target.x : (W > 0 ? W / 2 : 200);
+        if (isNaN(mascot.x)) mascot.x = targetX;
+        mascot.x += (targetX - mascot.x) * Math.min(1, dt * 8);
         mascot.sq *= .85;
         mascot.mouth *= .9;
         shake = Math.max(0, shake - dt);
 
-        // Tốc độ sao bay tăng gấp đôi khi ở trạng thái Fever
         const starSpeedMultiplier = isFever ? 2.5 : 1.0;
         for (const s of stars) {
             s.t += dt * s.s * 3 * starSpeedMultiplier;
@@ -594,7 +612,6 @@
         ctx.closePath();
     }
 
-    /* ---------- Vẽ nền Neon Cyberpunk khi Fever ---------- */
     function drawBg(t) {
         const g = ctx.createLinearGradient(0, 0, 0, H);
         if (isFever) {
@@ -707,15 +724,17 @@
         ctx.restore();
     }
 
-    /* ---------- Vẽ Mascot + Kính Râm Cyberpunk khi Fever ---------- */
     function drawMascot(t) {
-        const m = mascot, x = m.x, y = H - 52 + Math.sin(t / 300) * 3, s = 1 + m.sq * .18, k = 1 - m.sq * .14;
+        const m = mascot;
+        const x = isNaN(m.x) ? W / 2 : m.x;
+        const y = H - 52 + Math.sin(t / 300) * 3;
+        const s = 1 + (m.sq || 0) * .18, k = 1 - (m.sq || 0) * .14;
+
         ctx.save();
         ctx.translate(x, y);
         ctx.scale(s * k, s / k * 1.0);
         ctx.fillStyle = isFever ? '#ff79c6' : '#ffb347';
 
-        // Tai mèo
         for (const d of [-1, 1]) {
             ctx.beginPath();
             ctx.moveTo(d * 14, -22);
@@ -725,7 +744,6 @@
             ctx.fill();
         }
 
-        // Mặt mèo
         const g = ctx.createRadialGradient(-8, -14, 4, 0, 0, 40);
         if (isFever) {
             g.addColorStop(0, '#ff92d0');
@@ -739,7 +757,6 @@
         ctx.ellipse(0, 0, 38, 32, 0, 0, 6.283);
         ctx.fill();
 
-        // Má hồng
         ctx.fillStyle = 'rgba(255,111,174,.6)';
         for (const d of [-1, 1]) {
             ctx.beginPath();
@@ -755,13 +772,11 @@
         }
 
         if (isFever) {
-            // ĐEO KÍNH RÂM CYBER SHADES KHI VÀO FEVER
             ctx.save();
             ctx.fillStyle = '#111';
             ctx.shadowColor = '#00f2fe';
             ctx.shadowBlur = 12;
             ctx.beginPath();
-            // Gọng kính ngầu
             ctx.moveTo(-24, -10);
             ctx.lineTo(24, -10);
             ctx.lineTo(18, 4);
@@ -769,7 +784,6 @@
             ctx.closePath();
             ctx.fill();
 
-            // Vệt phản quang neon chạy trên tròng kính
             ctx.strokeStyle = '#00f2fe';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -780,7 +794,6 @@
             ctx.stroke();
             ctx.restore();
         } else {
-            // Mắt bình thường
             const blink = Math.sin(t / 900) > .97 ? .15 : 1;
             ctx.fillStyle = '#3a1250';
             for (const d of [-1, 1]) {
@@ -790,7 +803,6 @@
             }
         }
 
-        // Miệng
         ctx.strokeStyle = '#3a1250';
         ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
@@ -826,7 +838,6 @@
         }
         for (const q of words) drawWord(q, t);
 
-        // Vẽ đạn laser
         for (const b of bullets) {
             for (let i = 0; i < b.tr.length; i++) {
                 ctx.globalAlpha = i / b.tr.length * .6;
@@ -844,7 +855,6 @@
             ctx.shadowBlur = 0;
         }
 
-        // Vẽ hạt pháo hoa
         for (const p of parts) {
             ctx.globalAlpha = 1 - p.l / p.m;
             ctx.fillStyle = p.c;
@@ -1160,7 +1170,6 @@
     }
 
     function begin() {
-        resize();
         reset();
         state = 'play';
         if (!muted && 'speechSynthesis' in window) {
