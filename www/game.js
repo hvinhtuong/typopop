@@ -67,6 +67,10 @@
             localStorage.setItem('mtv-unlocked-skins', JSON.stringify(unlockedSkins));
         } catch (e) {}
     }
+    function updateCoinsDisplay() {
+        if ($('shop-coins-display')) $('shop-coins-display').textContent = `🪙 Số từ tích lũy: ${totalKilledBank}`;
+        if ($('home-coins')) $('home-coins').textContent = `🪙 Xu tích lũy: ${totalKilledBank}`;
+    }
 
     const $ = id => document.getElementById(id);
     const cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
@@ -513,6 +517,9 @@
         killed++;
         combo++;
 
+        totalKilledBank++;
+        saveCosmeticsData();
+
         const feverMultiplier = isFever ? 2 : 1;
         const gain = Math.round(q.w.length * 10 * (1 + Math.min(combo, 12) * .15)) * feverMultiplier;
         score += gain;
@@ -567,9 +574,15 @@
             snd(160, .25, 'sawtooth', .14, .4);
 
             if (boss.hp <= 0) {
-                // BOSS DEFEATED!
+                / BOSS DEFEATED!
                 say('💥 BOSS DEFEATED! +2000 💥', W / 2, H * .4, '#ffd23f', 34);
                 score += 2000;
+
+                // THÊM: Thưởng thêm 15 xu khi hạ gục Boss!
+                totalKilledBank += 15;
+                saveCosmeticsData();
+                say('+15 🪙 COINS!', W / 2, H * .45, '#ffd23f', 28);
+
                 burst(boss.x, boss.y, '#ffd23f', 90);
                 burst(boss.x, boss.y, '#ff2a5f', 90);
                 shake = reduce ? 0 : 0.8;
@@ -1575,9 +1588,6 @@
             notifyEl.innerHTML = '';
         }
 
-        // Cộng dồn số từ hạ được trong ván vào quỹ mua Skin
-        totalKilledBank += killed;
-        saveCosmeticsData();
         await saveScore(finalScore);
         syncSettingsUI();
 
@@ -1688,6 +1698,7 @@
             if ($('play')) $('play').textContent = 'Play';
             syncSettingsUI();
             fetchTopChamp();
+            updateCoinsDisplay();
             snd(480, .08, 'triangle', .06);
         };
     }
@@ -1852,6 +1863,7 @@
 
     function renderShop() {
         const grid = $('shop-skin-grid');
+        updateCoinsDisplay();
         const coinsEl = $('shop-coins-display');
         if (coinsEl) coinsEl.textContent = `🪙 Số từ tích lũy: ${totalKilledBank}`;
         if (!grid) return;
@@ -1902,6 +1914,7 @@
                     unlockedSkins.push(id);
                     currentSkin = id;
                     saveCosmeticsData();
+                    updateCoinsDisplay();
                     renderShop();
                     snd(784, .18, 'triangle', .1);
                     burst(W / 2, H / 2, '#ffd23f', 45);
@@ -1935,6 +1948,7 @@
     resize();
     initStars();
     reset();
+    updateCoinsDisplay();
     try {
         fetchTopChamp();
     } catch (e) {}
