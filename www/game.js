@@ -1160,6 +1160,7 @@
     }
 
     function begin() {
+        resize();
         reset();
         state = 'play';
         if (!muted && 'speechSynthesis' in window) {
