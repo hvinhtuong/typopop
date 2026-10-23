@@ -437,3 +437,50 @@ h1 {
         transition: none;
     }
 }
+/* --- GỢI Ý MẸO CHƠI (GAMEPLAY TIPS) --- */
+#game-tip {
+    position: absolute;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(14, 8, 40, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: clamp(12px, 3.4vw, 14px);
+    color: #e2dcff;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+#game-tip.show {
+    opacity: 0.95;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Thẻ tóm tắt mẹo ở màn hình Home */
+.guide-mini {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 380px;
+    margin: 2px 0 6px 0;
+    font-size: 12px;
+    color: #c9c3f5;
+}
+
+.guide-item {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}

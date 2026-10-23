@@ -41,6 +41,16 @@
     const cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
     const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
     const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+    const GAME_TIPS = [
+        '💣 Hạ từ có biểu tượng Bom để nổ sạch toàn bộ chữ trên màn hình!',
+        '❄️ Hạ từ có Bông tuyết để đóng băng, làm chậm tốc độ rơi 5 giây!',
+        '💖 Hạ từ có Trái tim để hồi lại 1 mạng (hoặc +1000 điểm nếu đầy máu)!',
+        '🔥 Đạt chuỗi Combo 10 để kích hoạt FEVER MODE: bắn đạn kép & x2 điểm!',
+        '⌨️ Gõ sai từ sẽ làm mất toàn bộ Combo và thoát trạng thái Fever!',
+        '🎯 Nhấn phím Backspace hoặc Escape để bỏ chọn từ đang gõ dở dang.',
+        '📱 Trên điện thoại: bạn có thể chạm thẳng vào từ để chọn nhanh mục tiêu.'
+    ];
+    let tipTimer = 0, currentTipIdx = 0;
 
     let W = window.innerWidth || 400, H = window.innerHeight || 700, DPR = 1, mode = 0, state = 'menu', last = 0;
 
@@ -513,6 +523,8 @@
 
     /* ---------- CẬP NHẬT TỌA ĐỘ VÀ VẬT LÝ ---------- */
     function update(dt) {
+        updateTip(dt);
+
         if (freezeTimer > 0) {
             freezeTimer = Math.max(0, freezeTimer - dt);
         }
@@ -589,6 +601,22 @@
             s.t += dt * s.s * 3 * starSpeedMultiplier;
             s.y += dt * s.s * .012 * (1 + level * .1) * starSpeedMultiplier;
             if (s.y > 1) s.y = 0;
+        }
+    }
+
+    function updateTip(dt) {
+        if (state !== 'play') return;
+        const tipEl = $('game-tip');
+        if (!tipEl) return;
+
+        tipTimer -= dt;
+        if (tipTimer <= 0) {
+            // Đổi sang câu mẹo kế tiếp
+            currentTipIdx = (currentTipIdx + 1) % GAME_TIPS.length;
+            tipEl.innerHTML = '💡 ' + GAME_TIPS[currentTipIdx];
+            tipEl.classList.remove('hide');
+            tipEl.classList.add('show');
+            tipTimer = 9; // Hiển thị 9 giây trước khi đổi câu khác
         }
     }
 
@@ -1173,6 +1201,13 @@
     function begin() {
         resize();
         reset();
+        tipTimer = 2; // Sau 2 giây vào game sẽ hiện mẹo đầu tiên
+        const tipEl = $('game-tip');
+        if (tipEl) {
+            tipEl.classList.remove('hide');
+            tipEl.classList.add('show');
+            tipEl.innerHTML = '💡 ' + GAME_TIPS[0];
+        }
         state = 'play';
         last = performance.now();
 
@@ -1212,6 +1247,8 @@
     async function end() {
         state = 'over';
         const finalScore = Math.round(score);
+        const tipEl = $('game-tip');
+        if (tipEl) tipEl.classList.add('hide');
         const best = finalScore > bestEver;
         if (best) {
             bestEver = finalScore;
