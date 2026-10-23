@@ -1405,6 +1405,7 @@
     const btnHome = $('btn-home');
     if (btnHome) {
         btnHome.onclick = () => {
+            isRevengeMode = false;
             state = 'menu';
             if ($('over')) $('over').classList.add('hide');
             if ($('start')) $('start').classList.remove('hide');
