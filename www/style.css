@@ -5,12 +5,12 @@
     --sun: #ffd23f;
     --mint: #3ee6b0;
     --sky: #5cc8ff;
-    color-scheme: dark
+    color-scheme: dark;
 }
 
 * {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent
+    -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
@@ -22,7 +22,12 @@ html, body {
     font-family: Fredoka, "Segoe UI", system-ui, sans-serif;
     touch-action: manipulation;
     user-select: none;
-    -webkit-user-select: none
+    -webkit-user-select: none;
+}
+
+/* Lớp tiện ích ẩn phần tử (Bắt buộc phải có) */
+.hide {
+    display: none !important;
 }
 
 #app {
@@ -30,7 +35,7 @@ html, body {
     left: 0;
     top: 0;
     width: 100%;
-    height: 100%
+    height: 100%;
 }
 
 canvas {
@@ -38,9 +43,10 @@ canvas {
     inset: 0;
     width: 100%;
     height: 100%;
-    display: block
+    display: block;
 }
 
+/* Ô nhập ảo cho bộ gõ di động */
 #kb {
     position: fixed;
     left: 0;
@@ -53,9 +59,10 @@ canvas {
     padding: 0;
     background: none;
     color: transparent;
-    caret-color: transparent
+    caret-color: transparent;
 }
 
+/* --- HUD HIỂN THỊ ĐẦU MÀN HÌNH --- */
 #hud {
     position: absolute;
     left: 0;
@@ -66,7 +73,8 @@ canvas {
     align-items: center;
     justify-content: space-between;
     padding: calc(env(safe-area-inset-top, 0px) + 10px) calc(env(safe-area-inset-right, 0px) + 12px) 0 calc(env(safe-area-inset-left, 0px) + 12px);
-    pointer-events: none
+    pointer-events: none;
+    z-index: 2;
 }
 
 .pill {
@@ -77,20 +85,20 @@ canvas {
     padding: 6px 14px;
     font-weight: 600;
     font-size: clamp(14px, 3.8vw, 18px);
-    white-space: nowrap
+    white-space: nowrap;
 }
 
 #score {
-    color: var(--sun)
+    color: var(--sun);
 }
 
 #combo {
     color: var(--pink);
-    transition: transform .15s
+    transition: transform .15s;
 }
 
 #combo.pop {
-    transform: scale(1.3)
+    transform: scale(1.3);
 }
 
 #mute {
@@ -98,9 +106,10 @@ canvas {
     border: 0;
     color: inherit;
     font: inherit;
-    cursor: pointer
+    cursor: pointer;
 }
 
+/* --- MÀN HÌNH OVERLAY & MODAL --- */
 .ov {
     position: absolute;
     inset: 0;
@@ -108,62 +117,82 @@ canvas {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 14px;
+    gap: 12px;
     text-align: center;
-    padding: 24px;
-    background: radial-gradient(circle at 50% 40%, rgba(60, 35, 140, .55), rgba(14, 8, 40, .88));
-    z-index: 5
-}
-
-.ov.hide {
-    display: none
+    padding: 20px;
+    background: radial-gradient(circle at 50% 40%, rgba(60, 35, 140, .65), rgba(14, 8, 40, .92));
+    z-index: 5;
 }
 
 h1 {
     margin: 0;
-    font-size: clamp(40px, 12vw, 76px);
+    font-size: clamp(38px, 11vw, 72px);
     line-height: 1;
     font-weight: 700;
     color: var(--sun);
     text-shadow: 0 5px 0 #e0457f, 0 10px 30px rgba(255, 111, 174, .5);
-    transform: rotate(-2deg)
+    transform: rotate(-2deg);
 }
 
 .ov p {
     margin: 0;
-    max-width: 30ch;
-    font-size: clamp(16px, 4.4vw, 20px);
+    max-width: 32ch;
+    font-size: clamp(15px, 4.2vw, 19px);
     line-height: 1.4;
-    color: #d9d3ff
+    color: #d9d3ff;
 }
 
+/* --- HỆ THỐNG NÚT BẤM (BUTTONS) --- */
 .btn {
     border: 0;
     cursor: pointer;
     font: inherit;
     font-weight: 700;
-    font-size: clamp(20px, 5.5vw, 26px);
+    font-size: clamp(18px, 5.2vw, 24px);
     color: #3a1250;
     background: var(--sun);
-    padding: 14px 38px;
+    padding: 12px 36px;
     border-radius: 999px;
     box-shadow: 0 6px 0 #e0a800, 0 14px 30px rgba(255, 210, 63, .35);
-    transition: transform .1s, box-shadow .1s
+    transition: transform .1s, box-shadow .1s;
 }
 
 .btn:active {
     transform: translateY(5px);
-    box-shadow: 0 1px 0 #e0a800
+    box-shadow: 0 1px 0 #e0a800;
 }
 
 .btn:focus-visible {
     outline: 3px solid #fff;
-    outline-offset: 3px
+    outline-offset: 3px;
 }
 
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 6px;
+}
+
+.btn-sub {
+    background: rgba(255, 255, 255, .15);
+    color: #fff;
+    box-shadow: 0 6px 0 rgba(255, 255, 255, .25), 0 10px 20px rgba(0, 0, 0, .3);
+    font-size: clamp(15px, 4.2vw, 19px);
+    padding: 10px 24px;
+}
+
+.btn-sub:active {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .25);
+}
+
+/* --- BỘ CHỌN ĐỘ KHÓ & TAB LỌC --- */
 .lv {
     display: flex;
-    gap: 8px
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .lv button {
@@ -172,219 +201,17 @@ h1 {
     color: #fff;
     font: inherit;
     font-weight: 600;
-    padding: 8px 16px;
+    padding: 6px 14px;
     border-radius: 999px;
-    cursor: pointer
+    cursor: pointer;
+    font-size: 14px;
+    transition: all .15s ease;
 }
 
 .lv button.on {
     background: var(--mint);
     color: #06402e;
-    border-color: var(--mint)
-}
-
-#big {
-    font-size: clamp(48px, 14vw, 84px);
-    font-weight: 700;
-    color: var(--mint);
-    line-height: 1
-}
-
-#miss {
-    font-size: 15px;
-    color: #d9d3ff;
-    max-width: 34ch
-}
-
-#miss b {
-    color: var(--pink)
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .btn, #combo {
-        transition: none
-    }
-}
-
-.actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 4px
-}
-
-.btn-sub {
-    background: rgba(255, 255, 255, .15);
-    color: #fff;
-    box-shadow: 0 6px 0 rgba(255, 255, 255, .25), 0 10px 20px rgba(0, 0, 0, .3);
-    font-size: clamp(16px, 4.5vw, 20px);
-    padding: 12px 24px
-}
-
-.btn-sub:active {
-    box-shadow: 0 1px 0 rgba(255, 255, 255, .25)
-}
-
-#rank-list {
-    width: min(92vw, 380px);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 8px 0
-}
-
-.rk-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(255, 255, 255, .1);
-    border: 2px solid rgba(255, 255, 255, .15);
-    border-radius: 16px;
-    padding: 10px 16px;
-    font-size: clamp(15px, 4vw, 18px)
-}
-
-.rk-row.top1 {
-    background: rgba(255, 210, 63, .2);
-    border-color: var(--sun)
-}
-
-.rk-row.new {
     border-color: var(--mint);
-    box-shadow: 0 0 15px rgba(62, 230, 176, .35)
-}
-
-.rk-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700
-}
-
-.rk-score {
-    color: var(--sun);
-    font-size: 1.15em
-}
-
-.rk-meta {
-    font-size: 13px;
-    color: #d9d3ff;
-    opacity: .85;
-    text-align: right
-}
-
-.actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 4px
-}
-
-.btn-sub {
-    background: rgba(255, 255, 255, .15);
-    color: #fff;
-    box-shadow: 0 6px 0 rgba(255, 255, 255, .25), 0 10px 20px rgba(0, 0, 0, .3);
-    font-size: clamp(16px, 4.5vw, 20px);
-    padding: 12px 28px
-}
-
-.btn-sub:active {
-    box-shadow: 0 1px 0 rgba(255, 255, 255, .25)
-}
-
-#player-name {
-    width: min(85vw, 320px);
-    padding: 14px 20px;
-    border-radius: 999px;
-    border: 3px solid var(--sun);
-    background: rgba(255, 255, 255, .12);
-    color: #fff;
-    font: inherit;
-    font-size: clamp(18px, 5vw, 22px);
-    font-weight: 600;
-    text-align: center;
-    outline: none;
-    user-select: text;
-    -webkit-user-select: text
-}
-
-#player-name::placeholder {
-    color: rgba(255, 255, 255, .45);
-    font-weight: 400
-}
-
-#player-name:focus {
-    border-color: var(--mint);
-    box-shadow: 0 0 16px rgba(62, 230, 176, .4)
-}
-
-.err {
-    color: #ff5d6c !important;
-    font-size: 15px !important;
-    font-weight: 600
-}
-
-.err.hide {
-    display: none
-}
-
-#rank-list {
-    width: min(92vw, 400px);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 8px 0
-}
-
-.rk-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(255, 255, 255, .1);
-    border: 2px solid rgba(255, 255, 255, .15);
-    border-radius: 16px;
-    padding: 10px 16px;
-    font-size: clamp(15px, 4vw, 18px)
-}
-
-.rk-row.top1 {
-    background: rgba(255, 210, 63, .2);
-    border-color: var(--sun)
-}
-
-.rk-row.new {
-    border-color: var(--mint);
-    box-shadow: 0 0 15px rgba(62, 230, 176, .35)
-}
-
-.rk-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    text-align: left
-}
-
-.rk-name {
-    color: #fff;
-    max-width: 130px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap
-}
-
-.rk-score {
-    color: var(--sun);
-    font-size: 1.1em
-}
-
-.rk-meta {
-    font-size: 13px;
-    color: #d9d3ff;
-    opacity: .85;
-    text-align: right
 }
 
 .topic-container {
@@ -392,36 +219,72 @@ h1 {
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    margin: 2px 0
+    margin: 2px 0;
 }
 
 .topic-label {
     font-size: 14px;
     color: #d9d3ff;
-    font-weight: 600
-}
-
-#topics {
-    flex-wrap: wrap;
-    justify-content: center
-}
-
-#topics button {
-    border: 2px solid rgba(255, 255, 255, .3);
-    background: rgba(255, 255, 255, .08);
-    color: #fff;
-    font: inherit;
     font-weight: 600;
-    padding: 6px 14px;
-    border-radius: 999px;
-    cursor: pointer;
-    font-size: 14px
 }
 
-#topics button.on {
+#topics button.on, #over-topics button.on {
     background: var(--sun);
     color: #3a1250;
-    border-color: var(--sun)
+    border-color: var(--sun);
+}
+
+/* --- Ô NHẬP TÊN NGƯỜI CHƠI --- */
+#player-name {
+    width: min(85vw, 320px);
+    padding: 12px 20px;
+    border-radius: 999px;
+    border: 3px solid var(--sun);
+    background: rgba(255, 255, 255, .12);
+    color: #fff;
+    font: inherit;
+    font-size: clamp(17px, 4.8vw, 21px);
+    font-weight: 600;
+    text-align: center;
+    outline: none;
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+#player-name::placeholder {
+    color: rgba(255, 255, 255, .45);
+    font-weight: 400;
+}
+
+#player-name:focus {
+    border-color: var(--mint);
+    box-shadow: 0 0 16px rgba(62, 230, 176, .4);
+}
+
+.err {
+    color: #ff5d6c !important;
+    font-size: 14px !important;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* --- MÀN HÌNH GAME OVER --- */
+#big {
+    font-size: clamp(48px, 14vw, 84px);
+    font-weight: 700;
+    color: var(--mint);
+    line-height: 1;
+}
+
+#miss {
+    font-size: 14px;
+    color: #d9d3ff;
+    max-width: 36ch;
+    line-height: 1.4;
+}
+
+#miss b {
+    color: var(--pink);
 }
 
 .restart-settings {
@@ -429,70 +292,102 @@ h1 {
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    margin: 6px 0;
+    margin: 4px 0;
     background: rgba(255, 255, 255, .05);
-    padding: 8px 12px;
+    padding: 8px 14px;
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, .1)
+    border: 1px solid rgba(255, 255, 255, .1);
 }
 
-#over-topics button, #over-modes button {
-    border: 2px solid rgba(255, 255, 255, .3);
-    background: rgba(255, 255, 255, .08);
-    color: #fff;
-    font: inherit;
-    font-weight: 600;
+/* --- BẢNG XẾP HẠNG TOP 5 --- */
+#rank-time-tabs button, #rank-topic-tabs button {
     padding: 5px 12px;
+    font-size: 13px;
+    border-radius: 14px;
+}
+
+#rank-list {
+    width: min(92vw, 380px);
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 6px 0;
+}
+
+.rk-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, .1);
+    border: 2px solid rgba(255, 255, 255, .15);
+    border-radius: 16px;
+    padding: 8px 14px;
+    font-size: clamp(14px, 3.8vw, 17px);
+}
+
+.rk-row.top1 {
+    background: rgba(255, 210, 63, .2);
+    border-color: var(--sun);
+}
+
+.rk-row.new {
+    border-color: var(--mint);
+    box-shadow: 0 0 15px rgba(62, 230, 176, .35);
+}
+
+.rk-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    text-align: left;
+}
+
+.rk-name {
+    color: #fff;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rk-score {
+    color: var(--sun);
+    font-size: 1.1em;
+}
+
+.rk-meta {
+    font-size: 12px;
+    color: #d9d3ff;
+    opacity: .85;
+    text-align: right;
+}
+
+/* --- BANNER VINH DANH & CÚP TOP 5 --- */
+.top-champ {
+    background: rgba(255, 210, 63, .15);
+    border: 2px solid var(--sun);
+    color: var(--sun);
+    padding: 6px 18px;
     border-radius: 999px;
-    cursor: pointer;
-    font-size: 13px
+    font-weight: 700;
+    font-size: clamp(13px, 3.6vw, 15px);
+    box-shadow: 0 0 16px rgba(255, 210, 63, .3);
+    animation: pulse 2s infinite ease-in-out;
 }
 
-#over-topics button.on {
-    background: var(--sun);
-    color: #3a1250;
-    border-color: var(--sun)
+.top-badge {
+    background: linear-gradient(90deg, #ffd23f, #ff6fae);
+    color: #1a1245;
+    font-weight: 800;
+    font-size: clamp(13px, 3.8vw, 17px);
+    padding: 7px 18px;
+    border-radius: 999px;
+    box-shadow: 0 0 20px rgba(255, 210, 63, .6);
+    animation: popIn .4s cubic-bezier(.175, .885, .32, 1.275);
 }
 
-#over-modes button.on {
-    background: var(--mint);
-    color: #06402e;
-    border-color: var(--mint)
-}
-/* Dòng vinh danh Top 1 ở màn hình Home */
-.top-champ{
-    background:rgba(255,210,63,.15);
-    border:2px solid var(--sun);
-    color:var(--sun);
-    padding:6px 18px;
-    border-radius:999px;
-    font-weight:700;
-    font-size:clamp(14px,3.8vw,16px);
-    box-shadow:0 0 16px rgba(255,210,63,.3);
-    animation:pulse 2s infinite ease-in-out;
-}
-
-/* Khung thông báo lọt Top 5 khi Game Over */
-.top-badge{
-    background:linear-gradient(90deg,#ffd23f,#ff6fae);
-    color:#1a1245;
-    font-weight:800;
-    font-size:clamp(14px,4vw,18px);
-    padding:8px 20px;
-    border-radius:999px;
-    box-shadow:0 0 20px rgba(255,210,63,.6);
-    animation:popIn .4s cubic-bezier(.175,.885,.32,1.275);
-}
-
-@keyframes pulse{
-    0%,100%{transform:scale(1)}
-    50%{transform:scale(1.04)}
-}
-@keyframes popIn{
-    from{transform:scale(.6);opacity:0}
-    to{transform:scale(1);opacity:1}
-}
-/* Kiểu dáng cho nhãn thời gian của Top 1 */
 .champ-time {
     font-size: 12px;
     font-weight: 500;
@@ -504,19 +399,7 @@ h1 {
     display: inline-block;
     vertical-align: middle;
 }
-#rank-time-tabs button, #rank-topic-tabs button {
-    padding: 6px 12px;
-    font-size: 13px;
-    border-radius: 14px;
-}
-#rank-list {
-    width: 100%;
-    max-width: 420px;
-    min-height: 220px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
+
 /* --- HIỆU ỨNG FEVER MODE --- */
 #fever-pill {
     background: linear-gradient(135deg, #ff007f, #7928ca, #00f2fe);
@@ -528,12 +411,29 @@ h1 {
     display: none;
 }
 
+.fever-active #app {
+    box-shadow: inset 0 0 35px rgba(255, 0, 128, 0.45);
+}
+
+/* --- KEYFRAME ANIMATIONS --- */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+}
+
+@keyframes popIn {
+    from { transform: scale(.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
 @keyframes feverGlow {
     0% { background-position: 0% 50%; box-shadow: 0 0 10px #ff007f; }
     100% { background-position: 100% 50%; box-shadow: 0 0 25px #00f2fe; }
 }
 
-/* Rung màn hình nhẹ theo nhịp bass khi Fever */
-.fever-active #app {
-    box-shadow: inset 0 0 35px rgba(255, 0, 128, 0.45);
+@media (prefers-reduced-motion: reduce) {
+    .btn, #combo, .top-champ, .top-badge, #fever-pill {
+        animation: none;
+        transition: none;
+    }
 }

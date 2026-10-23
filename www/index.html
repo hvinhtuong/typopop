@@ -15,7 +15,7 @@
         <div class="pill" id="combo" style="visibility:hidden">x1</div>
         <div class="pill" id="fever-pill">🔥 FEVER x2 🔥</div>
         <div class="pill" id="lvl">Cấp 1</div>
-        <div class="pill" id="hearts">💗💗💗💗💗</div>
+        <div class="pill" id="hearts">💗💗💗💗💗💗</div>
         <button class="pill" id="mute" aria-label="Bật tắt âm thanh">🔊</button>
     </div>
 
@@ -61,7 +61,6 @@
 
     <!-- Màn hình Game Over -->
     <div class="ov hide" id="over">
-        <!-- ĐỂ TRỐNG THẺ NÀY ĐỂ TRÁNH LỖI HIỂN THỊ MẶC ĐỊNH -->
         <div id="top-notify" class="top-badge hide"></div>
         <h1 style="font-size:clamp(34px,10vw,56px)">Hết lượt rồi!</h1>
         <div id="big">0</div>
@@ -112,7 +111,12 @@
         <div id="rank-list"></div>
         <button class="btn" id="close-rank" style="margin-top:12px">Quay lại</button>
     </div>
+
+    <!-- Thẻ input ảo nhận phím gõ (BẮT BUỘC PHẢI CÓ) -->
+    <input id="kb" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+           inputmode="text" aria-label="Gõ từ tại đây">
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="game.js"></script>
 </body>
