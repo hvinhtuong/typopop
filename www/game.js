@@ -574,7 +574,7 @@
             snd(160, .25, 'sawtooth', .14, .4);
 
             if (boss.hp <= 0) {
-                / BOSS DEFEATED!
+                // BOSS DEFEATED!
                 say('💥 BOSS DEFEATED! +2000 💥', W / 2, H * .4, '#ffd23f', 34);
                 score += 2000;
 
