@@ -37,13 +37,14 @@
     let currentRankPeriod = 'today';
     let currentRankTopic = 'all';
 
-    const $ = id => document.getElementById(id), cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
+    const $ = id => document.getElementById(id);
+    const cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
     const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
     const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
-    let W = window.innerWidth || 400, H = window.innerHeight || 700, DPR = 1, mode = 0, state = 'menu', last = 0;
+    let W = 400, H = 700, DPR = 1, mode = 0, state = 'menu', last = 0;
 
     let words = [], parts = [], bullets = [], floats = [], stars = [], score = 0, lives = 5, combo = 0, level = 1,
-        killed = 0, hits = 0, misses = 0, missed = new Map(), target = null, spawnT = 0.5,
+        killed = 0, hits = 0, misses = 0, missed = new Map(), target = null, spawnT = 0.4,
         shake = 0, bestEver = 0, topScores = [], lastRecordTime = 0, playerName = '', rankFrom = 'start',
         mascot = {x: 200, sq: 0, look: 0, mouth: 0}, freezeTimer = 0, isFever = false;
 
@@ -128,7 +129,6 @@
         cv.width = W * DPR;
         cv.height = H * DPR;
         ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-        window.scrollTo(0, 0);
 
         if (!mascot || isNaN(mascot.x) || mascot.x === 0) {
             mascot = {x: W / 2, sq: 0, look: 0, mouth: 0};
@@ -516,7 +516,6 @@
             freezeTimer = Math.max(0, freezeTimer - dt);
         }
 
-        // Sinh từ an toàn
         spawnT -= dt;
         if (spawnT <= 0 && words.length < 4 + level) {
             try { spawn(); } catch (e) { console.error('Lỗi spawn từ:', e); }
@@ -533,7 +532,6 @@
             if (q.locked && q.y > H - 95) q.y = H - 95;
             q.sc *= .88;
 
-            // Chỉ tính thua khi màn hình đã render xong (H > 200) và từ rơi chạm sàn (q.y > H - 92)
             if (!q.locked && H > 200 && q.y > H - 92) {
                 lose(q);
             }
@@ -577,7 +575,6 @@
         }
         floats = floats.filter(f => f.l < 1);
 
-        // Bảo vệ mascot.x không bao giờ bị NaN
         const targetX = target ? target.x : (W > 0 ? W / 2 : 200);
         if (isNaN(mascot.x)) mascot.x = targetX;
         mascot.x += (targetX - mascot.x) * Math.min(1, dt * 8);
@@ -886,6 +883,7 @@
     }
 
     function loop(t) {
+        if (!last) last = t;
         const dt = Math.min(.05, (t - last) / 1000 || 0);
         last = t;
         if (state === 'play') update(dt);
@@ -1166,12 +1164,15 @@
         if ($('start')) $('start').classList.add('hide');
         if ($('modes')) $('modes').style.display = '';
         if ($('btn-rank-start')) $('btn-rank-start').style.display = '';
+        last = performance.now();
         refocus();
     }
 
     function begin() {
         reset();
         state = 'play';
+        last = performance.now(); // Đồng bộ thời gian để dt không bị vọt ở frame đầu
+
         if (!muted && 'speechSynthesis' in window) {
             try {
                 const u = new SpeechSynthesisUtterance('');
@@ -1289,7 +1290,18 @@
     }
 
     // Gắn sự kiện các nút cơ bản
-    if ($('play')) $('play').onclick = () => state === 'paused' ? resume() : promptPlayerName();
+    if ($('play')) {
+        $('play').onclick = () => {
+            if (state === 'paused') {
+                resume();
+            } else if (playerName) {
+                begin(); // Đã có tên từ trước thì vào chơi ngay lập tức
+            } else {
+                promptPlayerName();
+            }
+        };
+    }
+
     if ($('confirm-name')) $('confirm-name').onclick = confirmNameAndPlay;
     if ($('cancel-name')) $('cancel-name').onclick = () => {
         state = 'menu';
@@ -1390,10 +1402,16 @@
 
     addEventListener('keydown', e => {
         if (e.key === 'Enter') {
-            if (state === 'menu') promptPlayerName();
-            else if (state === 'name') confirmNameAndPlay();
-            else if (state === 'over') begin();
-            else if (state === 'paused') resume();
+            if (state === 'menu') {
+                if (playerName) begin();
+                else promptPlayerName();
+            } else if (state === 'name') {
+                confirmNameAndPlay();
+            } else if (state === 'over') {
+                begin();
+            } else if (state === 'paused') {
+                resume();
+            }
         }
     });
 
