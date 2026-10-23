@@ -42,6 +42,32 @@
     let notebookFromScreen = 'start';
     let bossWarningTimer = 0;
 
+    // --- HỆ THỐNG NGOẠI TRANG & TIỀN TỆ ---
+    let totalKilledBank = 0;
+    let currentSkin = 'classic';
+    let unlockedSkins = ['classic'];
+
+    const SKINS_DATA = [
+        { id: 'classic', name: 'Mèo Cổ Điển', icon: '🐱', cost: 0, desc: 'Chú mèo vàng cam ban đầu, nhanh nhẹn đáng yêu.' },
+        { id: 'astro', name: 'Phi Hành Gia', icon: '👨‍🚀', cost: 30, desc: 'Đội mũ phi hành gia phản quang, bắn đạn laser xanh lam.' },
+        { id: 'ninja', name: 'Cyber Ninja', icon: '🥷', cost: 70, desc: 'Mặt nạ hắc ám, mắt đỏ ngầu, bắn phi tiêu bóng đêm.' },
+        { id: 'wizard', name: 'Phù Thủy Tối Thượng', icon: '🧙‍♂️', cost: 120, desc: 'Mũ phép thuật tím đính sao, bắn cầu lửa rực sáng.' }
+    ];
+
+    try {
+        totalKilledBank = +localStorage.getItem('mtv-total-killed') || 0;
+        currentSkin = localStorage.getItem('mtv-current-skin') || 'classic';
+        unlockedSkins = JSON.parse(localStorage.getItem('mtv-unlocked-skins') || '["classic"]');
+    } catch (e) {}
+
+    function saveCosmeticsData() {
+        try {
+            localStorage.setItem('mtv-total-killed', totalKilledBank);
+            localStorage.setItem('mtv-current-skin', currentSkin);
+            localStorage.setItem('mtv-unlocked-skins', JSON.stringify(unlockedSkins));
+        } catch (e) {}
+    }
+
     const $ = id => document.getElementById(id);
     const cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
     const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
@@ -377,12 +403,17 @@
         mascot.sq = 1;
         mascot.mouth = 1;
 
+        let bulletColor = '#ffd23f';
+        if (currentSkin === 'astro') bulletColor = '#63b3ed';
+        else if (currentSkin === 'ninja') bulletColor = '#ff2a5f';
+        else if (currentSkin === 'wizard') bulletColor = '#b794f4';
+
         if (isFever) {
-            bullets.push({x: mascot.x - 12, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
-            bullets.push({x: mascot.x + 12, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true});
+            bullets.push({x: mascot.x - 12, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true, col: '#ff007f'});
+            bullets.push({x: mascot.x + 12, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true, col: '#00f2fe'});
             snd(650 + t.typed * 55, .08, 'sawtooth', .08);
         } else {
-            bullets.push({x: mascot.x, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: []});
+            bullets.push({x: mascot.x, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], col: bulletColor});
             snd(520 + t.typed * 45, .09, 'triangle', .06);
         }
 
@@ -859,8 +890,35 @@
         ctx.save();
         ctx.translate(x, y);
         ctx.scale(s * k, s / k * 1.0);
-        ctx.fillStyle = isFever ? '#ff79c6' : '#ffb347';
 
+        // Màu lông theo skin
+        let furColor = '#ffb347';
+        let faceGradientStart = '#ffe98a';
+        let faceGradientEnd = '#ffb347';
+
+        if (currentSkin === 'ninja') {
+            furColor = '#2d3748';
+            faceGradientStart = '#4a5568';
+            faceGradientEnd = '#1a202c';
+        } else if (currentSkin === 'wizard') {
+            furColor = '#9f7aea';
+            faceGradientStart = '#b794f4';
+            faceGradientEnd = '#6b46c1';
+        } else if (currentSkin === 'astro') {
+            furColor = '#e2e8f0';
+            faceGradientStart = '#ffffff';
+            faceGradientEnd = '#cbd5e0';
+        }
+
+        if (isFever) {
+            furColor = '#ff79c6';
+            faceGradientStart = '#ff92d0';
+            faceGradientEnd = '#ff3b9d';
+        }
+
+        ctx.fillStyle = furColor;
+
+        // Tai mèo
         for (const d of [-1, 1]) {
             ctx.beginPath();
             ctx.moveTo(d * 14, -22);
@@ -870,19 +928,47 @@
             ctx.fill();
         }
 
+        // Mặt mèo
         const g = ctx.createRadialGradient(-8, -14, 4, 0, 0, 40);
-        if (isFever) {
-            g.addColorStop(0, '#ff92d0');
-            g.addColorStop(1, '#ff3b9d');
-        } else {
-            g.addColorStop(0, '#ffe98a');
-            g.addColorStop(1, '#ffb347');
-        }
+        g.addColorStop(0, faceGradientStart);
+        g.addColorStop(1, faceGradientEnd);
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.ellipse(0, 0, 38, 32, 0, 0, 6.283);
         ctx.fill();
 
+        // Phụ kiện riêng theo từng Skin
+        if (currentSkin === 'wizard') {
+            // Mũ phù thủy chóp nhọn
+            ctx.fillStyle = '#44337a';
+            ctx.beginPath();
+            ctx.moveTo(-36, -18);
+            ctx.lineTo(0, -65);
+            ctx.lineTo(36, -18);
+            ctx.closePath();
+            ctx.fill();
+
+            // Vành mũ
+            ctx.fillStyle = '#ffd23f';
+            ctx.beginPath();
+            ctx.ellipse(0, -18, 42, 6, 0, 0, 6.283);
+            ctx.fill();
+        } else if (currentSkin === 'astro') {
+            // Mũ kính phi hành gia không gian
+            ctx.strokeStyle = '#63b3ed';
+            ctx.lineWidth = 3;
+            ctx.fillStyle = 'rgba(190, 227, 248, 0.35)';
+            ctx.beginPath();
+            ctx.arc(0, -2, 42, 0, 6.283);
+            ctx.fill();
+            ctx.stroke();
+        } else if (currentSkin === 'ninja') {
+            // Băng đeo trán ninja
+            ctx.fillStyle = '#e53e3e';
+            ctx.fillRect(-32, -18, 64, 8);
+        }
+
+        // Má hồng
         ctx.fillStyle = 'rgba(255,111,174,.6)';
         for (const d of [-1, 1]) {
             ctx.beginPath();
@@ -898,6 +984,7 @@
         }
 
         if (isFever) {
+            // Đeo kính râm khi vào Fever Mode
             ctx.save();
             ctx.fillStyle = '#111';
             ctx.shadowColor = '#00f2fe';
@@ -921,7 +1008,7 @@
             ctx.restore();
         } else {
             const blink = Math.sin(t / 900) > .97 ? .15 : 1;
-            ctx.fillStyle = '#3a1250';
+            ctx.fillStyle = currentSkin === 'ninja' ? '#ff1a1a' : '#3a1250';
             for (const d of [-1, 1]) {
                 ctx.beginPath();
                 ctx.ellipse(d * 13 + lx, -4 + ly, 5, 6 * blink, 0, 0, 6.283);
@@ -929,7 +1016,8 @@
             }
         }
 
-        ctx.strokeStyle = '#3a1250';
+        // Miệng
+        ctx.strokeStyle = currentSkin === 'ninja' ? '#ffffff' : '#3a1250';
         ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
         ctx.beginPath();
@@ -1026,15 +1114,15 @@
             for (const b of bullets) {
                 for (let i = 0; i < b.tr.length; i++) {
                     ctx.globalAlpha = i / b.tr.length * .6;
-                    ctx.fillStyle = b.isFever ? '#ff007f' : '#ffd23f';
+                    ctx.fillStyle = b.col || '#ffd23f';
                     ctx.beginPath();
                     ctx.arc(b.tr[i][0], b.tr[i][1], 3 + i * .7, 0, 6.283);
                     ctx.fill();
                 }
                 ctx.globalAlpha = 1;
-                ctx.fillStyle = b.isFever ? '#00f2fe' : '#fff';
-                ctx.shadowColor = b.isFever ? '#00f2fe' : '#ffd23f';
-                ctx.shadowBlur = b.isFever ? 20 : 14;
+                ctx.fillStyle = b.isFever ? '#00f2fe' : (b.col || '#fff');
+                ctx.shadowColor = b.col || '#ffd23f';
+                ctx.shadowBlur = 16;
                 starPath(b.x, b.y, b.isFever ? 13 : 10, t / 70);
                 ctx.fill();
                 ctx.shadowBlur = 0;
@@ -1487,6 +1575,9 @@
             notifyEl.innerHTML = '';
         }
 
+        // Cộng dồn số từ hạ được trong ván vào quỹ mua Skin
+        totalKilledBank += killed;
+        saveCosmeticsData();
         await saveScore(finalScore);
         syncSettingsUI();
 
@@ -1756,6 +1847,85 @@
             begin();
             say('⚔️ REVENGE MODE!', W / 2, H * .4, '#ffd23f', 32);
             [440, 554, 659, 880].forEach((f, i) => snd(f, .18, 'sawtooth', .08, 0, i * .08));
+        };
+    }
+
+    function renderShop() {
+        const grid = $('shop-skin-grid');
+        const coinsEl = $('shop-coins-display');
+        if (coinsEl) coinsEl.textContent = `🪙 Số từ tích lũy: ${totalKilledBank}`;
+        if (!grid) return;
+
+        grid.innerHTML = SKINS_DATA.map(skin => {
+            const isUnlocked = unlockedSkins.includes(skin.id);
+            const isEquipped = currentSkin === skin.id;
+
+            let actionBtn = '';
+            if (isEquipped) {
+                actionBtn = `<button class="btn-skin-action equipped">Đang dùng</button>`;
+            } else if (isUnlocked) {
+                actionBtn = `<button class="btn-skin-action equip" data-id="${skin.id}">Trang bị</button>`;
+            } else {
+                const canBuy = totalKilledBank >= skin.cost;
+                actionBtn = `<button class="btn-skin-action buy" data-id="${skin.id}" data-cost="${skin.cost}" ${canBuy ? '' : 'disabled style="opacity:0.6"'}>
+                    Mua (${skin.cost} 🪙)
+                </button>`;
+            }
+
+            return `
+                <div class="skin-card ${isEquipped ? 'equipped' : ''}">
+                    <div class="skin-preview">${skin.icon}</div>
+                    <div class="skin-title">${skin.name}</div>
+                    <div class="skin-desc">${skin.desc}</div>
+                    ${actionBtn}
+                </div>
+            `;
+        }).join('');
+
+        // Bắt sự kiện Trang bị
+        grid.querySelectorAll('.btn-skin-action.equip').forEach(btn => {
+            btn.onclick = () => {
+                currentSkin = btn.dataset.id;
+                saveCosmeticsData();
+                renderShop();
+                snd(640, .1, 'triangle', .08);
+            };
+        });
+
+        // Bắt sự kiện Mua
+        grid.querySelectorAll('.btn-skin-action.buy').forEach(btn => {
+            btn.onclick = () => {
+                const cost = +btn.dataset.cost;
+                const id = btn.dataset.id;
+                if (totalKilledBank >= cost && !unlockedSkins.includes(id)) {
+                    totalKilledBank -= cost;
+                    unlockedSkins.push(id);
+                    currentSkin = id;
+                    saveCosmeticsData();
+                    renderShop();
+                    snd(784, .18, 'triangle', .1);
+                    burst(W / 2, H / 2, '#ffd23f', 45);
+                }
+            };
+        });
+    }
+
+    const btnShopStart = $('btn-shop-start');
+    if (btnShopStart) {
+        btnShopStart.onclick = () => {
+            renderShop();
+            if ($('start')) $('start').classList.add('hide');
+            if ($('shop-modal')) $('shop-modal').classList.remove('hide');
+            snd(520, .08, 'triangle', .06);
+        };
+    }
+
+    const closeShop = $('close-shop');
+    if (closeShop) {
+        closeShop.onclick = () => {
+            if ($('shop-modal')) $('shop-modal').classList.add('hide');
+            if ($('start')) $('start').classList.remove('hide');
+            snd(480, .08, 'triangle', .06);
         };
     }
 

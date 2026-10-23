@@ -61,6 +61,7 @@
 
         <button class="btn" id="play">Play</button>
         <button class="btn btn-sub" id="btn-rank-start">🏆 Rank</button>
+        <button class="btn btn-sub" id="btn-shop-start">🛍️ Cửa hàng</button>
         <button class="btn btn-sub" id="btn-notebook-start">📖 Sổ tay</button>
         <p style="font-size:14px;opacity:.8">Trên điện thoại: chạm vào màn hình để mở bàn phím, chạm vào từ để chọn.</p>
     </div>
@@ -74,6 +75,19 @@
         <div class="actions">
             <button class="btn" id="confirm-name">Bắt đầu</button>
             <button class="btn btn-sub" id="cancel-name">Quay lại</button>
+        </div>
+    </div>
+
+    <!-- Màn hình Cửa hàng Ngoại trang -->
+    <div class="ov hide" id="shop-modal">
+        <h1 style="font-size:clamp(28px,8vw,42px);margin-bottom:6px">🛍️ Cửa Hàng Skin</h1>
+        <p style="font-size:14px;margin-bottom:4px">Dùng số từ đã hạ gục tích lũy để mở khóa ngoại trang</p>
+        <div id="shop-coins-display" class="pill" style="margin-bottom:12px;color:var(--sun)">🪙 Số từ tích lũy: 0</div>
+
+        <div id="shop-skin-grid"></div>
+
+        <div class="actions" style="margin-top:14px">
+            <button class="btn btn-sub" id="close-shop">Quay lại</button>
         </div>
     </div>
 

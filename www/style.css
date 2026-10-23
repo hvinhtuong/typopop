@@ -626,3 +626,92 @@ h1 {
     background: linear-gradient(90deg, #ff2a5f, #ffd23f);
     transition: width 0.25s ease-out;
 }
+/* --- CỬA HÀNG NGOẠI TRANG (COSMETICS SHOP) --- */
+#shop-skin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: min(92vw, 420px);
+    max-height: 52vh;
+    overflow-y: auto;
+    padding: 6px 4px;
+}
+
+#shop-skin-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+#shop-skin-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+}
+
+.skin-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.skin-card.equipped {
+    border-color: var(--mint);
+    background: rgba(62, 230, 176, 0.15);
+    box-shadow: 0 0 16px rgba(62, 230, 176, 0.3);
+}
+
+.skin-preview {
+    font-size: 38px;
+    line-height: 1;
+    margin: 4px 0;
+}
+
+.skin-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: #fff;
+}
+
+.skin-desc {
+    font-size: 11px;
+    color: #c9c3f5;
+    text-align: center;
+    min-height: 28px;
+}
+
+.btn-skin-action {
+    border: none;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    transition: transform 0.1s;
+    width: 90%;
+    margin-top: 4px;
+}
+
+.btn-skin-action.buy {
+    background: var(--sun);
+    color: #3a1250;
+}
+
+.btn-skin-action.equip {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.btn-skin-action.equipped {
+    background: var(--mint);
+    color: #06402e;
+    cursor: default;
+}
+
+.btn-skin-action:active:not(.equipped) {
+    transform: scale(0.95);
+}
