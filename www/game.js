@@ -1664,18 +1664,11 @@
         begin();
     }
 
-    function resume() {
-        state = 'play';
-        if ($('start')) $('start').classList.add('hide');
-        if ($('modes')) $('modes').style.display = '';
-        if ($('btn-rank-start')) $('btn-rank-start').style.display = '';
-        last = performance.now();
-        refocus();
-    }
-
     function pauseGame() {
         if (state !== 'play') return;
         state = 'paused';
+        // Đảm bảo ẩn màn hình Home nếu lỡ đang mở
+        if ($('start')) $('start').classList.add('hide');
         if ($('pause-modal')) $('pause-modal').classList.remove('hide');
         snd(480, .08, 'triangle', .06);
     }
@@ -1684,7 +1677,8 @@
         if (state !== 'paused') return;
         state = 'play';
         if ($('pause-modal')) $('pause-modal').classList.add('hide');
-        last = performance.now(); // Tránh dt tăng đột ngột khi quay lại
+        if ($('start')) $('start').classList.add('hide');
+        last = performance.now();
         refocus();
         snd(560, .08, 'triangle', .06);
     }
@@ -1829,9 +1823,7 @@
     // Gắn sự kiện các nút
     if ($('play')) {
         $('play').onclick = () => {
-            if (state === 'paused') {
-                resume();
-            } else if (playerName) {
+            if (playerName) {
                 begin();
             } else {
                 promptPlayerName();
@@ -1971,7 +1963,7 @@
             } else if (state === 'over') {
                 begin();
             } else if (state === 'paused') {
-                resume();
+                resumeGame();
             }
         }
     });
