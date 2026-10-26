@@ -10,12 +10,23 @@
 <body>
 <div id="app">
     <canvas id="c"></canvas>
+    <!-- Màn hình Tạm dừng (Pause Modal) -->
+    <div class="ov hide" id="pause-modal">
+        <h1 style="font-size:clamp(32px,9vw,50px);margin-bottom:8px">⏸️ Tạm Dừng</h1>
+        <p style="font-size:15px;margin-bottom:14px">Trò chơi đang dừng lại, hãy nghỉ tay một lát nhé!</p>
+        <div class="actions">
+            <button class="btn" id="btn-resume">Tiếp tục</button>
+            <button class="btn btn-sub" id="btn-pause-home">🏠 Home</button>
+        </div>
+    </div>
     <div id="hud">
+        <div class="pill" id="player-tag">👤 Khách</div>
         <div class="pill" id="score">⭐ 0</div>
         <div class="pill" id="combo" style="visibility:hidden">x1</div>
         <div class="pill" id="fever-pill">🔥 FEVER x2 🔥</div>
         <div class="pill" id="lvl">Cấp 1</div>
         <div class="pill" id="hearts">💗💗💗💗💗</div>
+        <button class="pill btn-icon" id="btn-pause" aria-label="Tạm dừng">⏸️</button>
         <button class="pill" id="mute" aria-label="Bật tắt âm thanh">🔊</button>
     </div>
     <div id="game-tip" class="hide">💡 Mẹo: Đạt chuỗi Combo 10x🔥 để kích hoạt FEVER MODE: bắn đạn kép & x2 điểm!</div>

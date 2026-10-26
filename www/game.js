@@ -1673,12 +1673,33 @@
         refocus();
     }
 
+    function pauseGame() {
+        if (state !== 'play') return;
+        state = 'paused';
+        if ($('pause-modal')) $('pause-modal').classList.remove('hide');
+        snd(480, .08, 'triangle', .06);
+    }
+
+    function resumeGame() {
+        if (state !== 'paused') return;
+        state = 'play';
+        if ($('pause-modal')) $('pause-modal').classList.add('hide');
+        last = performance.now(); // Tránh dt tăng đột ngột khi quay lại
+        refocus();
+        snd(560, .08, 'triangle', .06);
+    }
+
     function begin() {
         if ($('play') && !isRevengeMode) {
             isRevengeMode = false;
         }
         resize();
         reset();
+
+        if ($('player-tag')) {
+            $('player-tag').textContent = '👤 ' + (playerName || 'Người chơi');
+        }
+
         tipTimer = 2;
         const tipEl = $('game-tip');
         if (tipEl) {
@@ -1919,6 +1940,31 @@
     initRankTabs();
 
     addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            if (state === 'play') {
+                pauseGame();
+                e.preventDefault();
+                return;
+            } else if (state === 'paused') {
+                resumeGame();
+                e.preventDefault();
+                return;
+            }
+        }
+
+        if (state !== 'play') return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        // Phím Backspace: Hủy chọn từ đang gõ dở
+        if (e.key === 'Backspace') {
+            if (target && !target.locked) {
+                target.typed = 0;
+                target = null;
+            }
+            if (kb) kb.value = '';
+            e.preventDefault();
+            return;
+        }
         if (e.key === 'Enter') {
             if (state === 'menu') {
                 if (playerName) begin();
@@ -2093,6 +2139,43 @@
             if (e) e.stopPropagation();
             if ($('shop-modal')) $('shop-modal').classList.add('hide');
             if ($('start')) $('start').classList.remove('hide');
+            snd(480, .08, 'triangle', .06);
+        };
+    }
+
+    // Nút Pause trên thanh HUD
+    const btnPause = $('btn-pause');
+    if (btnPause) {
+        btnPause.onclick = (e) => {
+            if (e) e.stopPropagation();
+            pauseGame();
+        };
+    }
+
+    // Nút Tiếp tục trong màn hình Pause
+    const btnResume = $('btn-resume');
+    if (btnResume) {
+        btnResume.onclick = (e) => {
+            if (e) e.stopPropagation();
+            resumeGame();
+        };
+    }
+
+    // Nút Home trong màn hình Pause
+    const btnPauseHome = $('btn-pause-home');
+    if (btnPauseHome) {
+        btnPauseHome.onclick = (e) => {
+            if (e) e.stopPropagation();
+            state = 'menu';
+            if ($('pause-modal')) $('pause-modal').classList.add('hide');
+            if ($('start')) $('start').classList.remove('hide');
+            if ($('modes')) $('modes').style.display = '';
+            if ($('btn-rank-start')) $('btn-rank-start').style.display = '';
+            if ($('play')) $('play').textContent = 'Play';
+            isRevengeMode = false;
+            syncSettingsUI();
+            fetchTopChamp();
+            updateCoinsDisplay();
             snd(480, .08, 'triangle', .06);
         };
     }

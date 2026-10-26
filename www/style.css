@@ -731,3 +731,23 @@ h1 {
     z-index: 10;
     pointer-events: auto;
 }
+/* --- HUD PLAYER TAG & PAUSE BUTTON --- */
+#player-tag {
+    font-size: clamp(11px, 2.8vw, 13px);
+    font-weight: 700;
+    color: #ffd23f;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-icon {
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.1s ease;
+}
+
+.btn-icon:active {
+    transform: scale(0.9);
+}
