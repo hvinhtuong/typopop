@@ -588,7 +588,13 @@
                 shake = reduce ? 0 : 0.8;
                 [392, 523, 659, 784, 1047].forEach((f, i) => snd(f * 1.3, .2, 'triangle', .09, 0, i * .08));
 
+                // QUAN TRỌNG: Xóa sạch từ hộ vệ còn sót lại của Boss
+                words = words.filter(w => !w.isBossMinion);
+                target = null;
+
                 boss = null;
+                bossWarningTimer = 0; // Đưa cờ cảnh báo về 0
+                spawnT = 0.8;         // Cấp ngay hẹn giờ để 0.8s sau từ thường lập tức rơi lại
                 const bossHud = $('boss-hud');
                 if (bossHud) bossHud.classList.add('hide');
 
@@ -1204,6 +1210,8 @@
             if (state !== 'play') return;
             if (warnEl) warnEl.classList.add('hide');
 
+            bossWarningTimer = 0;
+
             const maxHp = 4 + Math.floor(level / 2);
             boss = {
                 x: W / 2,
@@ -1238,6 +1246,8 @@
 
         ctx.font = `700 ${fs()}px Fredoka,sans-serif`;
         const w = ctx.measureText(o.w).width + 38;
+        // Tăng tốc độ rơi của từ hộ vệ Boss: nhanh, dồn dập và kịch tính hơn
+        const bossSpeed = (46 + level * 5 + mode * 12) * Math.max(.85, H / 700);
 
         words.push({
             w: o.w,
@@ -1245,7 +1255,7 @@
             x: boss.x,
             y: boss.y + 45, // Thả ra từ đáy phi thuyền
             pw: w,
-            vy: 22 + mode * 8,
+            vy: bossSpeed,
             typed: 0,
             ph: 0,
             col: '#ff4d4d',
