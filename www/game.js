@@ -407,17 +407,54 @@
         mascot.sq = 1;
         mascot.mouth = 1;
 
+// Xác định loại đạn và màu sắc theo Skin
+        let bulletType = 'star';      // Mặc định: Ngôi sao vàng
         let bulletColor = '#ffd23f';
-        if (currentSkin === 'astro') bulletColor = '#63b3ed';
-        else if (currentSkin === 'ninja') bulletColor = '#ff2a5f';
-        else if (currentSkin === 'wizard') bulletColor = '#b794f4';
+        let bulletGlow = '#ffd23f';
+
+        if (currentSkin === 'ninja') {
+            bulletType = 'shuriken';  // Phi tiêu Ninja 4 cánh
+            bulletColor = '#ff2a5f';
+            bulletGlow = '#ff0055';
+        } else if (currentSkin === 'astro') {
+            bulletType = 'lightning'; // Sấm sét Neon trắng sáng
+            bulletColor = '#ffffff';
+            bulletGlow = '#60efff';
+        } else if (currentSkin === 'wizard') {
+            bulletType = 'fireball';  // Cầu lửa xanh ma thuật
+            bulletColor = '#00f2fe';
+            bulletGlow = '#00c6ff';
+        }
 
         if (isFever) {
-            bullets.push({x: mascot.x - 12, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true, col: '#ff007f'});
-            bullets.push({x: mascot.x + 12, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], isFever: true, col: '#00f2fe'});
+            bullets.push({
+                x: mascot.x - 14, y: H - 95, t,
+                kill: t.typed === t.w.length,
+                lx: t.x, ly: t.y, tr: [],
+                isFever: true,
+                type: bulletType,
+                col: '#ff007f', glow: '#ff007f',
+                rot: 0
+            });
+            bullets.push({
+                x: mascot.x + 14, y: H - 95, t,
+                kill: t.typed === t.w.length,
+                lx: t.x, ly: t.y, tr: [],
+                isFever: true,
+                type: bulletType,
+                col: '#00f2fe', glow: '#00f2fe',
+                rot: 0
+            });
             snd(650 + t.typed * 55, .08, 'sawtooth', .08);
         } else {
-            bullets.push({x: mascot.x, y: H - 95, t, kill: t.typed === t.w.length, lx: t.x, ly: t.y, tr: [], col: bulletColor});
+            bullets.push({
+                x: mascot.x, y: H - 95, t,
+                kill: t.typed === t.w.length,
+                lx: t.x, ly: t.y, tr: [],
+                type: bulletType,
+                col: bulletColor, glow: bulletGlow,
+                rot: 0
+            });
             snd(520 + t.typed * 45, .09, 'triangle', .06);
         }
 
@@ -1051,6 +1088,88 @@
         ctx.restore();
     }
 
+    // 1. Vẽ Phi tiêu Shuriken 4 cánh của Ninja
+    function drawShuriken(x, y, r, rot, col) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(rot);
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+            ctx.lineTo(Math.cos(i * Math.PI / 2) * r, Math.sin(i * Math.PI / 2) * r);
+            ctx.lineTo(Math.cos(i * Math.PI / 2 + Math.PI / 4) * (r * 0.35), Math.sin(i * Math.PI / 2 + Math.PI / 4) * (r * 0.35));
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        // Lỗ tròn rỗng đặc trưng ở tâm Shuriken
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // 2. Vẽ Quả cầu lửa xanh ma thuật (Blue Fireball) của Phù Thủy
+    function drawFireball(x, y, r, rot, col) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Hào quang ngoài
+        const grad = ctx.createRadialGradient(0, 0, r * 0.2, 0, 0, r * 1.5);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.4, col);
+        grad.addColorStop(1, 'rgba(0, 150, 255, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ngọn lửa bập bùng xung quanh
+        ctx.fillStyle = col;
+        for (let i = 0; i < 5; i++) {
+            const angle = rot * 1.5 + i * (Math.PI * 2 / 5);
+            const dist = r * 0.85 + Math.sin(rot * 4 + i) * 3;
+            ctx.beginPath();
+            ctx.arc(Math.cos(angle) * dist, Math.sin(angle) * dist, r * 0.32, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Lõi trắng siêu nhiệt
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // 3. Vẽ Tia sấm sét Neon ziczac (Lightning Bolt) của Phi Hành Gia
+    function drawLightning(tr, curX, curY, col, glow) {
+        if (!tr || tr.length < 2) return;
+        ctx.save();
+        ctx.shadowColor = glow;
+        ctx.shadowBlur = 18;
+
+        // Vệt sấm ngoài rực sáng
+        ctx.strokeStyle = glow;
+        ctx.lineWidth = 4;
+        ctx.lineJoin = 'miter';
+        ctx.beginPath();
+        ctx.moveTo(tr[0][0], tr[0][1]);
+        for (let i = 1; i < tr.length; i++) {
+            const jitterX = (Math.sin(i * 12 + performance.now() / 30) - 0.5) * 6;
+            ctx.lineTo(tr[i][0] + jitterX, tr[i][1]);
+        }
+        ctx.lineTo(curX, curY);
+        ctx.stroke();
+
+        // Lõi sấm sét trắng trung tâm
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+    }
+
     /* ---------- HÀM RENDER AN TOÀN TUYỆT ĐỐI (TRY...FINALLY) ---------- */
     function draw(t) {
         ctx.save();
@@ -1131,19 +1250,43 @@
             for (const q of words) drawWord(q, t);
 
             for (const b of bullets) {
-                for (let i = 0; i < b.tr.length; i++) {
-                    ctx.globalAlpha = i / b.tr.length * .6;
-                    ctx.fillStyle = b.col || '#ffd23f';
-                    ctx.beginPath();
-                    ctx.arc(b.tr[i][0], b.tr[i][1], 3 + i * .7, 0, 6.283);
-                    ctx.fill();
+                // Cập nhật góc xoay cho phi tiêu và ngọn lửa
+                b.rot = (b.rot || 0) + 0.35;
+
+                // 1. Vẽ vệt đuôi
+                if (b.type === 'lightning') {
+                    drawLightning(b.tr, b.x, b.y, b.col, b.glow);
+                } else {
+                    for (let i = 0; i < b.tr.length; i++) {
+                        ctx.globalAlpha = (i / b.tr.length) * 0.5;
+                        ctx.fillStyle = b.col || '#ffd23f';
+                        ctx.beginPath();
+                        ctx.arc(b.tr[i][0], b.tr[i][1], 2 + i * 0.7, 0, 6.283);
+                        ctx.fill();
+                    }
                 }
                 ctx.globalAlpha = 1;
-                ctx.fillStyle = b.isFever ? '#00f2fe' : (b.col || '#fff');
-                ctx.shadowColor = b.col || '#ffd23f';
-                ctx.shadowBlur = 16;
-                starPath(b.x, b.y, b.isFever ? 13 : 10, t / 70);
-                ctx.fill();
+
+                // 2. Vẽ đầu đạn theo từng loại
+                ctx.shadowColor = b.glow || b.col;
+                ctx.shadowBlur = b.isFever ? 22 : 16;
+
+                if (b.type === 'shuriken') {
+                    drawShuriken(b.x, b.y, b.isFever ? 15 : 12, b.rot, b.col);
+                } else if (b.type === 'fireball') {
+                    drawFireball(b.x, b.y, b.isFever ? 12 : 9, b.rot, b.col);
+                } else if (b.type === 'lightning') {
+                    // Tia điện neon có quả cầu Plasma năng lượng ở đầu
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, b.isFever ? 8 : 6, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Ngôi sao mặc định
+                    ctx.fillStyle = b.isFever ? '#00f2fe' : (b.col || '#fff');
+                    starPath(b.x, b.y, b.isFever ? 13 : 10, t / 70);
+                    ctx.fill();
+                }
                 ctx.shadowBlur = 0;
             }
 
