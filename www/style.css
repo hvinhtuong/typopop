@@ -751,3 +751,10 @@ h1 {
 .btn-icon:active {
     transform: scale(0.9);
 }
+#hud {
+    pointer-events: none; /* Khung nền không cản trở màn hình */
+}
+
+#hud .pill, #hud button {
+    pointer-events: auto; /* Toàn bộ nút và nhãn trên HUD nhận click bình thường */
+}

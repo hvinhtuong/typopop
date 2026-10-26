@@ -1906,11 +1906,7 @@
 
     document.addEventListener('visibilitychange', () => {
         if (document.hidden && state === 'play') {
-            state = 'paused';
-            if ($('modes')) $('modes').style.display = 'none';
-            if ($('btn-rank-start')) $('btn-rank-start').style.display = 'none';
-            if ($('play')) $('play').textContent = 'Chơi tiếp';
-            if ($('start')) $('start').classList.remove('hide');
+            pauseGame();
         }
     });
 
@@ -1945,7 +1941,8 @@
                 pauseGame();
                 e.preventDefault();
                 return;
-            } else if (state === 'paused') {
+            } else if (state === 'paused' && $('pause-modal') && !$('pause-modal').classList.contains('hide')) {
+                // Chỉ cho phép bấm Esc để tiếp tục khi ĐANG THỰC SỰ MỞ pause-modal
                 resumeGame();
                 e.preventDefault();
                 return;
@@ -2143,13 +2140,22 @@
         };
     }
 
-    // Nút Pause trên thanh HUD
+// Nút Pause trên thanh HUD
     const btnPause = $('btn-pause');
     if (btnPause) {
-        btnPause.onclick = (e) => {
-            if (e) e.stopPropagation();
-            pauseGame();
+        const handlePauseClick = (e) => {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            if (state === 'play') {
+                pauseGame();
+            } else if (state === 'paused') {
+                resumeGame();
+            }
         };
+        btnPause.onclick = handlePauseClick;
+        btnPause.onpointerdown = (e) => e.stopPropagation(); // Chặn canvas bên dưới nhận click
     }
 
     // Nút Tiếp tục trong màn hình Pause
