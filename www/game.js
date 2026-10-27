@@ -136,7 +136,7 @@
 
             // Kênh nhạc nền BGM (âm lượng đầm ấm, rõ nét)
             bgmGain = AC.createGain();
-            bgmGain.gain.value = 0.55;
+            bgmGain.gain.value = 0.28;
             bgmGain.connect(masterGain);
 
             // Kênh hiệu ứng phím gõ & tiếng nổ
