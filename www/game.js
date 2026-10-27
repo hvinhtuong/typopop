@@ -67,6 +67,59 @@
             localStorage.setItem('mtv-unlocked-skins', JSON.stringify(unlockedSkins));
         } catch (e) {}
     }
+
+    // --- HỆ THỐNG NHIỆM VỤ & THÀNH TỰU ---
+    const TODAY_KEY = new Date().toISOString().slice(0, 10);
+    let questTab = 'daily';
+
+    let dailyQuests = [
+        { id: 'kill30', title: '🎯 Thợ săn từ vựng', desc: 'Hạ 30 từ bất kỳ', target: 30, progress: 0, reward: 15, claimed: false },
+        { id: 'shield3', title: '🛡️ Phá giáp siêu hạng', desc: 'Bắn vỡ 3 khiên năng lượng', target: 3, progress: 0, reward: 15, claimed: false },
+        { id: 'boss1', title: '👾 Khắc tinh Cyber Boss', desc: 'Tiêu diệt 1 Boss Cyber Mothership', target: 1, progress: 0, reward: 25, claimed: false }
+    ];
+
+    let achievements = [
+        { id: 'combo20', title: '🔥 Bàn phím rực lửa', desc: 'Đạt chuỗi Combo 20x', target: 20, progress: 0, reward: 30, claimed: false },
+        { id: 'meteor5', title: '☄️ Tay săn thiên thạch', desc: 'Bắn hạ 5 thiên thạch rơi nhanh', target: 5, progress: 0, reward: 30, claimed: false },
+        { id: 'skins2', title: '🐱 Nhà sưu tập Skin', desc: 'Sở hữu ít nhất 2 skin mèo', target: 2, progress: 0, reward: 50, claimed: false }
+    ];
+
+    try {
+        const savedDate = localStorage.getItem('mtv-quest-date');
+        if (savedDate === TODAY_KEY) {
+            const savedDaily = JSON.parse(localStorage.getItem('mtv-daily-quests') || '[]');
+            if (savedDaily.length) dailyQuests = savedDaily;
+        } else {
+            localStorage.setItem('mtv-quest-date', TODAY_KEY);
+            localStorage.setItem('mtv-daily-quests', JSON.stringify(dailyQuests));
+        }
+        const savedAchieve = JSON.parse(localStorage.getItem('mtv-achievements') || '[]');
+        if (savedAchieve.length) achievements = savedAchieve;
+    } catch (e) {}
+
+    function saveQuestData() {
+        try {
+            localStorage.setItem('mtv-daily-quests', JSON.stringify(dailyQuests));
+            localStorage.setItem('mtv-achievements', JSON.stringify(achievements));
+        } catch (e) {}
+    }
+
+    function addQuestProgress(questId, amount = 1) {
+        let q = dailyQuests.find(x => x.id === questId);
+        if (q && !q.claimed) {
+            q.progress = Math.min(q.target, q.progress + amount);
+            saveQuestData();
+        }
+    }
+
+    function addAchieveProgress(achieveId, amount = 1, isSet = false) {
+        let a = achievements.find(x => x.id === achieveId);
+        if (a && !a.claimed) {
+            a.progress = isSet ? Math.max(a.progress, amount) : Math.min(a.target, a.progress + amount);
+            saveQuestData();
+        }
+    }
+
     function updateCoinsDisplay() {
         if ($('shop-coins-display')) $('shop-coins-display').textContent = `🪙 Số từ tích lũy: ${totalKilledBank}`;
         if ($('home-coins')) $('home-coins').textContent = `🪙 Xu tích lũy: ${totalKilledBank}`;
@@ -134,12 +187,10 @@
             masterGain.gain.value = muted ? 0 : 0.9;
             masterGain.connect(AC.destination);
 
-            // Kênh nhạc nền BGM (âm lượng đầm ấm, rõ nét)
             bgmGain = AC.createGain();
             bgmGain.gain.value = 0.28;
             bgmGain.connect(masterGain);
 
-            // Kênh hiệu ứng phím gõ & tiếng nổ
             sfxGain = AC.createGain();
             sfxGain.gain.value = 0.8;
             sfxGain.connect(masterGain);
@@ -209,7 +260,6 @@
             if (!AC) return;
             const t = AC.currentTime;
 
-            // Click đanh
             const o1 = AC.createOscillator();
             const g1 = AC.createGain();
             o1.type = 'triangle';
@@ -222,7 +272,6 @@
             o1.start(t);
             o1.stop(t + 0.02);
 
-            // Thock đầm
             const o2 = AC.createOscillator();
             const g2 = AC.createGain();
             o2.type = 'sine';
@@ -237,7 +286,6 @@
         } catch (e) {}
     }
 
-    // Âm thanh kim loại khi bắn vỡ khiên chắn
     function playShieldBreakSound() {
         if (muted) return;
         try {
@@ -258,7 +306,6 @@
         } catch (e) {}
     }
 
-    // Âm thanh thiên thạch lao xuống
     function playMeteorSpawnSound() {
         if (muted) return;
         try {
@@ -295,17 +342,17 @@
     }
 
     /* ---------- NHẠC NỀN LOFI GALAXY ---------- */
-    const mf = m => 440 * Math.pow(2, (m - 69) / 12);   // MIDI -> Hz
+    const mf = m => 440 * Math.pow(2, (m - 69) / 12);
 
     const LOFI = {
         normal: {
             step: 0.40,
-            scale: [72, 74, 76, 79, 81, 84],             // C ngũ cung
+            scale: [72, 74, 76, 79, 81, 84],
             prog: [
-                { bass: 48, chord: [60, 64, 67, 71] },   // Cmaj7
-                { bass: 45, chord: [57, 60, 64, 67] },   // Am7
-                { bass: 41, chord: [53, 57, 60, 64] },   // Fmaj7
-                { bass: 43, chord: [55, 59, 62, 64] }    // G6
+                { bass: 48, chord: [60, 64, 67, 71] },
+                { bass: 45, chord: [57, 60, 64, 67] },
+                { bass: 41, chord: [53, 57, 60, 64] },
+                { bass: 43, chord: [55, 59, 62, 64] }
             ]
         },
         fever: {
@@ -320,12 +367,12 @@
         },
         boss: {
             step: 0.30,
-            scale: [69, 72, 74, 76, 79, 81],             // A thứ ngũ cung
+            scale: [69, 72, 74, 76, 79, 81],
             prog: [
-                { bass: 45, chord: [57, 60, 64, 67] },   // Am7
-                { bass: 41, chord: [53, 57, 60, 64] },   // Fmaj7
-                { bass: 38, chord: [50, 53, 57, 60] },   // Dm7
-                { bass: 40, chord: [52, 55, 59, 62] }    // Em7
+                { bass: 45, chord: [57, 60, 64, 67] },
+                { bass: 41, chord: [53, 57, 60, 64] },
+                { bass: 38, chord: [50, 53, 57, 60] },
+                { bass: 40, chord: [52, 55, 59, 62] }
             ]
         }
     };
@@ -337,13 +384,11 @@
 
         bgmBus = AC.createGain();
 
-        // Bộ lọc làm ấm âm thanh kiểu lofi
         const lp = AC.createBiquadFilter();
         lp.type = 'lowpass';
         lp.frequency.value = 2600;
         lp.Q.value = 0.4;
 
-        // Reverb: tạo xung đáp ứng nhiễu suy giảm dần (~3 giây)
         const conv = AC.createConvolver();
         const len = AC.sampleRate * 3;
         const ir = AC.createBuffer(2, len, AC.sampleRate);
@@ -355,7 +400,6 @@
         const wet = AC.createGain();
         wet.gain.value = 0.45;
 
-        // Echo vọng nhẹ
         const dl = AC.createDelay(1);
         dl.delayTime.value = 0.5;
         const fb = AC.createGain();
@@ -367,12 +411,11 @@
         echoOut.gain.value = 0.3;
 
         bgmBus.connect(lp);
-        lp.connect(bgmGain);                 // âm khô
+        lp.connect(bgmGain);
         lp.connect(conv); conv.connect(wet); wet.connect(bgmGain);
         lp.connect(dl); dl.connect(dlf); dlf.connect(fb); fb.connect(dl);
         dlf.connect(echoOut); echoOut.connect(bgmGain);
 
-        // Bộ đệm nhiễu cho hi-hat / snare
         noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
         const nd = noiseBuf.getChannelData(0);
         for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
@@ -427,7 +470,6 @@
         const s = step % 8;
         const swing = (s % 2) ? P.step * 0.12 : 0;
 
-        // Pad hợp âm: nở chậm, kéo dài cả ô nhịp, hơi lệch cao độ cho cảm giác "chorus"
         if (s === 0) {
             ch.chord.forEach((m, i) => {
                 lofiNote(mf(m), t, P.step * 7.5, { type: 'triangle', vol: 0.05, attack: 0.6, detune: (i - 1.5) * 6 });
@@ -436,22 +478,19 @@
         }
         if (s === 5) lofiNote(mf(ch.bass), t, P.step * 2, { vol: 0.15, attack: 0.03 });
 
-        // Trống lofi mềm
         if (s === 0 || s === 5) lofiKick(t);
-        if (s === 2 || s === 6) lofiNoise(t, 0.14, 0.09, 1800, 'bandpass');            // snare nhẹ
-        lofiNoise(t + swing, 0.04, s % 2 ? 0.025 : 0.04, 7000, 'highpass');           // hi-hat
+        if (s === 2 || s === 6) lofiNoise(t, 0.14, 0.09, 1800, 'bandpass');
+        lofiNoise(t + swing, 0.04, s % 2 ? 0.025 : 0.04, 7000, 'highpass');
 
-        // Giai điệu thưa, ngẫu nhiên trong ngũ cung (không lặp nốt liền nhau)
         if (Math.random() < 0.3) {
             let idx;
             do { idx = Math.random() * P.scale.length | 0; } while (idx === lastMel);
             lastMel = idx;
             const f = mf(P.scale[idx]);
             lofiNote(f, t + swing, P.step * 3.5, { vol: 0.07, attack: 0.01 });
-            lofiNote(f * 2, t + swing, P.step * 2, { vol: 0.015, attack: 0.01 });      // chút âm sáng kiểu chuông
+            lofiNote(f * 2, t + swing, P.step * 2, { vol: 0.015, attack: 0.01 });
         }
 
-        // Nốt cao lấp lánh như sao băng
         if (Math.random() < 0.06) {
             const f = mf(P.scale[Math.random() * P.scale.length | 0] + 12);
             lofiNote(f, t + swing, P.step * 5, { vol: 0.035, attack: 0.005 });
@@ -462,7 +501,7 @@
         if (state !== 'play') { bgmTimer = null; return; }
         if (!AC || !bgmBus) return;
 
-        if (muted) {                               // giữ vòng lặp sống, chỉ không phát nốt
+        if (muted) {
             nextNoteTime = AC.currentTime + 0.05;
             bgmTimer = setTimeout(scheduler, 100);
             return;
@@ -644,7 +683,6 @@
         let isMeteor = false;
 
         const rand = Math.random();
-        // Tỷ lệ xuất hiện biến thể từ vựng (chỉ từ level 2 trở lên)
         if (level >= 2 && rand < 0.14) {
             isShield = true;
         } else if (level >= 2 && rand < 0.24) {
@@ -658,7 +696,6 @@
             power = 'heal';
         }
 
-        // Tốc độ rơi: Thiên thạch x1.8 tốc độ
         const baseVy = (28 + level * 5 + Math.random() * 12 + mode * 10) * Math.max(.85, H / 700);
         const finalVy = isMeteor ? baseVy * 1.8 : baseVy;
 
@@ -675,7 +712,7 @@
             locked: false,
             sc: 0,
             power,
-            shield: isShield ? 1 : 0, // 1 là còn khiên, 0 là vỡ khiên
+            shield: isShield ? 1 : 0,
             isMeteor: isMeteor,
             smokeTimer: 0,
             invulTimer: 0
@@ -685,7 +722,6 @@
     function pickByChar(ch) {
         let b = null;
         for (const q of words) {
-            // Không chọn các từ đang khóa hoặc đã chết
             if (!q.locked && !q.dead && q.w && q.w[0] === ch) {
                 if (!b || q.y > b.y) b = q;
             }
@@ -755,21 +791,20 @@
 
         playSwitchSound();
 
-        // Xác định loại đạn và màu sắc theo Skin
         let bulletType = 'star';
         let bulletColor = '#ffd23f';
         let bulletGlow = '#ffd23f';
 
         if (currentSkin === 'ninja') {
-            bulletType = 'shuriken';  // Phi tiêu Ninja 4 cánh
+            bulletType = 'shuriken';
             bulletColor = '#ff2a5f';
             bulletGlow = '#ff0055';
         } else if (currentSkin === 'astro') {
-            bulletType = 'lightning'; // Sấm sét Neon trắng sáng
+            bulletType = 'lightning';
             bulletColor = '#ffffff';
             bulletGlow = '#60efff';
         } else if (currentSkin === 'wizard') {
-            bulletType = 'fireball';  // Cầu lửa xanh ma thuật
+            bulletType = 'fireball';
             bulletColor = '#00f2fe';
             bulletGlow = '#00c6ff';
         }
@@ -905,12 +940,18 @@
         totalKilledBank++;
         saveCosmeticsData();
 
+        addQuestProgress('kill30', 1);
+        if (q.isMeteor) {
+            addAchieveProgress('meteor5', 1);
+        }
+        addAchieveProgress('combo20', combo, true);
+
         const feverMultiplier = isFever ? 2 : 1;
         const gain = Math.round(q.w.length * 10 * (1 + Math.min(combo, 12) * .15)) * feverMultiplier;
         score += gain;
-        // Thưởng thêm nếu tiêu diệt được Thiên thạch lao nhanh
+
         if (q.isMeteor) {
-            totalKilledBank += 3; // Thưởng ngay 3 xu
+            totalKilledBank += 3;
             saveCosmeticsData();
             updateCoinsDisplay();
             say('☄️ METEOR DOWN! +3 🪙', q.x, q.y - 35, '#ff4757', 24);
@@ -967,13 +1008,13 @@
             snd(160, .25, 'sawtooth', .14, .4);
 
             if (boss.hp <= 0) {
-                // BOSS DEFEATED!
                 say('💥 BOSS DEFEATED! +2000 💥', W / 2, H * .4, '#ffd23f', 34);
+                addQuestProgress('boss1', 1);
                 score += 2000;
 
-                // THÊM: Thưởng thêm 15 xu khi hạ gục Boss!
                 totalKilledBank += 15;
                 saveCosmeticsData();
+                updateCoinsDisplay();
                 say('+15 🪙 COINS!', W / 2, H * .45, '#ffd23f', 28);
 
                 burst(boss.x, boss.y, '#ffd23f', 90);
@@ -981,13 +1022,12 @@
                 shake = reduce ? 0 : 0.8;
                 [392, 523, 659, 784, 1047].forEach((f, i) => snd(f * 1.3, .2, 'triangle', .09, 0, i * .08));
 
-                // QUAN TRỌNG: Xóa sạch từ hộ vệ còn sót lại của Boss
                 words = words.filter(w => !w.isBossMinion);
                 target = null;
 
                 boss = null;
-                bossWarningTimer = 0; // Đưa cờ cảnh báo về 0
-                spawnT = 0.8;         // Cấp ngay hẹn giờ để 0.8s sau từ thường lập tức rơi lại
+                bossWarningTimer = 0;
+                spawnT = 0.8;
                 const bossHud = $('boss-hud');
                 if (bossHud) bossHud.classList.add('hide');
 
@@ -997,7 +1037,7 @@
         }
 
         if (!boss && killed > 0 && killed % 10 === 0) {
-            if (level % 5 === 4) { // Cứ trước khi lên Level 5, 10... sẽ gọi Boss
+            if (level % 5 === 4) {
                 level++;
                 hud();
                 triggerBossBattle();
@@ -1028,7 +1068,6 @@
         snd(220, .35, 'square', .06, .4);
         if (!missed.has(q.w)) missed.set(q.w, q.vi);
 
-        // Lưu từ vào sổ tay ôn tập
         const existing = reviewNotebook.get(q.w) || { vi: q.vi, count: 0 };
         existing.count++;
         existing.vi = q.vi;
@@ -1049,7 +1088,6 @@
             freezeTimer = Math.max(0, freezeTimer - dt);
         }
 
-        // Chỉ spawn từ thường khi không có Boss
         if (!boss && bossWarningTimer <= 0) {
             spawnT -= dt;
             if (spawnT <= 0 && words.length < 4 + level) {
@@ -1058,7 +1096,6 @@
             }
         }
 
-        // Chuyển động của Boss
         if (boss) {
             boss.x += boss.vx * dt;
             if (boss.x < 80) {
@@ -1071,7 +1108,6 @@
 
             if (boss.hitTimer > 0) boss.hitTimer -= dt;
 
-            // Nếu từ bảo vệ bị hạ gục, Boss chuẩn bị thả từ tiếp theo
             if (!words.some(q => q.isBossMinion)) {
                 spawnBossWord();
             }
@@ -1126,24 +1162,20 @@
                 burst(b.lx, b.ly, b.t.col, b.kill ? 0 : (b.isFever ? 10 : 6));
 
                 if (b.kill && !b.t.dead) {
-                    // Nếu là từ có khiên và còn khiên: Phá khiên
                     if (b.t.shield > 0) {
                         b.t.shield = 0;
                         b.t.locked = false;
                         b.t.typed = 0;
-                        b.t.invulTimer = 0.25; // Miễn nhiễm 0.25s để viên đạn thứ hai của Fever Mode không giết luôn từ
-                        target = b.t;         // Giữ target để người chơi gõ tiếp lượt 2
+                        b.t.invulTimer = 0.25;
+                        target = b.t;
                         burst(b.t.x, b.t.y, '#3a86ff', 35);
                         say('🛡️ SHIELD BROKEN!', b.t.x, b.t.y - 20, '#3a86ff', 22);
+                        addQuestProgress('shield3', 1);
                         playShieldBreakSound();
                         shake = reduce ? 0 : 0.3;
-                    }
-                    // Nếu từ đang trong thời gian miễn nhiễm sau khi vừa vỡ khiên: Bỏ qua sát thương của viên đạn thứ 2
-                    else if (b.t.invulTimer > 0) {
+                    } else if (b.t.invulTimer > 0) {
                         burst(b.t.x, b.t.y, '#ffd23f', 12);
-                    }
-                    // Bắn hạ bình thường
-                    else {
+                    } else {
                         b.t.dead = true;
                         kill(b.t);
                     }
@@ -1307,18 +1339,6 @@
             strokeColor = isFever ? '#ff007f' : '#ffd23f';
         }
 
-        if (q.shield > 0) {
-            strokeColor = '#3a86ff';
-            fillColor = 'rgba(58, 134, 255, 0.28)';
-            ctx.shadowColor = '#3a86ff';
-            ctx.shadowBlur = 18 + Math.sin(t / 80) * 6;
-        } else if (q.isMeteor) {
-            strokeColor = '#ff3838';
-            fillColor = 'rgba(255, 56, 56, 0.32)';
-            ctx.shadowColor = '#ff3838';
-            ctx.shadowBlur = 22 + Math.sin(t / 60) * 8;
-        }
-
         rr(-q.pw / 2, -h / 2, q.pw, h, h / 2);
         ctx.fillStyle = fillColor;
         ctx.fill();
@@ -1367,7 +1387,6 @@
         ctx.translate(x, y);
         ctx.scale(s * k, s / k * 1.0);
 
-        // Màu lông theo skin
         let furColor = '#ffb347';
         let faceGradientStart = '#ffe98a';
         let faceGradientEnd = '#ffb347';
@@ -1394,7 +1413,6 @@
 
         ctx.fillStyle = furColor;
 
-        // Tai mèo
         for (const d of [-1, 1]) {
             ctx.beginPath();
             ctx.moveTo(d * 14, -22);
@@ -1404,7 +1422,6 @@
             ctx.fill();
         }
 
-        // Mặt mèo
         const g = ctx.createRadialGradient(-8, -14, 4, 0, 0, 40);
         g.addColorStop(0, faceGradientStart);
         g.addColorStop(1, faceGradientEnd);
@@ -1413,9 +1430,7 @@
         ctx.ellipse(0, 0, 38, 32, 0, 0, 6.283);
         ctx.fill();
 
-        // Phụ kiện riêng theo từng Skin
         if (currentSkin === 'wizard') {
-            // Mũ phù thủy chóp nhọn
             ctx.fillStyle = '#44337a';
             ctx.beginPath();
             ctx.moveTo(-36, -18);
@@ -1424,13 +1439,11 @@
             ctx.closePath();
             ctx.fill();
 
-            // Vành mũ
             ctx.fillStyle = '#ffd23f';
             ctx.beginPath();
             ctx.ellipse(0, -18, 42, 6, 0, 0, 6.283);
             ctx.fill();
         } else if (currentSkin === 'astro') {
-            // Mũ kính phi hành gia không gian
             ctx.strokeStyle = '#63b3ed';
             ctx.lineWidth = 3;
             ctx.fillStyle = 'rgba(190, 227, 248, 0.35)';
@@ -1439,12 +1452,10 @@
             ctx.fill();
             ctx.stroke();
         } else if (currentSkin === 'ninja') {
-            // Băng đeo trán ninja
             ctx.fillStyle = '#e53e3e';
             ctx.fillRect(-32, -18, 64, 8);
         }
 
-        // Má hồng
         ctx.fillStyle = 'rgba(255,111,174,.6)';
         for (const d of [-1, 1]) {
             ctx.beginPath();
@@ -1460,7 +1471,6 @@
         }
 
         if (isFever) {
-            // Đeo kính râm khi vào Fever Mode
             ctx.save();
             ctx.fillStyle = '#111';
             ctx.shadowColor = '#00f2fe';
@@ -1492,7 +1502,6 @@
             }
         }
 
-        // Miệng
         ctx.strokeStyle = currentSkin === 'ninja' ? '#ffffff' : '#3a1250';
         ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
@@ -1508,7 +1517,6 @@
         ctx.restore();
     }
 
-    // 1. Vẽ Phi tiêu Shuriken 4 cánh của Ninja
     function drawShuriken(x, y, r, rot, col) {
         ctx.save();
         ctx.translate(x, y);
@@ -1522,7 +1530,6 @@
         ctx.closePath();
         ctx.fill();
 
-        // Lỗ tròn rỗng đặc trưng ở tâm Shuriken
         ctx.fillStyle = '#111';
         ctx.beginPath();
         ctx.arc(0, 0, r * 0.22, 0, Math.PI * 2);
@@ -1530,12 +1537,10 @@
         ctx.restore();
     }
 
-    // 2. Vẽ Quả cầu lửa xanh ma thuật (Blue Fireball) của Phù Thủy
     function drawFireball(x, y, r, rot, col) {
         ctx.save();
         ctx.translate(x, y);
 
-        // Hào quang ngoài
         const grad = ctx.createRadialGradient(0, 0, r * 0.2, 0, 0, r * 1.5);
         grad.addColorStop(0, '#ffffff');
         grad.addColorStop(0.4, col);
@@ -1545,7 +1550,6 @@
         ctx.arc(0, 0, r * 1.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Ngọn lửa bập bùng xung quanh
         ctx.fillStyle = col;
         for (let i = 0; i < 5; i++) {
             const angle = rot * 1.5 + i * (Math.PI * 2 / 5);
@@ -1555,7 +1559,6 @@
             ctx.fill();
         }
 
-        // Lõi trắng siêu nhiệt
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(0, 0, r * 0.5, 0, Math.PI * 2);
@@ -1563,14 +1566,12 @@
         ctx.restore();
     }
 
-    // 3. Vẽ Tia sấm sét Neon ziczac (Lightning Bolt) của Phi Hành Gia
     function drawLightning(tr, curX, curY, col, glow) {
         if (!tr || tr.length < 2) return;
         ctx.save();
         ctx.shadowColor = glow;
         ctx.shadowBlur = 18;
 
-        // Vệt sấm ngoài rực sáng
         ctx.strokeStyle = glow;
         ctx.lineWidth = 4;
         ctx.lineJoin = 'miter';
@@ -1583,7 +1584,6 @@
         ctx.lineTo(curX, curY);
         ctx.stroke();
 
-        // Lõi sấm sét trắng trung tâm
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
         ctx.stroke();
@@ -1596,10 +1596,8 @@
         try {
             if (shake > 0) ctx.translate((Math.random() - .5) * shake * 20, (Math.random() - .5) * shake * 20);
 
-            // 1. Vẽ nền vũ trụ
             drawBg(t);
 
-            // 2. Vẽ Phi thuyền Boss Cyber Mothership (VẼ SAU NỀN ĐỂ KHÔNG BỊ ĐÈ)
             if (boss) {
                 ctx.save();
                 const floatY = boss.y + Math.sin(t / 250) * 5;
@@ -1609,11 +1607,9 @@
                     ctx.translate((Math.random() - .5) * 8, (Math.random() - .5) * 8);
                 }
 
-                // Hào quang phản lực
                 ctx.shadowColor = '#ff2a5f';
                 ctx.shadowBlur = 22 + Math.sin(t / 80) * 8;
 
-                // Thân phi thuyền mẹ
                 ctx.fillStyle = boss.hitTimer > 0 ? '#ffffff' : '#220b3b';
                 ctx.strokeStyle = '#ff2a5f';
                 ctx.lineWidth = 3.5;
@@ -1629,7 +1625,6 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // Cánh năng lượng hai bên
                 ctx.fillStyle = '#ff007f';
                 for (const side of [-1, 1]) {
                     ctx.beginPath();
@@ -1640,7 +1635,6 @@
                     ctx.fill();
                 }
 
-                // Lõi năng lượng Neon ở trung tâm
                 ctx.fillStyle = '#00f2fe';
                 ctx.shadowColor = '#00f2fe';
                 ctx.shadowBlur = 15;
@@ -1670,10 +1664,8 @@
             for (const q of words) drawWord(q, t);
 
             for (const b of bullets) {
-                // Cập nhật góc xoay cho phi tiêu và ngọn lửa
                 b.rot = (b.rot || 0) + 0.35;
 
-                // 1. Vẽ vệt đuôi
                 if (b.type === 'lightning') {
                     drawLightning(b.tr, b.x, b.y, b.col, b.glow);
                 } else {
@@ -1687,7 +1679,6 @@
                 }
                 ctx.globalAlpha = 1;
 
-                // 2. Vẽ đầu đạn theo từng loại
                 ctx.shadowColor = b.glow || b.col;
                 ctx.shadowBlur = b.isFever ? 22 : 16;
 
@@ -1696,13 +1687,11 @@
                 } else if (b.type === 'fireball') {
                     drawFireball(b.x, b.y, b.isFever ? 12 : 9, b.rot, b.col);
                 } else if (b.type === 'lightning') {
-                    // Tia điện neon có quả cầu Plasma năng lượng ở đầu
                     ctx.fillStyle = '#ffffff';
                     ctx.beginPath();
                     ctx.arc(b.x, b.y, b.isFever ? 8 : 6, 0, Math.PI * 2);
                     ctx.fill();
                 } else {
-                    // Ngôi sao mặc định
                     ctx.fillStyle = b.isFever ? '#00f2fe' : (b.col || '#fff');
                     starPath(b.x, b.y, b.isFever ? 13 : 10, t / 70);
                     ctx.fill();
@@ -1761,12 +1750,10 @@
         const warnEl = $('boss-warning');
         if (warnEl) warnEl.classList.remove('hide');
 
-        // Quét sạch từ thường đang rơi để dọn sàn đấu
         words.forEach(q => burst(q.x, q.y, '#ff5277', 14));
         words = [];
         target = null;
 
-        // Còi báo động dồn dập
         [220, 293, 220, 293].forEach((f, i) => snd(f, .18, 'sawtooth', .1, 0, i * .2));
 
         setTimeout(() => {
@@ -1778,7 +1765,7 @@
             const maxHp = 4 + Math.floor(level / 2);
             boss = {
                 x: W / 2,
-                y: 130, // Đặt thấp hơn thanh HUD để không bị che
+                y: 130,
                 vx: 80,
                 w: 130,
                 h: 60,
@@ -1809,14 +1796,13 @@
 
         ctx.font = `700 ${fs()}px Fredoka,sans-serif`;
         const w = ctx.measureText(o.w).width + 38;
-        // Tăng tốc độ rơi của từ hộ vệ Boss: nhanh, dồn dập và kịch tính hơn
         const bossSpeed = (46 + level * 5 + mode * 12) * Math.max(.85, H / 700);
 
         words.push({
             w: o.w,
             vi: o.vi,
             x: boss.x,
-            y: boss.y + 45, // Thả ra từ đáy phi thuyền
+            y: boss.y + 45,
             pw: w,
             vy: bossSpeed,
             typed: 0,
@@ -2088,7 +2074,6 @@
         if (state !== 'play') return;
         stopBgm();
         state = 'paused';
-        // Đảm bảo ẩn màn hình Home nếu lỡ đang mở
         if ($('start')) $('start').classList.add('hide');
         if ($('pause-modal')) $('pause-modal').classList.remove('hide');
         snd(480, .08, 'triangle', .06);
@@ -2127,7 +2112,7 @@
         }
         state = 'play';
         last = performance.now();
-        startBgm(); // Backgroud music
+        startBgm();
 
         if (!muted && 'speechSynthesis' in window) {
             try {
@@ -2296,6 +2281,96 @@
         };
     }
 
+    function renderQuests() {
+        const box = $('quest-list');
+        if (!box) return;
+
+        const currentList = questTab === 'daily' ? dailyQuests : achievements;
+
+        box.innerHTML = currentList.map(q => {
+            const pct = Math.min(100, Math.round((q.progress / q.target) * 100));
+            const isCompleted = q.progress >= q.target;
+
+            let actionBtn = '';
+            if (q.claimed) {
+                actionBtn = `<button class="btn-claim done">Đã nhận</button>`;
+            } else if (isCompleted) {
+                actionBtn = `<button class="btn-claim claim-now" data-id="${q.id}">Nhận +${q.reward} 🪙</button>`;
+            } else {
+                actionBtn = `<span style="font-size:12px;opacity:0.75;font-weight:600">${q.progress}/${q.target}</span>`;
+            }
+
+            return `
+                <div class="quest-item">
+                    <div class="quest-info">
+                        <div class="quest-title">${q.title}</div>
+                        <div class="quest-desc">${q.desc}</div>
+                        <div class="quest-progress-wrap">
+                            <div class="quest-progress-bar" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                    <div>${actionBtn}</div>
+                </div>
+            `;
+        }).join('');
+
+        box.querySelectorAll('.claim-now').forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.dataset.id;
+                const item = currentList.find(x => x.id === id);
+                if (item && !item.claimed) {
+                    item.claimed = true;
+                    totalKilledBank += item.reward;
+                    saveCosmeticsData();
+                    saveQuestData();
+                    updateCoinsDisplay();
+                    renderQuests();
+                    snd(784, .18, 'triangle', .1);
+                    say(`+${item.reward} 🪙 NHẬN THƯỞNG!`, W / 2, H * .4, '#ffd23f', 28);
+                    burst(W / 2, H * .4, '#ffd23f', 40);
+                }
+            };
+        });
+    }
+
+    const tabDaily = $('tab-daily');
+    const tabAchieve = $('tab-achieve');
+    if (tabDaily && tabAchieve) {
+        tabDaily.onclick = () => {
+            questTab = 'daily';
+            tabDaily.classList.add('on');
+            tabAchieve.classList.remove('on');
+            renderQuests();
+            snd(520, .06, 'triangle', .05);
+        };
+        tabAchieve.onclick = () => {
+            questTab = 'achieve';
+            tabAchieve.classList.add('on');
+            tabDaily.classList.remove('on');
+            renderQuests();
+            snd(520, .06, 'triangle', .05);
+        };
+    }
+
+    const btnQuestsStart = $('btn-quests-start');
+    if (btnQuestsStart) {
+        btnQuestsStart.onclick = () => {
+            renderQuests();
+            if ($('start')) $('start').classList.add('hide');
+            if ($('quests-modal')) $('quests-modal').classList.remove('hide');
+            snd(520, .08, 'triangle', .06);
+        };
+    }
+
+    const closeQuests = $('close-quests');
+    if (closeQuests) {
+        closeQuests.onclick = () => {
+            if ($('quests-modal')) $('quests-modal').classList.add('hide');
+            if ($('start')) $('start').classList.remove('hide');
+            snd(480, .08, 'triangle', .06);
+        };
+    }
+
     document.querySelectorAll('#modes button').forEach(b => b.onclick = () => {
         if (state === 'paused') return;
         mode = +b.dataset.m;
@@ -2361,7 +2436,6 @@
                 e.preventDefault();
                 return;
             } else if (state === 'paused' && $('pause-modal') && !$('pause-modal').classList.contains('hide')) {
-                // Chỉ cho phép bấm Esc để tiếp tục khi ĐANG THỰC SỰ MỞ pause-modal
                 resumeGame();
                 e.preventDefault();
                 return;
@@ -2371,7 +2445,6 @@
         if (state !== 'play') return;
         if (e.ctrlKey || e.metaKey || e.altKey) return;
 
-        // Phím Backspace: Hủy chọn từ đang gõ dở
         if (e.key === 'Backspace') {
             if (target && !target.locked) {
                 target.typed = 0;
@@ -2509,7 +2582,6 @@
             `;
         }).join('');
 
-        // Bắt sự kiện Trang bị
         grid.querySelectorAll('.btn-skin-action.equip').forEach(btn => {
             btn.onclick = () => {
                 currentSkin = btn.dataset.id;
@@ -2519,7 +2591,6 @@
             };
         });
 
-        // Bắt sự kiện Mua
         grid.querySelectorAll('.btn-skin-action.buy').forEach(btn => {
             btn.onclick = () => {
                 const cost = +btn.dataset.cost;
@@ -2529,6 +2600,7 @@
                     unlockedSkins.push(id);
                     currentSkin = id;
                     saveCosmeticsData();
+                    addAchieveProgress('skins2', unlockedSkins.length, true);
                     updateCoinsDisplay();
                     renderShop();
                     snd(784, .18, 'triangle', .1);
@@ -2559,7 +2631,6 @@
         };
     }
 
-// Nút Pause trên thanh HUD
     const btnPause = $('btn-pause');
     if (btnPause) {
         const handlePauseClick = (e) => {
@@ -2574,10 +2645,9 @@
             }
         };
         btnPause.onclick = handlePauseClick;
-        btnPause.onpointerdown = (e) => e.stopPropagation(); // Chặn canvas bên dưới nhận click
+        btnPause.onpointerdown = (e) => e.stopPropagation();
     }
 
-    // Nút Tiếp tục trong màn hình Pause
     const btnResume = $('btn-resume');
     if (btnResume) {
         btnResume.onclick = (e) => {
@@ -2586,7 +2656,6 @@
         };
     }
 
-    // Nút Home trong màn hình Pause
     const btnPauseHome = $('btn-pause-home');
     if (btnPauseHome) {
         btnPauseHome.onclick = (e) => {

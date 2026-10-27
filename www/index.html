@@ -76,6 +76,7 @@
         <div class="actions">
             <button class="btn btn-sub" id="btn-rank-start">🏆 Rank</button>
             <button class="btn btn-sub" id="btn-shop-start">🛍️ Cửa hàng</button>
+            <button class="btn btn-sub" id="btn-quests-start">🎯 Nhiệm vụ</button>
             <button class="btn btn-sub" id="btn-notebook-start">📖 Sổ tay</button>
         </div>
         <p style="font-size:14px;opacity:.8">Trên điện thoại: chạm vào màn hình để mở bàn phím, chạm vào từ để chọn.</p>
@@ -162,6 +163,24 @@
             <button class="btn" id="btn-revenge">⚔️ Phục thù</button>
             <button class="btn btn-sub" id="btn-clear-notebook">🗑️ Xoá sổ</button>
             <button class="btn btn-sub" id="close-notebook">Quay lại</button>
+        </div>
+    </div>
+
+    <!-- Màn hình Nhiệm vụ & Thành tựu -->
+    <div class="ov hide" id="quests-modal">
+        <h1 style="font-size:clamp(26px,8vw,42px);margin-bottom:4px">🎯 Thử Thách & Thành Tựu</h1>
+        <p style="font-size:14px;margin-bottom:8px">Hoàn thành nhiệm vụ để nhận thêm xu tích lũy</p>
+
+        <!-- Tab chuyển đổi Daily Quests vs Achievements -->
+        <div class="lv" id="quest-tabs" style="margin-bottom:10px">
+            <button id="tab-daily" class="on">Nhiệm vụ ngày</button>
+            <button id="tab-achieve">Danh hiệu</button>
+        </div>
+
+        <div id="quest-list"></div>
+
+        <div class="actions" style="margin-top:12px">
+            <button class="btn btn-sub" id="close-quests">Quay lại</button>
         </div>
     </div>
 
