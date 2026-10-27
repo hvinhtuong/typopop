@@ -125,6 +125,17 @@
         if ($('home-coins')) $('home-coins').textContent = `🪙 Xu tích lũy: ${totalKilledBank}`;
     }
 
+    function updatePlayerNameDisplay() {
+        const homeNameEl = $('home-player-name');
+        if (homeNameEl) {
+            homeNameEl.textContent = '👤 ' + (playerName || 'Chưa đặt tên');
+        }
+        const hudNameEl = $('player-tag');
+        if (hudNameEl) {
+            hudNameEl.textContent = '👤 ' + (playerName || 'Người chơi');
+        }
+    }
+
     const $ = id => document.getElementById(id);
     const cv = $('c'), ctx = cv.getContext('2d'), kb = $('kb');
     const COL = ['#ff6fae', '#ffd23f', '#3ee6b0', '#5cc8ff', '#b79cff', '#ff9a5c'];
@@ -2066,6 +2077,7 @@
         try {
             localStorage.setItem('mtv-name', playerName);
         } catch (e) {}
+        updatePlayerNameDisplay();
         if ($('name-modal')) $('name-modal').classList.add('hide');
         begin();
     }
@@ -2278,6 +2290,14 @@
             fetchTopChamp();
             updateCoinsDisplay();
             snd(480, .08, 'triangle', .06);
+        };
+    }
+
+    const btnChangeName = $('btn-change-name');
+    if (btnChangeName) {
+        btnChangeName.onclick = (e) => {
+            if (e) e.stopPropagation();
+            promptPlayerName();
         };
     }
 
@@ -2679,6 +2699,7 @@
     initStars();
     reset();
     updateCoinsDisplay();
+    updatePlayerNameDisplay();
     try {
         fetchTopChamp();
     } catch (e) {}
