@@ -116,12 +116,13 @@
         }
     } catch (e) {}
 
-    /* ---------- DYNAMIC AUDIO & BGM SYNTHESIZER (ĐÃ SỬA LỖI) ---------- */
+    /* ---------- DYNAMIC AUDIO & BGM SYNTHESIZER (CHUẨN STUDIO) ---------- */
     let AC = null, masterGain = null, bgmGain = null, sfxGain = null;
     let muted = false, enVoice = null;
 
     let bgmStep = 0;
     let bgmTimer = null;
+    let nextNoteTime = 0;
 
     function initAudioContext() {
         if (!AC) {
@@ -133,13 +134,14 @@
             masterGain.gain.value = muted ? 0 : 0.9;
             masterGain.connect(AC.destination);
 
-            // Tăng âm lượng kênh nhạc nền BGM lên rõ ràng hơn (0.45)
+            // Kênh nhạc nền BGM (âm lượng đầm ấm, rõ nét)
             bgmGain = AC.createGain();
-            bgmGain.gain.value = 0.45;
+            bgmGain.gain.value = 0.55;
             bgmGain.connect(masterGain);
 
+            // Kênh hiệu ứng phím gõ & tiếng nổ
             sfxGain = AC.createGain();
-            sfxGain.gain.value = 0.85;
+            sfxGain.gain.value = 0.8;
             sfxGain.connect(masterGain);
         }
         if (AC.state === 'suspended') {
@@ -211,9 +213,9 @@
             const o1 = AC.createOscillator();
             const g1 = AC.createGain();
             o1.type = 'triangle';
-            o1.frequency.setValueAtTime(1200 + Math.random() * 200, t);
-            o1.frequency.exponentialRampToValueAtTime(600, t + 0.02);
-            g1.gain.setValueAtTime(0.05, t);
+            o1.frequency.setValueAtTime(1400 + Math.random() * 200, t);
+            o1.frequency.exponentialRampToValueAtTime(700, t + 0.02);
+            g1.gain.setValueAtTime(0.06, t);
             g1.gain.exponentialRampToValueAtTime(0.0001, t + 0.02);
             o1.connect(g1);
             g1.connect(sfxGain);
@@ -224,14 +226,14 @@
             const o2 = AC.createOscillator();
             const g2 = AC.createGain();
             o2.type = 'sine';
-            o2.frequency.setValueAtTime(160 + Math.random() * 30, t);
-            o2.frequency.exponentialRampToValueAtTime(80, t + 0.035);
+            o2.frequency.setValueAtTime(150 + Math.random() * 30, t);
+            o2.frequency.exponentialRampToValueAtTime(65, t + 0.03);
             g2.gain.setValueAtTime(0.12, t);
-            g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
+            g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
             o2.connect(g2);
             g2.connect(sfxGain);
             o2.start(t);
-            o2.stop(t + 0.035);
+            o2.stop(t + 0.03);
         } catch (e) {}
     }
 
@@ -250,89 +252,100 @@
         };
     }
 
-    /* ---------- VÒNG LẶP NHẠC NỀN CHIPTUNE SYNTHWAVE ---------- */
-    // Dãy hợp âm Retro 8-bit rõ nốt, du dương
-    const BGM_MELODY_NORMAL = [
-        261.63, 329.63, 392.00, 329.63, // C - E - G - E
-        220.00, 261.63, 329.63, 261.63, // A - C - E - C
-        174.61, 220.00, 261.63, 220.00, // F - A - C - A
-        196.00, 246.94, 293.66, 246.94  // G - B - D - B
-    ];
-    const BGM_MELODY_FEVER = [
-        523.25, 659.25, 783.99, 659.25,
-        440.00, 523.25, 659.25, 523.25,
-        349.23, 440.00, 523.25, 440.00,
-        392.00, 493.88, 587.33, 493.88
-    ];
-    const BGM_MELODY_BOSS = [
-        110.00, 110.00, 130.81, 110.00,
-        98.00, 110.00, 146.83, 130.81,
-        87.31, 87.31, 110.00, 87.31,
-        98.00, 110.00, 130.81, 98.00
-    ];
+    /* ---------- BỘ NHẠC NỀN ĐỘNG THEO 3 TRẠNG THÁI ---------- */
+    // 1. Nhạc thường: Giai điệu Synthwave tươi vui, thư giãn
+    const TRACK_NORMAL = {
+        bass:   [130.81, 130.81, 164.81, 164.81, 174.61, 174.61, 196.00, 196.00], // C3 - E3 - F3 - G3
+        melody: [261.63, 329.63, 392.00, 523.25, 349.23, 440.00, 392.00, 329.63], // C4 - E4 - G4 - C5 - F4 - A4 - G4 - E4
+        tempo: 0.22,
+        wave: 'triangle'
+    };
 
-    function playBgmStep() {
-        if (state !== 'play' || muted || !AC) return;
+    // 2. Nhạc Fever Mode: Electro 16-bit dồn dập, sôi nổi
+    const TRACK_FEVER = {
+        bass:   [261.63, 261.63, 329.63, 349.23, 392.00, 392.00, 440.00, 523.25],
+        melody: [523.25, 659.25, 783.99, 1046.5, 698.46, 880.00, 783.99, 659.25],
+        tempo: 0.15,
+        wave: 'square'
+    };
 
-        let melody = BGM_MELODY_NORMAL;
-        let noteLength = 0.20; // Độ dài mỗi nốt vừa tai
+    // 3. Nhạc Đấu Boss: Cyber Techno dồn dập, căng thẳng, kịch tính
+    const TRACK_BOSS = {
+        bass:   [65.41, 65.41, 73.42, 65.41, 87.31, 82.41, 65.41, 98.00], // C2 Sub-bass
+        melody: [130.81, 130.81, 155.56, 130.81, 174.61, 164.81, 130.81, 196.00],
+        tempo: 0.13,
+        wave: 'sawtooth'
+    };
 
-        if (boss) {
-            melody = BGM_MELODY_BOSS;
-            noteLength = 0.13;
-        } else if (isFever) {
-            melody = BGM_MELODY_FEVER;
-            noteLength = 0.14;
-        }
-
-        const note = melody[bgmStep % melody.length];
-        const t = AC.currentTime;
-
+    function playNote(freq, startTime, duration, type = 'sine', volume = 0.15) {
+        if (!AC || muted || freq <= 0) return;
         try {
-            // Nốt Bass Synth Lead
             const osc = AC.createOscillator();
             const gain = AC.createGain();
 
-            osc.type = boss ? 'sawtooth' : (isFever ? 'square' : 'triangle');
-            osc.frequency.setValueAtTime(note, t);
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, startTime);
 
-            // Âm lượng nốt nhạc rõ ràng (0.16)
-            const noteVol = boss ? 0.22 : (isFever ? 0.18 : 0.16);
-            gain.gain.setValueAtTime(noteVol, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + noteLength * 0.95);
+            // ADSR Envelope: Attack nhanh, Decay êm ái
+            gain.gain.setValueAtTime(0.0001, startTime);
+            gain.gain.linearRampToValueAtTime(volume, startTime + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
             osc.connect(gain);
             gain.connect(bgmGain);
 
-            osc.start(t);
-            osc.stop(t + noteLength);
+            osc.start(startTime);
+            osc.stop(startTime + duration);
+        } catch (e) {}
+    }
 
-            // Tiếng gõ nhịp Drum/Hat (DÙNG 'triangle' tần số cao thay vì 'highpass' bị lỗi)
-            if (bgmStep % 2 === 1) {
-                const drum = AC.createOscillator();
-                const drumGain = AC.createGain();
-                drum.type = 'triangle';
-                drum.frequency.setValueAtTime(3500, t);
-                drum.frequency.exponentialRampToValueAtTime(100, t + 0.04);
-                drumGain.gain.setValueAtTime(0.05, t);
-                drumGain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-                drum.connect(drumGain);
-                drumGain.connect(bgmGain);
-                drum.start(t);
-                drum.stop(t + 0.04);
-            }
-        } catch (e) {
-            console.warn('Lỗi BGM Step:', e);
+    function scheduler() {
+        if (state !== 'play' || muted || !AC) return;
+
+        // Chọn bản nhạc dựa trên trạng thái ván đấu
+        let track = TRACK_NORMAL;
+        if (boss) {
+            track = TRACK_BOSS;
+        } else if (isFever) {
+            track = TRACK_FEVER;
         }
 
-        bgmStep++;
-        bgmTimer = setTimeout(playBgmStep, noteLength * 1000);
+        // Lập lịch phát trước 100ms để không bao giờ bị giật tiếng
+        while (nextNoteTime < AC.currentTime + 0.1) {
+            const step = bgmStep % track.bass.length;
+
+            // 1. Phát nốt Bassline đệm nền
+            const bassFreq = track.bass[step];
+            playNote(bassFreq, nextNoteTime, track.tempo * 1.5, boss ? 'sawtooth' : 'triangle', boss ? 0.35 : 0.28);
+
+            // 2. Phát nốt Giai điệu (Melody Lead)
+            const melFreq = track.melody[step];
+            playNote(melFreq, nextNoteTime, track.tempo * 0.9, track.wave, isFever ? 0.22 : 0.18);
+
+            // 3. Tiếng gõ nhịp (Kick/Snare điện tử)
+            if (step % 2 === 0) {
+                // Nhịp Kick trầm
+                playNote(85, nextNoteTime, 0.05, 'sine', 0.25);
+            } else {
+                // Nhịp Snare lách cách
+                playNote(450, nextNoteTime, 0.03, 'triangle', 0.08);
+            }
+
+            nextNoteTime += track.tempo;
+            bgmStep++;
+        }
+
+        bgmTimer = setTimeout(scheduler, 40);
     }
 
     function startBgm() {
+        initAudioContext();
         stopBgm();
         bgmStep = 0;
-        playBgmStep();
+        if (AC) {
+            nextNoteTime = AC.currentTime + 0.05;
+            scheduler();
+        }
     }
 
     function stopBgm() {
