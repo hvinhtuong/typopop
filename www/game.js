@@ -677,7 +677,7 @@
             power,
             shield: isShield ? 1 : 0, // 1 là còn khiên, 0 là vỡ khiên
             isMeteor: isMeteor,
-            smokeTimer: 0
+            smokeTimer: 0,
             invulTimer: 0
         });
     }
