@@ -117,7 +117,37 @@
     } catch (e) {}
 
     /* ---------- âm thanh ---------- */
-    let AC, muted = false, enVoice = null;
+    /* ---------- DYNAMIC AUDIO & BGM SYNTHESIZER ---------- */
+    let AC = null, masterGain = null, bgmGain = null, sfxGain = null;
+    let muted = false, enVoice = null;
+
+    // Quản lý BGM tự sinh bằng Web Audio
+    let bgmStep = 0;
+    let bgmTimer = null;
+    let bgmSpeed = 0.15; // Nhịp độ nốt nhạc (giây)
+
+    function initAudioContext() {
+        if (!AC) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            AC = new AudioCtx();
+
+            masterGain = AC.createGain();
+            masterGain.gain.setValueAtTime(muted ? 0 : 0.85, AC.currentTime);
+            masterGain.connect(AC.destination);
+
+            bgmGain = AC.createGain();
+            bgmGain.gain.setValueAtTime(0.22, AC.currentTime); // Nhạc nền vừa phải, không lấn át tiếng gõ
+            bgmGain.connect(masterGain);
+
+            sfxGain = AC.createGain();
+            sfxGain.gain.setValueAtTime(1.0, AC.currentTime);
+            sfxGain.connect(masterGain);
+        }
+        if (AC.state === 'suspended') {
+            AC.resume();
+        }
+    }
 
     function loadVoice() {
         if (!('speechSynthesis' in window)) return;
@@ -148,32 +178,156 @@
         [523, 659, 784].forEach((f, i) => snd(f, 0.1, 'triangle', 0.08, 0, i * 0.06));
     }
 
+    // Bộ phát âm SFX đa tầng
     function snd(f, d = .08, type = 'sine', v = .07, slide = 0, delay = 0) {
         if (muted) return;
         try {
-            AC = AC || new (window.AudioContext || window.webkitAudioContext)();
-            const t = AC.currentTime + delay, o = AC.createOscillator(), g = AC.createGain();
+            initAudioContext();
+            if (!AC) return;
+            const t = AC.currentTime + delay;
+            const o = AC.createOscillator();
+            const g = AC.createGain();
+
             o.type = type;
             o.frequency.setValueAtTime(f, t);
-            if (slide) o.frequency.exponentialRampToValueAtTime(f * slide, t + d);
+            if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(10, f * slide), t + d);
+
             g.gain.setValueAtTime(v, t);
-            g.gain.exponentialRampToValueAtTime(.0001, t + d);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+
             o.connect(g);
-            g.connect(AC.destination);
+            g.connect(sfxGain);
+
             o.start(t);
             o.stop(t + d);
         } catch (e) {}
     }
 
+    // Âm thanh gõ phím cơ (Mechanical Switch "Thock & Click")
+    function playSwitchSound() {
+        if (muted) return;
+        try {
+            initAudioContext();
+            if (!AC) return;
+            const t = AC.currentTime;
+
+            // 1. Tiếng Click đanh nhẹ ở dải cao
+            const o1 = AC.createOscillator();
+            const g1 = AC.createGain();
+            o1.type = 'triangle';
+            o1.frequency.setValueAtTime(1200 + Math.random() * 200, t);
+            o1.frequency.exponentialRampToValueAtTime(600, t + 0.02);
+            g1.gain.setValueAtTime(0.05, t);
+            g1.gain.exponentialRampToValueAtTime(0.0001, t + 0.02);
+            o1.connect(g1);
+            g1.connect(sfxGain);
+            o1.start(t);
+            o1.stop(t + 0.02);
+
+            // 2. Tiếng đầm sâu "Thock" dải trầm
+            const o2 = AC.createOscillator();
+            const g2 = AC.createGain();
+            o2.type = 'sine';
+            o2.frequency.setValueAtTime(160 + Math.random() * 30, t);
+            o2.frequency.exponentialRampToValueAtTime(80, t + 0.035);
+            g2.gain.setValueAtTime(0.12, t);
+            g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
+            o2.connect(g2);
+            g2.connect(sfxGain);
+            o2.start(t);
+            o2.stop(t + 0.035);
+        } catch (e) {}
+    }
+
     const sPop = n => [523, 659, 784, 1047].forEach((f, i) => snd(f * (1 + Math.min(n, 8) * .03), .14, 'triangle', .07, 0, i * .05));
 
+    // Nút Bật/Tắt Âm thanh toàn cục
     if ($('mute')) {
         $('mute').onclick = e => {
+            initAudioContext();
             muted = !muted;
+            if (masterGain && AC) {
+                masterGain.gain.setValueAtTime(muted ? 0 : 0.85, AC.currentTime);
+            }
             if (muted && 'speechSynthesis' in window) speechSynthesis.cancel();
             e.target.textContent = muted ? '🔇' : '🔊';
             refocus();
         };
+    }
+
+    /* ---------- HỆ THỐNG NHẠC NỀN TỰ SINH (DYNAMIC BGM LOOP) ---------- */
+    // Chuỗi giai điệu (Note frequencies: C, D, E, F, G, A, B)
+    const BGM_MELODY_NORMAL = [130.81, 164.81, 196.00, 261.63, 174.61, 220.00, 261.63, 329.63, 146.83, 174.61, 220.00, 293.66, 196.00, 246.94, 293.66, 392.00];
+    const BGM_MELODY_FEVER = [261.63, 329.63, 392.00, 523.25, 349.23, 440.00, 523.25, 659.25, 293.66, 349.23, 440.00, 587.33, 392.00, 493.88, 587.33, 783.99];
+    const BGM_MELODY_BOSS = [110.00, 110.00, 130.81, 110.00, 98.00, 110.00, 146.83, 130.81, 87.31, 87.31, 110.00, 87.31, 98.00, 110.00, 130.81, 98.00];
+
+    function playBgmStep() {
+        if (state !== 'play' || muted || !AC) return;
+
+        let melody = BGM_MELODY_NORMAL;
+        let noteLength = 0.16;
+
+        if (boss) {
+            melody = BGM_MELODY_BOSS;
+            noteLength = 0.11; // Tiết tấu cực nhanh khi đánh Boss
+        } else if (isFever) {
+            melody = BGM_MELODY_FEVER;
+            noteLength = 0.12; // Nhịp bay bổng, dồn dập trong Fever Mode
+        }
+
+        const note = melody[bgmStep % melody.length];
+        const t = AC.currentTime;
+
+        try {
+            // Nốt Bass nhịp nền
+            const osc = AC.createOscillator();
+            const gain = AC.createGain();
+
+            osc.type = boss ? 'sawtooth' : (isFever ? 'square' : 'triangle');
+            osc.frequency.setValueAtTime(note, t);
+
+            // Tự động glide nhẹ tạo âm synthwave
+            osc.frequency.exponentialRampToValueAtTime(note * 0.98, t + noteLength);
+
+            gain.gain.setValueAtTime(boss ? 0.08 : 0.06, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + noteLength);
+
+            osc.connect(gain);
+            gain.connect(bgmGain);
+
+            osc.start(t);
+            osc.stop(t + noteLength);
+
+            // Tiếng Hi-hat giả lập giữ nhịp
+            if (bgmStep % 2 === 1) {
+                const hat = AC.createOscillator();
+                const hatGain = AC.createGain();
+                hat.type = 'highpass';
+                hat.frequency.setValueAtTime(8000, t);
+                hatGain.gain.setValueAtTime(0.02, t);
+                hatGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+                hat.connect(hatGain);
+                hatGain.connect(bgmGain);
+                hat.start(t);
+                hat.stop(t + 0.03);
+            }
+        } catch (e) {}
+
+        bgmStep++;
+        bgmTimer = setTimeout(playBgmStep, noteLength * 1000);
+    }
+
+    function startBgm() {
+        stopBgm();
+        bgmStep = 0;
+        playBgmStep();
+    }
+
+    function stopBgm() {
+        if (bgmTimer) {
+            clearTimeout(bgmTimer);
+            bgmTimer = null;
+        }
     }
 
     /* ---------- KÍCH THƯỚC CHUẨN XÁC KHÔNG LỆCH MATRIX ---------- */
@@ -407,8 +561,10 @@
         mascot.sq = 1;
         mascot.mouth = 1;
 
-// Xác định loại đạn và màu sắc theo Skin
-        let bulletType = 'star';      // Mặc định: Ngôi sao vàng
+        playSwitchSound();
+
+        // Xác định loại đạn và màu sắc theo Skin
+        let bulletType = 'star';
         let bulletColor = '#ffd23f';
         let bulletGlow = '#ffd23f';
 
@@ -1666,6 +1822,7 @@
 
     function pauseGame() {
         if (state !== 'play') return;
+        stopBgm();
         state = 'paused';
         // Đảm bảo ẩn màn hình Home nếu lỡ đang mở
         if ($('start')) $('start').classList.add('hide');
@@ -1676,6 +1833,7 @@
     function resumeGame() {
         if (state !== 'paused') return;
         state = 'play';
+        startBgm();
         if ($('pause-modal')) $('pause-modal').classList.add('hide');
         if ($('start')) $('start').classList.add('hide');
         last = performance.now();
@@ -1684,6 +1842,9 @@
     }
 
     function begin() {
+        initAudioContext();
+        startBgm(); // Backgroud music
+
         if ($('play') && !isRevengeMode) {
             isRevengeMode = false;
         }
@@ -1738,6 +1899,7 @@
     }
 
     async function end() {
+        stopBgm();
         state = 'over';
         const finalScore = Math.round(score);
         const tipEl = $('game-tip');
@@ -1855,6 +2017,7 @@
     const btnHome = $('btn-home');
     if (btnHome) {
         btnHome.onclick = () => {
+            stopBgm();
             isRevengeMode = false;
             state = 'menu';
             if ($('over')) $('over').classList.add('hide');
