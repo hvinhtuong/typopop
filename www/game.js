@@ -237,6 +237,48 @@
         } catch (e) {}
     }
 
+    // Âm thanh kim loại khi bắn vỡ khiên chắn
+    function playShieldBreakSound() {
+        if (muted) return;
+        try {
+            initAudioContext();
+            if (!AC) return;
+            const t = AC.currentTime;
+            const o = AC.createOscillator();
+            const g = AC.createGain();
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(800, t);
+            o.frequency.exponentialRampToValueAtTime(200, t + 0.15);
+            g.gain.setValueAtTime(0.12, t);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+            o.connect(g);
+            g.connect(masterGain);
+            o.start(t);
+            o.stop(t + 0.15);
+        } catch (e) {}
+    }
+
+    // Âm thanh thiên thạch lao xuống
+    function playMeteorSpawnSound() {
+        if (muted) return;
+        try {
+            initAudioContext();
+            if (!AC) return;
+            const t = AC.currentTime;
+            const o = AC.createOscillator();
+            const g = AC.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(600, t);
+            o.frequency.exponentialRampToValueAtTime(120, t + 0.3);
+            g.gain.setValueAtTime(0.1, t);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+            o.connect(g);
+            g.connect(masterGain);
+            o.start(t);
+            o.stop(t + 0.3);
+        } catch (e) {}
+    }
+
     const sPop = n => [523, 659, 784, 1047].forEach((f, i) => snd(f * (1 + Math.min(n, 8) * .03), .14, 'triangle', .07, 0, i * .05));
 
     if ($('mute')) {
@@ -598,10 +640,27 @@
         }
 
         let power = null;
+        let isShield = false;
+        let isMeteor = false;
+
         const rand = Math.random();
-        if (rand < 0.12) power = 'bomb';
-        else if (rand < 0.25) power = 'freeze';
-        else if (rand < 0.35) power = 'heal';
+        // Tỷ lệ xuất hiện biến thể từ vựng (chỉ từ level 2 trở lên)
+        if (level >= 2 && rand < 0.14) {
+            isShield = true;
+        } else if (level >= 2 && rand < 0.24) {
+            isMeteor = true;
+            playMeteorSpawnSound();
+        } else if (rand < 0.34) {
+            power = 'bomb';
+        } else if (rand < 0.44) {
+            power = 'freeze';
+        } else if (rand < 0.52) {
+            power = 'heal';
+        }
+
+        // Tốc độ rơi: Thiên thạch x1.8 tốc độ
+        const baseVy = (28 + level * 5 + Math.random() * 12 + mode * 10) * Math.max(.85, H / 700);
+        const finalVy = isMeteor ? baseVy * 1.8 : baseVy;
 
         words.push({
             w: o.w,
@@ -609,13 +668,16 @@
             x: Math.max(m, Math.min(W - m, x)),
             y: -30,
             pw: w,
-            vy: (28 + level * 5 + Math.random() * 12 + mode * 10) * Math.max(.85, H / 700),
+            vy: finalVy,
             typed: 0,
             ph: Math.random() * 6,
-            col: COL[Math.random() * COL.length | 0],
+            col: isMeteor ? '#ff3344' : (isShield ? '#3a86ff' : COL[Math.random() * COL.length | 0]),
             locked: false,
             sc: 0,
-            power
+            power,
+            shield: isShield ? 1 : 0, // 1 là còn khiên, 0 là vỡ khiên
+            isMeteor: isMeteor,
+            smokeTimer: 0
         });
     }
 
@@ -840,6 +902,14 @@
         const feverMultiplier = isFever ? 2 : 1;
         const gain = Math.round(q.w.length * 10 * (1 + Math.min(combo, 12) * .15)) * feverMultiplier;
         score += gain;
+        // Thưởng thêm nếu tiêu diệt được Thiên thạch lao nhanh
+        if (q.isMeteor) {
+            totalKilledBank += 3; // Thưởng ngay 3 xu
+            saveCosmeticsData();
+            updateCoinsDisplay();
+            say('☄️ METEOR DOWN! +3 🪙', q.x, q.y - 35, '#ff4757', 24);
+            burst(q.x, q.y, '#ff4757', 45);
+        }
         burst(q.x, q.y, q.col, isFever ? 45 : 30);
 
         const pointText = isFever ? `🔥 +${gain} (x2) · ${q.vi}` : `+${gain} · ${q.vi}`;
@@ -1004,6 +1074,25 @@
         const freezeSlowFactor = freezeTimer > 0 ? 0.35 : 1.0;
 
         for (const q of words.slice()) {
+            if (q.isMeteor) {
+                q.smokeTimer = (q.smokeTimer || 0) + dt;
+                if (q.smokeTimer > 0.04) {
+                    q.smokeTimer = 0;
+                    parts.push({
+                        x: q.x + (Math.random() - 0.5) * 20,
+                        y: q.y - 10,
+                        vx: (Math.random() - 0.5) * 30,
+                        vy: -40 - Math.random() * 30,
+                        l: 0,
+                        m: 0.35,
+                        c: Math.random() < 0.5 ? '#ff4757' : '#ffa502',
+                        r: 3 + Math.random() * 4,
+                        star: false,
+                        rot: 0
+                    });
+                }
+            }
+
             q.ph += dt * 2;
             const nearBottom = q === target && q.y > H - 150;
             const speedFactor = (q.locked ? 0.1 : (nearBottom ? 0.65 : 1)) * freezeSlowFactor;
@@ -1029,8 +1118,20 @@
                 b.done = true;
                 burst(b.lx, b.ly, b.t.col, b.kill ? 0 : (b.isFever ? 10 : 6));
                 if (b.kill && !b.t.dead) {
-                    b.t.dead = true;
-                    kill(b.t);
+                    // Nếu là từ bọc khiên và lớp khiên vẫn còn: Phá khiên chứ chưa chết
+                    if (b.t.shield > 0) {
+                        b.t.shield = 0;
+                        b.t.locked = false;
+                        b.t.typed = 0; // Đặt lại để người chơi gõ tiếp lượt 2
+                        target = b.t;
+                        burst(b.t.x, b.t.y, '#3a86ff', 35);
+                        say('🛡️ SHIELD BROKEN!', b.t.x, b.t.y - 20, '#3a86ff', 22);
+                        playShieldBreakSound();
+                        shake = reduce ? 0 : 0.3;
+                    } else {
+                        b.t.dead = true;
+                        kill(b.t);
+                    }
                 }
             } else {
                 b.x += dx / d * s;
@@ -1152,7 +1253,19 @@
         let fillColor = isT ? 'rgba(255,210,63,.22)' : 'rgba(255,255,255,.12)';
         let badge = '';
 
-        if (q.power === 'bomb') {
+        if (q.shield > 0) {
+            badge = '🛡️';
+            strokeColor = '#3a86ff';
+            fillColor = isT ? 'rgba(58, 134, 255, 0.45)' : 'rgba(58, 134, 255, 0.22)';
+            ctx.shadowColor = '#3a86ff';
+            ctx.shadowBlur = 18 + Math.sin(t / 80) * 6;
+        } else if (q.isMeteor) {
+            badge = '☄️';
+            strokeColor = '#ff3838';
+            fillColor = isT ? 'rgba(255, 56, 56, 0.45)' : 'rgba(255, 56, 56, 0.25)';
+            ctx.shadowColor = '#ff3838';
+            ctx.shadowBlur = 22 + Math.sin(t / 60) * 8;
+        } else if (q.power === 'bomb') {
             strokeColor = '#ff4d4d';
             fillColor = 'rgba(255,77,77,.28)';
             badge = '💣';
@@ -1172,11 +1285,23 @@
             ctx.shadowBlur = 16 + Math.sin(t / 100) * 6;
         }
 
-        if (isT || q.locked) {
+        if ((isT || q.locked) && q.shield <= 0 && !q.isMeteor) {
             ctx.shadowColor = q.locked ? '#3ee6b0' : (isFever ? '#ff007f' : '#ffd23f');
             ctx.shadowBlur = 20 + Math.sin(t / 120) * 8;
             fillColor = isFever ? 'rgba(255,0,128,.32)' : 'rgba(255,210,63,.28)';
             strokeColor = isFever ? '#ff007f' : '#ffd23f';
+        }
+
+        if (q.shield > 0) {
+            strokeColor = '#3a86ff';
+            fillColor = 'rgba(58, 134, 255, 0.28)';
+            ctx.shadowColor = '#3a86ff';
+            ctx.shadowBlur = 18 + Math.sin(t / 80) * 6;
+        } else if (q.isMeteor) {
+            strokeColor = '#ff3838';
+            fillColor = 'rgba(255, 56, 56, 0.32)';
+            ctx.shadowColor = '#ff3838';
+            ctx.shadowBlur = 22 + Math.sin(t / 60) * 8;
         }
 
         rr(-q.pw / 2, -h / 2, q.pw, h, h / 2);
