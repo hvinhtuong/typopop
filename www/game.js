@@ -678,12 +678,18 @@
             shield: isShield ? 1 : 0, // 1 là còn khiên, 0 là vỡ khiên
             isMeteor: isMeteor,
             smokeTimer: 0
+            invulTimer: 0
         });
     }
 
     function pickByChar(ch) {
         let b = null;
-        for (const q of words) if (!q.locked && q.w && q.w[0] === ch && (!b || q.y > b.y)) b = q;
+        for (const q of words) {
+            // Không chọn các từ đang khóa hoặc đã chết
+            if (!q.locked && !q.dead && q.w && q.w[0] === ch) {
+                if (!b || q.y > b.y) b = q;
+            }
+        }
         return b;
     }
 
@@ -1074,6 +1080,7 @@
         const freezeSlowFactor = freezeTimer > 0 ? 0.35 : 1.0;
 
         for (const q of words.slice()) {
+            if (q.invulTimer > 0) q.invulTimer -= dt;
             if (q.isMeteor) {
                 q.smokeTimer = (q.smokeTimer || 0) + dt;
                 if (q.smokeTimer > 0.04) {
@@ -1117,18 +1124,26 @@
             if (d <= s + 8) {
                 b.done = true;
                 burst(b.lx, b.ly, b.t.col, b.kill ? 0 : (b.isFever ? 10 : 6));
+
                 if (b.kill && !b.t.dead) {
-                    // Nếu là từ bọc khiên và lớp khiên vẫn còn: Phá khiên chứ chưa chết
+                    // Nếu là từ có khiên và còn khiên: Phá khiên
                     if (b.t.shield > 0) {
                         b.t.shield = 0;
                         b.t.locked = false;
-                        b.t.typed = 0; // Đặt lại để người chơi gõ tiếp lượt 2
-                        target = b.t;
+                        b.t.typed = 0;
+                        b.t.invulTimer = 0.25; // Miễn nhiễm 0.25s để viên đạn thứ hai của Fever Mode không giết luôn từ
+                        target = b.t;         // Giữ target để người chơi gõ tiếp lượt 2
                         burst(b.t.x, b.t.y, '#3a86ff', 35);
                         say('🛡️ SHIELD BROKEN!', b.t.x, b.t.y - 20, '#3a86ff', 22);
                         playShieldBreakSound();
                         shake = reduce ? 0 : 0.3;
-                    } else {
+                    }
+                    // Nếu từ đang trong thời gian miễn nhiễm sau khi vừa vỡ khiên: Bỏ qua sát thương của viên đạn thứ 2
+                    else if (b.t.invulTimer > 0) {
+                        burst(b.t.x, b.t.y, '#ffd23f', 12);
+                    }
+                    // Bắn hạ bình thường
+                    else {
                         b.t.dead = true;
                         kill(b.t);
                     }
