@@ -128,7 +128,8 @@
     function updatePlayerNameDisplay() {
         const homeNameEl = $('home-player-name');
         if (homeNameEl) {
-            homeNameEl.textContent = '👤 ' + (playerName || 'Chưa đặt tên');
+            // Hiển thị lời chào thân thiện kèm tên người chơi
+            homeNameEl.textContent = playerName ? `👋 Chào, ${playerName}!` : '👋 Chào bạn mới!';
         }
         const hudNameEl = $('player-tag');
         if (hudNameEl) {

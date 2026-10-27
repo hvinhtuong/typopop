@@ -43,15 +43,23 @@
     <!-- Màn hình chính (Menu) -->
     <div class="ov" id="start">
         <h1>Typo Pop</h1>
+
+        <!-- Dòng vinh danh người chơi cao điểm nhất toàn cầu -->
         <div id="top-champ" class="top-champ">👑 Hãy là người đầu tiên lập kỷ lục!</div>
-        <!-- THÊM: Huy hiệu hiển thị xu tức thì -->
-        <div class="pill" id="home-coins" style="margin: 4px auto 8px; color: var(--sun); font-size: 13px; font-weight: 700;">
+
+        <!-- Xu tích lũy -->
+        <div class="pill" id="home-coins" style="margin: 4px auto 6px; color: var(--sun); font-size: 13px; font-weight: 700;">
             🪙 Xu tích lũy: 0
         </div>
+
         <p>Gõ đúng từ tiếng Anh đang rơi để bắn hạ chúng trước khi chạm đất.</p>
 
         <!-- Chọn độ khó -->
-        <div class="lv" id="modes"><button data-m="0" class="on">Dễ</button><button data-m="1">Vừa</button><button data-m="2">Khó</button></div>
+        <div class="lv" id="modes">
+            <button data-m="0" class="on">Dễ</button>
+            <button data-m="1">Vừa</button>
+            <button data-m="2">Khó</button>
+        </div>
 
         <!-- Chọn chủ đề từ vựng -->
         <div class="topic-container">
@@ -64,17 +72,9 @@
             </div>
         </div>
 
-        <!-- Hướng dẫn nhanh cho người mới -->
-        <div class="guide-mini">
-            <span class="guide-item">💣 <b>Bom:</b> Nổ sạch từ</span>
-            <span class="guide-item">❄️ <b>Băng:</b> Chậm 5s</span>
-            <span class="guide-item">💖 <b>Tim:</b> Hồi sinh</span>
-            <span class="guide-item">🔥 <b>Combo 10:</b> Fever x2</span>
-        </div>
-
-        <!-- Huy hiệu tên người chơi (Bấm vào để đổi tên mà không mất dữ liệu) -->
+        <!-- HUY HIỆU TÊN NGƯỜI CHƠI (Giao diện chào đón thân thiện, rõ ràng) -->
         <div class="player-profile-badge" id="btn-change-name" title="Nhấn để đổi tên">
-            <span id="home-player-name">👤 Người chơi</span>
+            <span id="home-player-name">👋 Chào bạn!</span>
             <span class="edit-icon">✏️ Đổi tên</span>
         </div>
 
@@ -85,7 +85,7 @@
             <button class="btn btn-sub" id="btn-quests-start">🎯 Nhiệm vụ</button>
             <button class="btn btn-sub" id="btn-notebook-start">📖 Sổ tay</button>
         </div>
-        <p style="font-size:14px;opacity:.8">Trên điện thoại: chạm vào màn hình để mở bàn phím, chạm vào từ để chọn.</p>
+        <p style="font-size:13.5px;opacity:.75;margin-top:4px">Trên điện thoại: chạm vào màn hình để mở bàn phím, chạm vào từ để chọn.</p>
     </div>
 
     <!-- Màn hình nhập tên người chơi -->
