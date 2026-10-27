@@ -300,7 +300,13 @@
     }
 
     function scheduler() {
-        if (state !== 'play' || muted || !AC) return;
+        if (state !== 'play') { bgmTimer = null; return; }  // dừng hẳn khi không chơi
+        if (muted) {
+            // vẫn giữ vòng lặp, chỉ không phát nốt
+            nextNoteTime = AC.currentTime + 0.05;
+            bgmTimer = setTimeout(scheduler, 100);
+            return;
+        }
 
         // Chọn bản nhạc dựa trên trạng thái ván đấu
         let track = TRACK_NORMAL;
@@ -342,10 +348,9 @@
         initAudioContext();
         stopBgm();
         bgmStep = 0;
-        if (AC) {
-            nextNoteTime = AC.currentTime + 0.05;
-            scheduler();
-        }
+        if (!AC) return;
+        const go = () => { nextNoteTime = AC.currentTime + 0.05; scheduler(); };
+        AC.state === 'suspended' ? AC.resume().then(go) : go();
     }
 
     function stopBgm() {
@@ -1868,7 +1873,6 @@
 
     function begin() {
         initAudioContext();
-        startBgm(); // Backgroud music
 
         if ($('play') && !isRevengeMode) {
             isRevengeMode = false;
@@ -1889,6 +1893,7 @@
         }
         state = 'play';
         last = performance.now();
+        startBgm(); // Backgroud music
 
         if (!muted && 'speechSynthesis' in window) {
             try {
