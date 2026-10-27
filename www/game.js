@@ -252,95 +252,187 @@
         };
     }
 
-    /* ---------- BỘ NHẠC NỀN ĐỘNG THEO 3 TRẠNG THÁI ---------- */
-    // 1. Nhạc thường: Giai điệu Synthwave tươi vui, thư giãn
-    const TRACK_NORMAL = {
-        bass:   [130.81, 130.81, 164.81, 164.81, 174.61, 174.61, 196.00, 196.00], // C3 - E3 - F3 - G3
-        melody: [261.63, 329.63, 392.00, 523.25, 349.23, 440.00, 392.00, 329.63], // C4 - E4 - G4 - C5 - F4 - A4 - G4 - E4
-        tempo: 0.22,
-        wave: 'triangle'
+    /* ---------- NHẠC NỀN LOFI GALAXY ---------- */
+    const mf = m => 440 * Math.pow(2, (m - 69) / 12);   // MIDI -> Hz
+
+    const LOFI = {
+        normal: {
+            step: 0.40,
+            scale: [72, 74, 76, 79, 81, 84],             // C ngũ cung
+            prog: [
+                { bass: 48, chord: [60, 64, 67, 71] },   // Cmaj7
+                { bass: 45, chord: [57, 60, 64, 67] },   // Am7
+                { bass: 41, chord: [53, 57, 60, 64] },   // Fmaj7
+                { bass: 43, chord: [55, 59, 62, 64] }    // G6
+            ]
+        },
+        fever: {
+            step: 0.32,
+            scale: [72, 74, 76, 79, 81, 84],
+            prog: [
+                { bass: 48, chord: [60, 64, 67, 71] },
+                { bass: 45, chord: [57, 60, 64, 67] },
+                { bass: 41, chord: [53, 57, 60, 64] },
+                { bass: 43, chord: [55, 59, 62, 64] }
+            ]
+        },
+        boss: {
+            step: 0.30,
+            scale: [69, 72, 74, 76, 79, 81],             // A thứ ngũ cung
+            prog: [
+                { bass: 45, chord: [57, 60, 64, 67] },   // Am7
+                { bass: 41, chord: [53, 57, 60, 64] },   // Fmaj7
+                { bass: 38, chord: [50, 53, 57, 60] },   // Dm7
+                { bass: 40, chord: [52, 55, 59, 62] }    // Em7
+            ]
+        }
     };
 
-    // 2. Nhạc Fever Mode: Electro 16-bit dồn dập, sôi nổi
-    const TRACK_FEVER = {
-        bass:   [261.63, 261.63, 329.63, 349.23, 392.00, 392.00, 440.00, 523.25],
-        melody: [523.25, 659.25, 783.99, 1046.5, 698.46, 880.00, 783.99, 659.25],
-        tempo: 0.15,
-        wave: 'square'
-    };
+    let bgmBus = null, noiseBuf = null, lastMel = -1;
 
-    // 3. Nhạc Đấu Boss: Cyber Techno dồn dập, căng thẳng, kịch tính
-    const TRACK_BOSS = {
-        bass:   [65.41, 65.41, 73.42, 65.41, 87.31, 82.41, 65.41, 98.00], // C2 Sub-bass
-        melody: [130.81, 130.81, 155.56, 130.81, 174.61, 164.81, 130.81, 196.00],
-        tempo: 0.13,
-        wave: 'sawtooth'
-    };
+    function setupBgmFx() {
+        if (bgmBus || !AC) return;
 
-    function playNote(freq, startTime, duration, type = 'sine', volume = 0.15) {
-        if (!AC || muted || freq <= 0) return;
-        try {
-            const osc = AC.createOscillator();
-            const gain = AC.createGain();
+        bgmBus = AC.createGain();
 
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, startTime);
+        // Bộ lọc làm ấm âm thanh kiểu lofi
+        const lp = AC.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = 2600;
+        lp.Q.value = 0.4;
 
-            // ADSR Envelope: Attack nhanh, Decay êm ái
-            gain.gain.setValueAtTime(0.0001, startTime);
-            gain.gain.linearRampToValueAtTime(volume, startTime + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+        // Reverb: tạo xung đáp ứng nhiễu suy giảm dần (~3 giây)
+        const conv = AC.createConvolver();
+        const len = AC.sampleRate * 3;
+        const ir = AC.createBuffer(2, len, AC.sampleRate);
+        for (let c = 0; c < 2; c++) {
+            const d = ir.getChannelData(c);
+            for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+        }
+        conv.buffer = ir;
+        const wet = AC.createGain();
+        wet.gain.value = 0.45;
 
-            osc.connect(gain);
-            gain.connect(bgmGain);
+        // Echo vọng nhẹ
+        const dl = AC.createDelay(1);
+        dl.delayTime.value = 0.5;
+        const fb = AC.createGain();
+        fb.gain.value = 0.35;
+        const dlf = AC.createBiquadFilter();
+        dlf.type = 'lowpass';
+        dlf.frequency.value = 1500;
+        const echoOut = AC.createGain();
+        echoOut.gain.value = 0.3;
 
-            osc.start(startTime);
-            osc.stop(startTime + duration);
-        } catch (e) {}
+        bgmBus.connect(lp);
+        lp.connect(bgmGain);                 // âm khô
+        lp.connect(conv); conv.connect(wet); wet.connect(bgmGain);
+        lp.connect(dl); dl.connect(dlf); dlf.connect(fb); fb.connect(dl);
+        dlf.connect(echoOut); echoOut.connect(bgmGain);
+
+        // Bộ đệm nhiễu cho hi-hat / snare
+        noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
+        const nd = noiseBuf.getChannelData(0);
+        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    }
+
+    function lofiNote(f, t, dur, o = {}) {
+        const { type = 'sine', vol = 0.1, attack = 0.02, detune = 0 } = o;
+        const osc = AC.createOscillator();
+        const g = AC.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(f, t);
+        osc.detune.value = detune;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(vol, t + attack);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        osc.connect(g);
+        g.connect(bgmBus);
+        osc.start(t);
+        osc.stop(t + dur + 0.05);
+    }
+
+    function lofiNoise(t, dur, vol, freq, filterType) {
+        const src = AC.createBufferSource();
+        src.buffer = noiseBuf;
+        const f = AC.createBiquadFilter();
+        f.type = filterType;
+        f.frequency.value = freq;
+        const g = AC.createGain();
+        g.gain.setValueAtTime(vol, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        src.connect(f); f.connect(g); g.connect(bgmBus);
+        src.start(t);
+        src.stop(t + dur + 0.02);
+    }
+
+    function lofiKick(t) {
+        const osc = AC.createOscillator();
+        const g = AC.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(120, t);
+        osc.frequency.exponentialRampToValueAtTime(45, t + 0.15);
+        g.gain.setValueAtTime(0.3, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+        osc.connect(g);
+        g.connect(bgmBus);
+        osc.start(t);
+        osc.stop(t + 0.25);
+    }
+
+    function scheduleLofiStep(step, t, P) {
+        const ch = P.prog[Math.floor(step / 8) % P.prog.length];
+        const s = step % 8;
+        const swing = (s % 2) ? P.step * 0.12 : 0;
+
+        // Pad hợp âm: nở chậm, kéo dài cả ô nhịp, hơi lệch cao độ cho cảm giác "chorus"
+        if (s === 0) {
+            ch.chord.forEach((m, i) => {
+                lofiNote(mf(m), t, P.step * 7.5, { type: 'triangle', vol: 0.05, attack: 0.6, detune: (i - 1.5) * 6 });
+            });
+            lofiNote(mf(ch.bass), t, P.step * 3.5, { vol: 0.22, attack: 0.03 });
+        }
+        if (s === 5) lofiNote(mf(ch.bass), t, P.step * 2, { vol: 0.15, attack: 0.03 });
+
+        // Trống lofi mềm
+        if (s === 0 || s === 5) lofiKick(t);
+        if (s === 2 || s === 6) lofiNoise(t, 0.14, 0.09, 1800, 'bandpass');            // snare nhẹ
+        lofiNoise(t + swing, 0.04, s % 2 ? 0.025 : 0.04, 7000, 'highpass');           // hi-hat
+
+        // Giai điệu thưa, ngẫu nhiên trong ngũ cung (không lặp nốt liền nhau)
+        if (Math.random() < 0.3) {
+            let idx;
+            do { idx = Math.random() * P.scale.length | 0; } while (idx === lastMel);
+            lastMel = idx;
+            const f = mf(P.scale[idx]);
+            lofiNote(f, t + swing, P.step * 3.5, { vol: 0.07, attack: 0.01 });
+            lofiNote(f * 2, t + swing, P.step * 2, { vol: 0.015, attack: 0.01 });      // chút âm sáng kiểu chuông
+        }
+
+        // Nốt cao lấp lánh như sao băng
+        if (Math.random() < 0.06) {
+            const f = mf(P.scale[Math.random() * P.scale.length | 0] + 12);
+            lofiNote(f, t + swing, P.step * 5, { vol: 0.035, attack: 0.005 });
+        }
     }
 
     function scheduler() {
-        if (state !== 'play') { bgmTimer = null; return; }  // dừng hẳn khi không chơi
-        if (muted) {
-            // vẫn giữ vòng lặp, chỉ không phát nốt
+        if (state !== 'play') { bgmTimer = null; return; }
+        if (!AC || !bgmBus) return;
+
+        if (muted) {                               // giữ vòng lặp sống, chỉ không phát nốt
             nextNoteTime = AC.currentTime + 0.05;
             bgmTimer = setTimeout(scheduler, 100);
             return;
         }
 
-        // Chọn bản nhạc dựa trên trạng thái ván đấu
-        let track = TRACK_NORMAL;
-        if (boss) {
-            track = TRACK_BOSS;
-        } else if (isFever) {
-            track = TRACK_FEVER;
-        }
+        const P = boss ? LOFI.boss : (isFever ? LOFI.fever : LOFI.normal);
 
-        // Lập lịch phát trước 100ms để không bao giờ bị giật tiếng
-        while (nextNoteTime < AC.currentTime + 0.1) {
-            const step = bgmStep % track.bass.length;
-
-            // 1. Phát nốt Bassline đệm nền
-            const bassFreq = track.bass[step];
-            playNote(bassFreq, nextNoteTime, track.tempo * 1.5, boss ? 'sawtooth' : 'triangle', boss ? 0.35 : 0.28);
-
-            // 2. Phát nốt Giai điệu (Melody Lead)
-            const melFreq = track.melody[step];
-            playNote(melFreq, nextNoteTime, track.tempo * 0.9, track.wave, isFever ? 0.22 : 0.18);
-
-            // 3. Tiếng gõ nhịp (Kick/Snare điện tử)
-            if (step % 2 === 0) {
-                // Nhịp Kick trầm
-                playNote(85, nextNoteTime, 0.05, 'sine', 0.25);
-            } else {
-                // Nhịp Snare lách cách
-                playNote(450, nextNoteTime, 0.03, 'triangle', 0.08);
-            }
-
-            nextNoteTime += track.tempo;
+        while (nextNoteTime < AC.currentTime + 0.15) {
+            scheduleLofiStep(bgmStep, nextNoteTime, P);
+            nextNoteTime += P.step;
             bgmStep++;
         }
-
         bgmTimer = setTimeout(scheduler, 40);
     }
 
@@ -348,7 +440,9 @@
         initAudioContext();
         stopBgm();
         bgmStep = 0;
+        lastMel = -1;
         if (!AC) return;
+        setupBgmFx();
         const go = () => { nextNoteTime = AC.currentTime + 0.05; scheduler(); };
         AC.state === 'suspended' ? AC.resume().then(go) : go();
     }
