@@ -166,7 +166,7 @@
     let tipTimer = 0, currentTipIdx = 0;
 
     let W = window.innerWidth || 400, H = window.innerHeight || 700, DPR = 1, mode = 0, state = 'menu', last = 0;
-
+    let namePromptFrom = 'home';
     let words = [], parts = [], bullets = [], floats = [], stars = [], score = 0, lives = 5, combo = 0, level = 1,
         killed = 0, hits = 0, misses = 0, missed = new Map(), target = null, spawnT = 0.5,
         shake = 0, bestEver = 0, topScores = [], lastRecordTime = 0, playerName = '', rankFrom = 'start',
@@ -2049,14 +2049,15 @@
         snd(600, .08, 'triangle', .06);
     }
 
-    function promptPlayerName() {
+    function promptPlayerName(from = 'home') {
+        namePromptFrom = from;
         state = 'name';
         if ($('start')) $('start').classList.add('hide');
         if ($('name-err')) $('name-err').classList.add('hide');
         if ($('name-modal')) $('name-modal').classList.remove('hide');
         const inp = $('player-name');
         if (inp) {
-            inp.value = playerName;
+            inp.value = playerName || '';
             setTimeout(() => {
                 inp.focus();
                 inp.select();
@@ -2078,9 +2079,19 @@
         try {
             localStorage.setItem('mtv-name', playerName);
         } catch (e) {}
+
         updatePlayerNameDisplay();
         if ($('name-modal')) $('name-modal').classList.add('hide');
-        begin();
+
+        if (namePromptFrom === 'play') {
+            // Trường hợp người chơi mới bấm Play mà chưa có tên -> vào chơi luôn
+            begin();
+        } else {
+            // Trường hợp người chơi bấm Đổi tên từ Home -> quay lại màn hình Home
+            state = 'menu';
+            if ($('start')) $('start').classList.remove('hide');
+            snd(560, .08, 'triangle', .06);
+        }
     }
 
     function pauseGame() {
@@ -2244,24 +2255,25 @@
         }
     }
 
-    // Gắn sự kiện các nút
     if ($('play')) {
         $('play').onclick = () => {
             if (playerName) {
                 begin();
             } else {
-                promptPlayerName();
+                promptPlayerName('play'); // Mở modal với mục đích vào chơi
             }
         };
     }
 
     if ($('confirm-name')) $('confirm-name').onclick = confirmNameAndPlay;
-    if ($('cancel-name')) $('cancel-name').onclick = () => {
-        state = 'menu';
-        if ($('name-modal')) $('name-modal').classList.add('hide');
-        if ($('start')) $('start').classList.remove('hide');
-        snd(480, .08, 'triangle', .06);
-    };
+    if ($('cancel-name')) {
+        $('cancel-name').onclick = () => {
+            state = 'menu';
+            if ($('name-modal')) $('name-modal').classList.add('hide');
+            if ($('start')) $('start').classList.remove('hide');
+            snd(480, .08, 'triangle', .06);
+        };
+    }
     if ($('player-name')) $('player-name').addEventListener('input', () => {
         if ($('name-err')) $('name-err').classList.add('hide');
     });
@@ -2298,7 +2310,7 @@
     if (btnChangeName) {
         btnChangeName.onclick = (e) => {
             if (e) e.stopPropagation();
-            promptPlayerName();
+            promptPlayerName('home'); // Mở modal với mục đích chỉ đổi tên rồi quay lại home
         };
     }
 
