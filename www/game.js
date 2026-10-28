@@ -164,6 +164,8 @@
     }
 
     let tipTimer = 0, currentTipIdx = 0;
+    let gameType = 'classic'; // 'classic', 'time', 'boss'
+    let timeAttackTimer = 60;
 
     let W = window.innerWidth || 400, H = window.innerHeight || 700, DPR = 1, mode = 0, state = 'menu', last = 0;
     let namePromptFrom = 'home';
@@ -606,6 +608,8 @@
         mascot = {x: W / 2, sq: 0, look: 0, mouth: 0};
         boss = null;
         bossWarningTimer = 0;
+        timeAttackTimer = 60; // Reset lại 60 giây
+
         const warnEl = $('boss-warning');
         if (warnEl) warnEl.classList.add('hide');
         const bossHud = $('boss-hud');
@@ -617,7 +621,23 @@
     function hud() {
         if ($('score')) $('score').textContent = '⭐ ' + Math.round(score);
         if ($('lvl')) $('lvl').textContent = 'Cấp ' + level;
-        if ($('hearts')) $('hearts').textContent = '💗'.repeat(Math.max(lives, 0)) + '🤍'.repeat(5 - Math.max(lives, 0));
+
+        // Xử lý hiển thị Timer hoặc Tim theo Game Mode
+        const timerPill = $('timer-pill');
+        const heartsPill = $('hearts');
+        if (gameType === 'time') {
+            if (timerPill) {
+                timerPill.style.display = 'block';
+                timerPill.textContent = `⏱️ ${Math.ceil(timeAttackTimer)}s`;
+            }
+            if (heartsPill) heartsPill.style.display = 'none';
+        } else {
+            if (timerPill) timerPill.style.display = 'none';
+            if (heartsPill) {
+                heartsPill.style.display = 'block';
+                heartsPill.textContent = '💗'.repeat(Math.max(lives, 0)) + '🤍'.repeat(5 - Math.max(lives, 0));
+            }
+        }
 
         const c = $('combo');
         if (c) {
@@ -1020,6 +1040,7 @@
             snd(160, .25, 'sawtooth', .14, .4);
 
             if (boss.hp <= 0) {
+
                 say('💥 BOSS DEFEATED! +2000 💥', W / 2, H * .4, '#ffd23f', 34);
                 addQuestProgress('boss1', 1);
                 score += 2000;
@@ -1044,6 +1065,14 @@
                 if (bossHud) bossHud.classList.add('hide');
 
                 level++;
+
+                if (gameType === 'boss') {
+                    // Nếu là chế độ Boss Rush, chuẩn bị gọi tiếp Boss cấp độ cao hơn
+                    setTimeout(() => {
+                        if (state === 'play') triggerBossBattle();
+                    }, 1200);
+                }
+
                 hud();
             }
         }
@@ -1072,7 +1101,9 @@
     }
 
     function lose(q) {
-        lives--;
+        if (gameType !== 'time') {
+            lives--; // Chỉ trừ mạng khi không phải chế độ đua thời gian
+        }
         combo = 0;
         shake = reduce ? 0 : .5;
         burst(q.x, H - 75, '#ff5d6c', 26, false);
@@ -1089,18 +1120,31 @@
         if (target === q) target = null;
         words.splice(words.indexOf(q), 1);
         hud();
-        if (lives <= 0) end();
+        if (lives <= 0 && gameType !== 'time') end();
     }
 
     /* ---------- CẬP NHẬT TỌA ĐỘ VÀ VẬT LÝ ---------- */
     function update(dt) {
         updateTip(dt);
 
+        // Xử lý đếm ngược chế độ Đua thời gian 60s
+        if (gameType === 'time') {
+            timeAttackTimer -= dt;
+            if (timeAttackTimer <= 0) {
+                timeAttackTimer = 0;
+                hud();
+                end();
+                return;
+            }
+            hud();
+        }
+
         if (freezeTimer > 0) {
             freezeTimer = Math.max(0, freezeTimer - dt);
         }
 
-        if (!boss && bossWarningTimer <= 0) {
+        // Thay vì chỉ check !boss, thêm điều kiện gameType !== 'boss'
+        if (!boss && bossWarningTimer <= 0 && gameType !== 'boss') {
             spawnT -= dt;
             if (spawnT <= 0 && words.length < 4 + level) {
                 try { spawn(); } catch (e) {}
@@ -1762,6 +1806,7 @@
         const warnEl = $('boss-warning');
         if (warnEl) warnEl.classList.remove('hide');
 
+        // Dọn sạch từ thường đang rơi
         words.forEach(q => burst(q.x, q.y, '#ff5277', 14));
         words = [];
         target = null;
@@ -1774,11 +1819,14 @@
 
             bossWarningTimer = 0;
 
-            const maxHp = 4 + Math.floor(level / 2);
+            // Trong chế độ Boss Rush, Boss sau trâu máu hơn Boss trước
+            const extraHp = gameType === 'boss' ? (level - 1) * 2 : 0;
+            const maxHp = 4 + Math.floor(level / 2) + extraHp;
+
             boss = {
                 x: W / 2,
                 y: 130,
-                vx: 80,
+                vx: 80 + Math.min(60, level * 5), // Boss di chuyển lượn nhanh dần
                 w: 130,
                 h: 60,
                 hp: maxHp,
@@ -2117,6 +2165,10 @@
     function begin() {
         initAudioContext();
 
+        if (gameType === 'boss') {
+            triggerBossBattle(); // Gọi Boss ngay lập tức
+        }
+
         if ($('play') && !isRevengeMode) {
             isRevengeMode = false;
         }
@@ -2169,6 +2221,8 @@
         document.querySelectorAll('#over-topics button').forEach(x => x.classList.toggle('on', x.dataset.topic === currentTopic));
         document.querySelectorAll('#modes button').forEach(x => x.classList.toggle('on', +x.dataset.m === mode));
         document.querySelectorAll('#over-modes button').forEach(x => x.classList.toggle('on', +x.dataset.m === mode));
+        // Thêm đồng bộ tab Game Mode
+        document.querySelectorAll('#game-types button').forEach(x => x.classList.toggle('on', x.dataset.type === gameType));
     }
 
     async function end() {
@@ -2435,6 +2489,14 @@
         if (document.hidden && state === 'play') {
             pauseGame();
         }
+    });
+
+    document.querySelectorAll('#game-types button').forEach(b => b.onclick = () => {
+        if (state === 'paused') return;
+        document.querySelectorAll('#game-types button').forEach(btn => btn.classList.remove('on'));
+        b.classList.add('on');
+        gameType = b.dataset.type;
+        snd(500, .06, 'triangle', .05);
     });
 
     function initRankTabs() {

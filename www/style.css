@@ -875,3 +875,15 @@ h1 {
     border-radius: 999px;
     font-weight: 600;
 }
+/* --- CHẾ ĐỘ CHƠI MỞ RỘNG (GAME MODES) --- */
+#game-types button.on {
+    background: var(--sky);
+    color: #0c2540;
+    border-color: var(--sky);
+    box-shadow: 0 0 12px rgba(92, 200, 255, 0.4);
+}
+
+#timer-pill {
+    font-weight: 700;
+    animation: pulse 1s infinite alternate;
+}

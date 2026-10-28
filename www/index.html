@@ -21,6 +21,7 @@
     </div>
     <div id="hud">
         <div class="pill" id="player-tag">👤 Khách</div>
+        <div class="pill" id="timer-pill" style="display:none;color:var(--sun)">⏱️ 60s</div>
         <div class="pill" id="score">⭐ 0</div>
         <div class="pill" id="combo" style="visibility:hidden">x1</div>
         <div class="pill" id="fever-pill">🔥 FEVER x2 🔥</div>
@@ -59,6 +60,16 @@
             <button data-m="0" class="on">Dễ</button>
             <button data-m="1">Vừa</button>
             <button data-m="2">Khó</button>
+        </div>
+
+        <!-- Chọn chế độ chơi (Game Modes) -->
+        <div class="topic-container" style="margin-top:2px">
+            <div class="topic-label">Chế độ chơi:</div>
+            <div class="lv" id="game-types">
+                <button data-type="classic" class="on">🌟 Cổ điển</button>
+                <button data-type="time">⏱️ Đua 60s</button>
+                <button data-type="boss">👾 Săn Boss</button>
+            </div>
         </div>
 
         <!-- Chọn chủ đề từ vựng -->
