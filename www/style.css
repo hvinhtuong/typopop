@@ -940,3 +940,65 @@ h1 {
     background: linear-gradient(135deg, rgba(255, 111, 174, 0.5), rgba(92, 200, 255, 0.5));
     box-shadow: 0 0 15px rgba(92, 200, 255, 0.4);
 }
+/* --- LAYOUT 2 TẦNG MÀN HÌNH GAME OVER --- */
+.over-action-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: min(92vw, 380px);
+    margin-top: 8px;
+}
+
+/* Tầng 1: Chơi lại & Share to rõ */
+.actions-primary {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+}
+
+.actions-primary .btn-replay {
+    flex: 1.2;
+    padding: 12px 20px;
+    font-size: clamp(16px, 4.4vw, 20px);
+}
+
+.actions-primary .btn-share {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(255, 111, 174, 0.4), rgba(92, 200, 255, 0.4));
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: #fff;
+    padding: 12px 18px;
+    font-size: clamp(15px, 4vw, 18px);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25), 0 10px 20px rgba(92, 200, 255, 0.25);
+}
+
+.actions-primary .btn-share:active {
+    transform: translateY(5px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* Tầng 2: Các nút phụ gọn gàng */
+.actions-secondary {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    justify-content: center;
+}
+
+.actions-secondary .btn-mini {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: clamp(12.5px, 3.4vw, 14.5px);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+}
+
+.actions-secondary .btn-mini:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}

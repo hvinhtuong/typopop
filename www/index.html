@@ -161,12 +161,20 @@
             </div>
         </div>
 
-        <div class="actions" style="margin-top:8px">
-            <button class="btn" id="again">Replay</button>
-            <button class="btn btn-sub" id="btn-share-card">📸 Khoe bạn bè</button>
-            <button class="btn btn-sub" id="btn-notebook-over">📖 Sổ tay</button>
-            <button class="btn btn-sub" id="btn-rank-over">🏆 Rank</button>
-            <button class="btn btn-sub" id="btn-home">🏠 Home</button>
+        <!-- CỤM NÚT KẾT THÚC VÁN (2 TẦNG NÚT CÂN ĐỐI) -->
+        <div class="over-action-group">
+            <!-- Tầng 1: Hành động chính (Chơi lại & Khoe kỷ lục) -->
+            <div class="actions-primary">
+                <button class="btn btn-replay" id="again">🔄 Chơi lại</button>
+                <button class="btn btn-share" id="btn-share-card">📸 Share</button>
+            </div>
+
+            <!-- Tầng 2: Hành động phụ (Sổ tay, Rank, Home) -->
+            <div class="actions-secondary">
+                <button class="btn-sub btn-mini" id="btn-notebook-over">📖 Sổ tay</button>
+                <button class="btn-sub btn-mini" id="btn-rank-over">🏆 Rank</button>
+                <button class="btn-sub btn-mini" id="btn-home">🏠 Home</button>
+            </div>
         </div>
     </div>
 
