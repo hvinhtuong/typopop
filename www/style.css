@@ -887,3 +887,18 @@ h1 {
     font-weight: 700;
     animation: pulse 1s infinite alternate;
 }
+/* --- MODAL THIẾT LẬP VÁN ĐẤU (LOBBY MODAL) --- */
+#lobby-modal .topic-container {
+    width: min(90vw, 360px);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 8px 12px 10px;
+}
+
+#lobby-modal .topic-label {
+    font-size: 13px;
+    color: var(--sun);
+    font-weight: 700;
+    margin-bottom: 4px;
+}

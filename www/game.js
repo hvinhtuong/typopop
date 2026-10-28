@@ -2132,10 +2132,10 @@
         if ($('name-modal')) $('name-modal').classList.add('hide');
 
         if (namePromptFrom === 'play') {
-            // Trường hợp người chơi mới bấm Play mà chưa có tên -> vào chơi luôn
-            begin();
+            // Chuyển sang màn hình chọn chế độ/độ khó
+            if ($('lobby-modal')) $('lobby-modal').classList.remove('hide');
+            syncSettingsUI();
         } else {
-            // Trường hợp người chơi bấm Đổi tên từ Home -> quay lại màn hình Home
             state = 'menu';
             if ($('start')) $('start').classList.remove('hide');
             snd(560, .08, 'triangle', .06);
@@ -2164,7 +2164,7 @@
 
     function begin() {
         initAudioContext();
-
+        if ($('lobby-modal')) $('lobby-modal').classList.add('hide');
         if (gameType === 'boss') {
             triggerBossBattle(); // Gọi Boss ngay lập tức
         }
@@ -2311,11 +2311,15 @@
 
     if ($('play')) {
         $('play').onclick = () => {
-            if (playerName) {
-                begin();
-            } else {
-                promptPlayerName('play'); // Mở modal với mục đích vào chơi
+            if (!playerName) {
+                promptPlayerName('play');
+                return;
             }
+            // Đã có tên -> Mở Modal chọn cấu hình trận đấu
+            if ($('start')) $('start').classList.add('hide');
+            if ($('lobby-modal')) $('lobby-modal').classList.remove('hide');
+            syncSettingsUI();
+            snd(520, .08, 'triangle', .06);
         };
     }
 
@@ -2349,6 +2353,7 @@
             isRevengeMode = false;
             state = 'menu';
             if ($('over')) $('over').classList.add('hide');
+            if ($('lobby-modal')) $('lobby-modal').classList.add('hide');
             if ($('start')) $('start').classList.remove('hide');
             if ($('modes')) $('modes').style.display = '';
             if ($('btn-rank-start')) $('btn-rank-start').style.display = '';
@@ -2365,6 +2370,25 @@
         btnChangeName.onclick = (e) => {
             if (e) e.stopPropagation();
             promptPlayerName('home'); // Mở modal với mục đích chỉ đổi tên rồi quay lại home
+        };
+    }
+
+    // Nút Vào trận trong Lobby Modal
+    const btnStartGame = $('btn-start-game');
+    if (btnStartGame) {
+        btnStartGame.onclick = () => {
+            if ($('lobby-modal')) $('lobby-modal').classList.add('hide');
+            begin(); // Thực sự bắt đầu ván chơi
+        };
+    }
+
+    // Nút Quay lại màn hình Home từ Lobby Modal
+    const closeLobby = $('close-lobby');
+    if (closeLobby) {
+        closeLobby.onclick = () => {
+            if ($('lobby-modal')) $('lobby-modal').classList.add('hide');
+            if ($('start')) $('start').classList.remove('hide');
+            snd(480, .08, 'triangle', .06);
         };
     }
 

@@ -41,30 +41,43 @@
         </div>
     </div>
 
-    <!-- Màn hình chính (Menu) -->
+    <!-- Màn hình chính (Home Menu tối giản, thoáng mắt) -->
     <div class="ov" id="start">
         <h1>Typo Pop</h1>
 
-        <!-- Dòng vinh danh người chơi cao điểm nhất toàn cầu -->
         <div id="top-champ" class="top-champ">👑 Hãy là người đầu tiên lập kỷ lục!</div>
 
-        <!-- Xu tích lũy -->
-        <div class="pill" id="home-coins" style="margin: 4px auto 6px; color: var(--sun); font-size: 13px; font-weight: 700;">
+        <div class="pill" id="home-coins" style="margin: 4px auto; color: var(--sun); font-size: 13px; font-weight: 700;">
             🪙 Xu tích lũy: 0
         </div>
 
-        <p>Gõ đúng từ tiếng Anh đang rơi để bắn hạ chúng trước khi chạm đất.</p>
-
-        <!-- Chọn độ khó -->
-        <div class="lv" id="modes">
-            <button data-m="0" class="on">Dễ</button>
-            <button data-m="1">Vừa</button>
-            <button data-m="2">Khó</button>
+        <!-- Lời chào & Đổi tên -->
+        <div class="player-profile-badge" id="btn-change-name" title="Nhấn để đổi tên">
+            <span id="home-player-name">👋 Chào bạn!</span>
+            <span class="edit-icon">✏️ Đổi tên</span>
         </div>
 
-        <!-- Chọn chế độ chơi (Game Modes) -->
-        <div class="topic-container" style="margin-top:2px">
-            <div class="topic-label">Chế độ chơi:</div>
+        <!-- Nút Play trọng tâm -->
+        <button class="btn" id="play" style="margin: 12px 0 6px; font-size: 26px; padding: 14px 50px;">Play</button>
+
+        <div class="actions">
+            <button class="btn btn-sub" id="btn-rank-start">🏆 Rank</button>
+            <button class="btn btn-sub" id="btn-shop-start">🛍️ Cửa hàng</button>
+            <button class="btn btn-sub" id="btn-quests-start">🎯 Nhiệm vụ</button>
+            <button class="btn btn-sub" id="btn-notebook-start">📖 Sổ tay</button>
+        </div>
+
+        <p style="font-size:12.5px; opacity:.7; margin-top:8px">Trên điện thoại: chạm màn hình để mở bàn phím, chạm vào từ để chọn.</p>
+    </div>
+
+    <!-- MODAL CHỌN CẤU HÌNH VÁN ĐẤU (TÁCH LUỒNG CHƠI) -->
+    <div class="ov hide" id="lobby-modal">
+        <h1 style="font-size:clamp(28px,8vw,44px); margin-bottom:4px">🎮 Thiết Lập Trận Đấu</h1>
+        <p style="font-size:13.5px; margin-bottom:8px">Tùy chỉnh thử thách trước khi bắt đầu</p>
+
+        <!-- 1. Chọn chế độ chơi -->
+        <div class="topic-container" style="margin-bottom:6px">
+            <div class="topic-label">1. Chế độ chơi:</div>
             <div class="lv" id="game-types">
                 <button data-type="classic" class="on">🌟 Cổ điển</button>
                 <button data-type="time">⏱️ Đua 60s</button>
@@ -72,9 +85,19 @@
             </div>
         </div>
 
-        <!-- Chọn chủ đề từ vựng -->
-        <div class="topic-container">
-            <div class="topic-label">Chủ đề:</div>
+        <!-- 2. Chọn độ khó -->
+        <div class="topic-container" style="margin-bottom:6px">
+            <div class="topic-label">2. Độ khó:</div>
+            <div class="lv" id="modes">
+                <button data-m="0" class="on">Dễ</button>
+                <button data-m="1">Vừa</button>
+                <button data-m="2">Khó</button>
+            </div>
+        </div>
+
+        <!-- 3. Chọn chủ đề từ vựng -->
+        <div class="topic-container" style="margin-bottom:12px">
+            <div class="topic-label">3. Chủ đề từ vựng:</div>
             <div class="lv" id="topics">
                 <button data-topic="all" class="on">Tất cả</button>
                 <button data-topic="it">Công nghệ</button>
@@ -83,20 +106,10 @@
             </div>
         </div>
 
-        <!-- HUY HIỆU TÊN NGƯỜI CHƠI (Giao diện chào đón thân thiện, rõ ràng) -->
-        <div class="player-profile-badge" id="btn-change-name" title="Nhấn để đổi tên">
-            <span id="home-player-name">👋 Chào bạn!</span>
-            <span class="edit-icon">✏️ Đổi tên</span>
-        </div>
-
-        <button class="btn" id="play">Play</button>
         <div class="actions">
-            <button class="btn btn-sub" id="btn-rank-start">🏆 Rank</button>
-            <button class="btn btn-sub" id="btn-shop-start">🛍️ Cửa hàng</button>
-            <button class="btn btn-sub" id="btn-quests-start">🎯 Nhiệm vụ</button>
-            <button class="btn btn-sub" id="btn-notebook-start">📖 Sổ tay</button>
+            <button class="btn" id="btn-start-game" style="padding: 10px 36px;">Vào trận 🚀</button>
+            <button class="btn btn-sub" id="close-lobby">Quay lại</button>
         </div>
-        <p style="font-size:13.5px;opacity:.75;margin-top:4px">Trên điện thoại: chạm vào màn hình để mở bàn phím, chạm vào từ để chọn.</p>
     </div>
 
     <!-- Màn hình nhập tên người chơi -->
