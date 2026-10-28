@@ -927,3 +927,16 @@ h1 {
 .btn-text-danger:active {
     transform: scale(0.95);
 }
+
+/* --- NÚT KHOE KỶ LỤC SHARE CARD --- */
+#btn-share-card {
+    background: linear-gradient(135deg, rgba(255, 111, 174, 0.3), rgba(92, 200, 255, 0.3));
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-weight: 700;
+}
+
+#btn-share-card:hover {
+    background: linear-gradient(135deg, rgba(255, 111, 174, 0.5), rgba(92, 200, 255, 0.5));
+    box-shadow: 0 0 15px rgba(92, 200, 255, 0.4);
+}

@@ -2309,6 +2309,188 @@
         }
     }
 
+    // --- HÀM TẠO ẢNH SHARE CARD & CHIA SẺ MẠNG XÃ HỘI ---
+    async function generateAndShareCard() {
+        const scW = 800, scH = 1000;
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = scW;
+        offCanvas.height = scH;
+        const sCtx = offCanvas.getContext('2d');
+
+        // 1. Nền Gradient không gian huyền ảo
+        const bgGrad = sCtx.createLinearGradient(0, 0, 0, scH);
+        bgGrad.addColorStop(0, '#2a1a6e');
+        bgGrad.addColorStop(0.5, '#1a1245');
+        bgGrad.addColorStop(1, '#0b0624');
+        sCtx.fillStyle = bgGrad;
+        sCtx.fillRect(0, 0, scW, scH);
+
+        // Vòng sáng Aura
+        const aura = sCtx.createRadialGradient(scW / 2, 450, 50, scW / 2, 450, 400);
+        aura.addColorStop(0, 'rgba(255, 210, 63, 0.22)');
+        aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        sCtx.fillStyle = aura;
+        sCtx.fillRect(0, 0, scW, scH);
+
+        // Khung viền bo tròn thẩm mỹ
+        sCtx.strokeStyle = 'rgba(255, 210, 63, 0.4)';
+        sCtx.lineWidth = 6;
+        sCtx.strokeRect(25, 25, scW - 50, scH - 50);
+
+        // 2. Tiêu đề Game
+        sCtx.textAlign = 'center';
+        sCtx.font = '700 52px Fredoka, sans-serif';
+        sCtx.fillStyle = '#ffd23f';
+        sCtx.shadowColor = '#e0457f';
+        sCtx.shadowOffsetY = 4;
+        sCtx.fillText('TYPO POP', scW / 2, 110);
+        sCtx.shadowColor = 'transparent';
+
+        // 3. Tên người chơi & Thời gian
+        sCtx.font = '600 28px Fredoka, sans-serif';
+        sCtx.fillStyle = '#ffffff';
+        sCtx.fillText(`👤 Cơ thủ: ${playerName || 'Người chơi'}`, scW / 2, 165);
+
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const timeStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} · ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        sCtx.font = '400 18px Fredoka, sans-serif';
+        sCtx.fillStyle = 'rgba(217, 211, 255, 0.75)';
+        sCtx.fillText(timeStr, scW / 2, 198);
+
+        // 4. Vẽ Mascot phóng to ở giữa tấm thẻ
+        sCtx.save();
+        sCtx.translate(scW / 2, 360);
+        sCtx.scale(2.6, 2.6);
+
+        // Màu lông theo Skin
+        let furColor = '#ffb347';
+        let gradStart = '#ffe98a', gradEnd = '#ffb347';
+        if (currentSkin === 'ninja') { furColor = '#2d3748'; gradStart = '#4a5568'; gradEnd = '#1a202c'; }
+        else if (currentSkin === 'wizard') { furColor = '#9f7aea'; gradStart = '#b794f4'; gradEnd = '#6b46c1'; }
+        else if (currentSkin === 'astro') { furColor = '#e2e8f0'; gradStart = '#ffffff'; gradEnd = '#cbd5e0'; }
+
+        sCtx.fillStyle = furColor;
+        // Tai
+        for (const d of [-1, 1]) {
+            sCtx.beginPath();
+            sCtx.moveTo(d * 14, -22);
+            sCtx.lineTo(d * 30, -46);
+            sCtx.lineTo(d * 34, -14);
+            sCtx.closePath();
+            sCtx.fill();
+        }
+        // Mặt
+        const fg = sCtx.createRadialGradient(-8, -14, 4, 0, 0, 40);
+        fg.addColorStop(0, gradStart);
+        fg.addColorStop(1, gradEnd);
+        sCtx.fillStyle = fg;
+        sCtx.beginPath();
+        sCtx.ellipse(0, 0, 38, 32, 0, 0, 6.283);
+        sCtx.fill();
+
+        // Mũ / Phụ kiện
+        if (currentSkin === 'wizard') {
+            sCtx.fillStyle = '#44337a';
+            sCtx.beginPath();
+            sCtx.moveTo(-36, -18); sCtx.lineTo(0, -65); sCtx.lineTo(36, -18);
+            sCtx.closePath(); sCtx.fill();
+            sCtx.fillStyle = '#ffd23f';
+            sCtx.beginPath(); sCtx.ellipse(0, -18, 42, 6, 0, 0, 6.283); sCtx.fill();
+        } else if (currentSkin === 'astro') {
+            sCtx.strokeStyle = '#63b3ed'; sCtx.lineWidth = 3;
+            sCtx.fillStyle = 'rgba(190, 227, 248, 0.35)';
+            sCtx.beginPath(); sCtx.arc(0, -2, 42, 0, 6.283); sCtx.fill(); sCtx.stroke();
+        } else if (currentSkin === 'ninja') {
+            sCtx.fillStyle = '#e53e3e';
+            sCtx.fillRect(-32, -18, 64, 8);
+        }
+
+        // Mắt và miệng
+        sCtx.fillStyle = currentSkin === 'ninja' ? '#ff1a1a' : '#3a1250';
+        for (const d of [-1, 1]) {
+            sCtx.beginPath(); sCtx.ellipse(d * 13, -4, 5, 6, 0, 0, 6.283); sCtx.fill();
+        }
+        sCtx.strokeStyle = currentSkin === 'ninja' ? '#ffffff' : '#3a1250';
+        sCtx.lineWidth = 2.5;
+        sCtx.beginPath();
+        sCtx.arc(0, 8, 6, .15 * Math.PI, .85 * Math.PI);
+        sCtx.stroke();
+        sCtx.restore();
+
+        // 5. Khối Điểm Kỷ Lục
+        sCtx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        sCtx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        sCtx.lineWidth = 2;
+        sCtx.beginPath();
+        sCtx.roundRect(100, 520, 600, 220, 24);
+        sCtx.fill();
+        sCtx.stroke();
+
+        sCtx.font = '600 24px Fredoka, sans-serif';
+        sCtx.fillStyle = '#d9d3ff';
+        sCtx.fillText('ĐIỂM KỶ LỤC TRẬN ĐẤU', scW / 2, 565);
+
+        sCtx.font = '700 84px Fredoka, sans-serif';
+        sCtx.fillStyle = '#3ee6b0';
+        sCtx.fillText(String(Math.round(score)), scW / 2, 655);
+
+        // 6. Thống kê chi tiết (Cấp độ, Số từ, Độ chính xác)
+        const acc = hits + misses ? Math.round(hits / (hits + misses) * 100) : 100;
+        const modeLabel = gameType === 'time' ? 'Đua 60s' : (gameType === 'boss' ? 'Săn Boss' : 'Cổ điển');
+
+        sCtx.font = '500 22px Fredoka, sans-serif';
+        sCtx.fillStyle = '#ffd23f';
+        sCtx.fillText(`🏆 Cấp ${level}  ·  🎯 Hạ ${killed} từ  ·  🔥 Chuẩn xác ${acc}%`, scW / 2, 705);
+
+        // 7. Huy hiệu chế độ & Lời thách đấu
+        sCtx.font = '600 20px Fredoka, sans-serif';
+        sCtx.fillStyle = '#5cc8ff';
+        sCtx.fillText(`Chế độ: ${modeLabel}  ·  Skin: ${SKINS_DATA.find(s => s.id === currentSkin)?.name || 'Mèo Cổ Điển'}`, scW / 2, 790);
+
+        sCtx.font = '500 20px Fredoka, sans-serif';
+        sCtx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        sCtx.fillText('Bạn có gõ nhanh hơn tôi không? Thử ngay Typo Pop!', scW / 2, 850);
+
+        // Watermark chân trang
+        sCtx.font = '400 16px Fredoka, sans-serif';
+        sCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        sCtx.fillText('⌨️ Typo Pop Web Game · Luyện gõ từ vựng tiếng Anh', scW / 2, 940);
+
+        // 8. Thực hiện Chia sẻ hoặc Tải ảnh về
+        offCanvas.toBlob(async (blob) => {
+            if (!blob) return;
+            const file = new File([blob], `typopop-record-${Date.now()}.png`, { type: 'image/png' });
+
+            // Nếu thiết bị hỗ trợ chia sẻ trực tiếp (Mobile Browser)
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        title: 'Kỷ lục Typo Pop của tôi!',
+                        text: `Tôi vừa đạt ⭐ ${Math.round(score)} điểm tại Typo Pop! Bạn có vượt qua được không?`,
+                        files: [file]
+                    });
+                    return;
+                } catch (err) {
+                    if (err.name !== 'AbortError') console.warn('Lỗi Share API:', err);
+                }
+            }
+
+            // Phương án dự phòng: Tự động tải file ảnh về máy
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `TypoPop-${playerName || 'Player'}-${Math.round(score)}pts.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(downloadUrl);
+
+            say('📸 ĐÃ TẢI ẢNH KỶ LỤC CÁ NHÂN!', W / 2, H * .4, '#ffd23f', 26);
+            snd(784, .18, 'triangle', .1);
+        }, 'image/png');
+    }
+
     if ($('play')) {
         $('play').onclick = () => {
             if (!playerName) {
@@ -2825,6 +3007,16 @@
             fetchTopChamp();
             updateCoinsDisplay();
             snd(480, .08, 'triangle', .06);
+        };
+    }
+
+    // Bắt sự kiện bấm nút "📸 Khoe kỷ lục cá nhân"
+    const btnShareCard = $('btn-share-card');
+    if (btnShareCard) {
+        btnShareCard.onclick = (e) => {
+            if (e) e.stopPropagation();
+            generateAndShareCard();
+            snd(560, .08, 'triangle', .06);
         };
     }
 
