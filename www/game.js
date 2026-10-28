@@ -2392,6 +2392,41 @@
         };
     }
 
+    // Xử lý Xóa toàn bộ dữ liệu game
+    const btnResetData = $('btn-reset-data');
+    if (btnResetData) {
+        btnResetData.onclick = () => {
+            const confirmed = confirm(
+                '⚠️ CẢNH BÁO: Bạn có chắc chắn muốn xoá toàn bộ dữ liệu?\n\n' +
+                '- Tất cả Skin đã mua sẽ bị mất\n' +
+                '- Toàn bộ Xu tích lũy sẽ về 0\n' +
+                '- Kỷ lục điểm số và Sổ tay từ vựng sẽ bị xóa\n\n' +
+                'Hành động này không thể hoàn tác!'
+            );
+
+            if (confirmed) {
+                // Xóa các key liên quan của Typo Pop
+                const keysToRemove = [
+                    'mtv-name',
+                    'mtv-best',
+                    'mtv-top5',
+                    'mtv-notebook',
+                    'mtv-total-killed',
+                    'mtv-current-skin',
+                    'mtv-unlocked-skins',
+                    'mtv-daily-quests',
+                    'mtv-achievements',
+                    'mtv-quest-date'
+                ];
+                keysToRemove.forEach(k => localStorage.removeItem(k));
+
+                snd(180, .25, 'sawtooth', .1, .4);
+                alert('Đã xóa toàn bộ dữ liệu! Trò chơi sẽ khởi động lại.');
+                window.location.reload();
+            }
+        };
+    }
+
     function renderQuests() {
         const box = $('quest-list');
         if (!box) return;
