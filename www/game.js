@@ -1436,140 +1436,328 @@
     function drawMascot(t) {
         const m = mascot;
         const x = isNaN(m.x) ? W / 2 : m.x;
-        const y = H - 78 + Math.sin(t / 300) * 3;
-        const s = 1 + (m.sq || 0) * .18, k = 1 - (m.sq || 0) * .14;
+        const y = H - 85 + Math.sin(t / 250) * 4; // Tăng nhịp thở phập phồng tự nhiên
+        const s = 1 + (m.sq || 0) * .15, k = 1 - (m.sq || 0) * .12;
 
         ctx.save();
         ctx.translate(x, y);
-        ctx.scale(s * k, s / k * 1.0);
+        ctx.scale(s * k, s / k);
 
-        let furColor = '#ffb347';
-        let faceGradientStart = '#ffe98a';
-        let faceGradientEnd = '#ffb347';
+        // -------------------------
+        // 1. THIẾT LẬP MÀU SẮC ĐA TẦNG VÀ HIỆU ỨNG ÁNH SÁNG 3D
+        // -------------------------
+        let furColor = '#ff9233'; // Cam 3D ấm hơn
+        let gradStart = '#ffe596', gradEnd = '#e66000';
+        let innerEarColor = '#ff6b8b';
+        let accessoriesColor = '#00f0ff'; // Led xanh neon mặc định
 
         if (currentSkin === 'ninja') {
-            furColor = '#2d3748';
-            faceGradientStart = '#4a5568';
-            faceGradientEnd = '#1a202c';
+            furColor = '#1f242e'; gradStart = '#3a4454'; gradEnd = '#0f1115';
+            innerEarColor = '#ff3b30'; accessoriesColor = '#ff0033';
         } else if (currentSkin === 'wizard') {
-            furColor = '#9f7aea';
-            faceGradientStart = '#b794f4';
-            faceGradientEnd = '#6b46c1';
+            furColor = '#5e2ca8'; gradStart = '#9b5de5'; gradEnd = '#240046';
+            innerEarColor = '#f15bb5'; accessoriesColor = '#ffb703';
         } else if (currentSkin === 'astro') {
-            furColor = '#e2e8f0';
-            faceGradientStart = '#ffffff';
-            faceGradientEnd = '#cbd5e0';
+            furColor = '#d0d8e8'; gradStart = '#ffffff'; gradEnd = '#7a8a9e';
+            innerEarColor = '#a8dadc'; accessoriesColor = '#48cae4';
         }
 
         if (isFever) {
-            furColor = '#ff79c6';
-            faceGradientStart = '#ff92d0';
-            faceGradientEnd = '#ff3b9d';
+            accessoriesColor = '#ff007f';
         }
 
-        ctx.fillStyle = furColor;
-
+        // -------------------------
+        // 2. VẼ TAI 3D (ĐA TẦNG & SẮC SẢO)
+        // -------------------------
         for (const d of [-1, 1]) {
+            ctx.save();
+            ctx.scale(d, 1);
+
+            // Tai ngoài có khối bóng
+            const earGrad = ctx.createLinearGradient(12, -22, 28, -52);
+            earGrad.addColorStop(0, furColor);
+            earGrad.addColorStop(1, gradEnd);
+            ctx.fillStyle = earGrad;
             ctx.beginPath();
-            ctx.moveTo(d * 14, -22);
-            ctx.lineTo(d * 30, -46);
-            ctx.lineTo(d * 34, -14);
+            ctx.moveTo(12, -20);
+            ctx.quadraticCurveTo(18, -48, 28, -50);
+            ctx.quadraticCurveTo(32, -32, 31, -12);
             ctx.closePath();
             ctx.fill();
+
+            // Tai trong có chiều sâu (Hốc tai)
+            ctx.fillStyle = innerEarColor;
+            ctx.beginPath();
+            ctx.moveTo(16, -22);
+            ctx.quadraticCurveTo(20, -42, 25, -44);
+            ctx.quadraticCurveTo(27, -30, 26, -14);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
         }
 
-        const g = ctx.createRadialGradient(-8, -14, 4, 0, 0, 40);
-        g.addColorStop(0, faceGradientStart);
-        g.addColorStop(1, faceGradientEnd);
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 38, 32, 0, 0, 6.283);
-        ctx.fill();
+        // -------------------------
+        // 3. VẼ ĐẦU VÀ MẶT (BO TRÒN KHỐI 3D)
+        // -------------------------
+        const faceGrad = ctx.createRadialGradient(-6, -16, 5, 0, 2, 45);
+        faceGrad.addColorStop(0, gradStart);
+        faceGrad.addColorStop(0.5, furColor);
+        faceGrad.addColorStop(1, gradEnd);
+        ctx.fillStyle = faceGrad;
 
-        if (currentSkin === 'wizard') {
-            ctx.fillStyle = '#44337a';
+        ctx.shadowColor = 'rgba(0,0,0,0.45)';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 42, 36, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0; // Tắt shadow
+
+        // Má hồng dễ thương
+        const cheekGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, 8);
+        cheekGrad.addColorStop(0, 'rgba(255,100,130,0.7)');
+        cheekGrad.addColorStop(1, 'rgba(255,100,130,0)');
+        ctx.fillStyle = cheekGrad;
+        for (const d of [-1, 1]) {
+            ctx.save();
+            ctx.translate(d * 24, 6);
             ctx.beginPath();
-            ctx.moveTo(-36, -18);
-            ctx.lineTo(0, -65);
-            ctx.lineTo(36, -18);
+            ctx.ellipse(0, 0, 9, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // -------------------------
+        // 4. TRANG BỊ ĐẶC TRƯNG CYBERNETIC & SKIN
+        // -------------------------
+        if (currentSkin === 'wizard') {
+            // Mũ Phù Thủy huyền bí
+            ctx.fillStyle = '#311b92';
+            ctx.beginPath();
+            ctx.moveTo(-44, -16);
+            ctx.quadraticCurveTo(-38, -60, 0, -82);
+            ctx.quadraticCurveTo(32, -60, 44, -16);
             ctx.closePath();
             ctx.fill();
 
-            ctx.fillStyle = '#ffd23f';
+            // Viền mũ
+            ctx.fillStyle = accessoriesColor;
+            ctx.shadowColor = accessoriesColor;
+            ctx.shadowBlur = 10;
             ctx.beginPath();
-            ctx.ellipse(0, -18, 42, 6, 0, 0, 6.283);
+            ctx.ellipse(0, -16, 48, 8, 0, 0, Math.PI * 2);
             ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Ngôi sao vàng phát sáng trên mũ
+            ctx.fillStyle = '#ffd23f';
+            starPath(0, -55, 9, t/500);
+            ctx.fill();
+
         } else if (currentSkin === 'astro') {
-            ctx.strokeStyle = '#63b3ed';
-            ctx.lineWidth = 3;
-            ctx.fillStyle = 'rgba(190, 227, 248, 0.35)';
+            // Mũ bảo hiểm Phi hành gia 3D
+            ctx.strokeStyle = accessoriesColor;
+            ctx.lineWidth = 4;
+            ctx.fillStyle = 'rgba(72, 202, 228, 0.22)';
+
+            ctx.shadowColor = accessoriesColor;
+            ctx.shadowBlur = 12;
             ctx.beginPath();
-            ctx.arc(0, -2, 42, 0, 6.283);
+            ctx.arc(0, -3, 46, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
-        } else if (currentSkin === 'ninja') {
-            ctx.fillStyle = '#e53e3e';
-            ctx.fillRect(-32, -18, 64, 8);
-        }
+            ctx.shadowBlur = 0;
 
-        ctx.fillStyle = 'rgba(255,111,174,.6)';
-        for (const d of [-1, 1]) {
+            // Khung bóng kính
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
             ctx.beginPath();
-            ctx.ellipse(d * 23, 8, 7, 4.5, 0, 0, 6.283);
+            ctx.ellipse(-12, -18, 16, 10, Math.PI / 6, 0, Math.PI * 2);
             ctx.fill();
+
+        } else if (currentSkin === 'ninja' || true) {
+            // Cả skin thường cũng có Visor công nghệ cho giống trong Logo!
+            const isNinja = currentSkin === 'ninja';
+
+            // Kính visor công nghệ cao (Cyber Visor)
+            ctx.fillStyle = isNinja ? '#121620' : 'rgba(15, 23, 42, 0.95)';
+            ctx.strokeStyle = accessoriesColor;
+            ctx.lineWidth = 2.5;
+            ctx.shadowColor = accessoriesColor;
+            ctx.shadowBlur = 10;
+
+            ctx.beginPath();
+            ctx.roundRect(-36, -18, 72, 20, 6);
+            ctx.fill();
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Đèn LED chạy trên kính
+            ctx.fillStyle = accessoriesColor;
+            ctx.beginPath();
+            ctx.roundRect(-30, -11, 60, 4, 2);
+            ctx.fill();
+
+            // Chữ "PO" hoặc chữ chạy mờ kỹ thuật số
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 7px Fredoka, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚡ READY ⚡', 0, -11);
+
+            // Bọc ốp tai nghe cyber (Earcups)
+            ctx.fillStyle = isNinja ? '#1a1d24' : '#592c00';
+            ctx.strokeStyle = accessoriesColor;
+            ctx.lineWidth = 2;
+            for (const d of [-1, 1]) {
+                ctx.beginPath();
+                ctx.roundRect(d * 42 - 5, -15, 10, 24, 4);
+                ctx.fill();
+                ctx.stroke();
+            }
         }
 
+        // -------------------------
+        // 5. MẮT VÀ BỘ RÂU MÈO CÔNG NGHỆ KHÁC BIỆT
+        // -------------------------
         let lx = 0, ly = 0;
         if (target) {
             const dx = target.x - x, dy = target.y - y, d = Math.hypot(dx, dy) || 1;
-            lx = dx / d * 4;
-            ly = dy / d * 3;
+            lx = dx / d * 5;
+            ly = dy / d * 4;
         }
 
-        if (isFever) {
-            ctx.save();
-            ctx.fillStyle = '#111';
-            ctx.shadowColor = '#00f2fe';
-            ctx.shadowBlur = 12;
-            ctx.beginPath();
-            ctx.moveTo(-24, -10);
-            ctx.lineTo(24, -10);
-            ctx.lineTo(18, 4);
-            ctx.lineTo(-18, 4);
-            ctx.closePath();
-            ctx.fill();
+        const blink = Math.sin(t / 800) > .96 ? .1 : 1;
+        ctx.fillStyle = currentSkin === 'ninja' ? '#ff2a2a' : '#2b1000';
 
-            ctx.strokeStyle = '#00f2fe';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(-16, -2);
-            ctx.lineTo(-6, -2);
-            ctx.moveTo(6, -2);
-            ctx.lineTo(16, -2);
-            ctx.stroke();
-            ctx.restore();
-        } else {
-            const blink = Math.sin(t / 900) > .97 ? .15 : 1;
-            ctx.fillStyle = currentSkin === 'ninja' ? '#ff1a1a' : '#3a1250';
+        // Mắt tròn sâu thẳm
+        if (currentSkin !== 'ninja' && currentSkin !== 'astro' && currentSkin !== 'wizard') {
+            // Mắt thường phía dưới kính visor (nếu bỏ visor)
             for (const d of [-1, 1]) {
                 ctx.beginPath();
-                ctx.ellipse(d * 13 + lx, -4 + ly, 5, 6 * blink, 0, 0, 6.283);
+                ctx.ellipse(d * 14 + lx, -3 + ly, 6, 7 * blink, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        ctx.strokeStyle = currentSkin === 'ninja' ? '#ffffff' : '#3a1250';
-        ctx.lineWidth = 2.5;
+        // Miệng nhỏ dễ thương
+        ctx.strokeStyle = currentSkin === 'ninja' ? '#ff3b30' : '#4e2501';
+        ctx.lineWidth = 3;
         ctx.lineCap = 'round';
         ctx.beginPath();
-        if (m.mouth > .2) {
-            ctx.fillStyle = '#e0457f';
-            ctx.ellipse(0, 12, 6, 4 + m.mouth * 5, 0, 0, 6.283);
+        if (m.mouth > .18) {
+            ctx.fillStyle = '#ff4d6d';
+            ctx.beginPath();
+            ctx.ellipse(0, 10, 6, 3 + m.mouth * 6, 0, 0, Math.PI * 2);
             ctx.fill();
         } else {
-            ctx.arc(0, 8, 6, .15 * Math.PI, .85 * Math.PI);
+            ctx.arc(-3, 8, 4, 0, Math.PI * 0.85);
+            ctx.moveTo(3, 8);
+            ctx.arc(3, 8, 4, Math.PI * 0.15, Math.PI);
             ctx.stroke();
         }
+
+        // Râu mèo 3D phản quang
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        if (isFever) ctx.strokeStyle = 'rgba(255, 0, 127, 0.6)';
+        ctx.lineWidth = 1.8;
+        for (const d of [-1, 1]) {
+            ctx.beginPath();
+            ctx.moveTo(d * 30, 4);
+            ctx.lineTo(d * 52, 1);
+            ctx.moveTo(d * 31, 9);
+            ctx.lineTo(d * 54, 8);
+            ctx.stroke();
+        }
+
+        // Cổ & Vòng đeo (Collar) phát sáng
+        ctx.fillStyle = '#3a0c00';
+        if (currentSkin === 'ninja') ctx.fillStyle = '#0f1115';
+        ctx.beginPath();
+        ctx.ellipse(0, 28, 22, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = accessoriesColor;
+        ctx.shadowColor = accessoriesColor;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(0, 31, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.restore(); // Kết thúc vẽ mèo
+
+        // -------------------------
+        // 6. VẼ BÀN PHÍM CƠ LED NEON (KEYBOARD VEHICLE) CHẠY DƯỚI CHÂN
+        // -------------------------
+        ctx.save();
+        ctx.translate(x, y + 42 + Math.sin(t / 150) * 2); // Khớp theo nhịp bập bềnh của mèo
+
+        const kbW = 100, kbH = 34;
+
+        // Đổ bóng phát sáng (LED Underglow) dưới bàn phím
+        const ledGrad = ctx.createRadialGradient(0, 10, 5, 0, 10, 65);
+        ledGrad.addColorStop(0, accessoriesColor);
+        ledGrad.addColorStop(0.5, 'rgba(0, 240, 255, 0.15)');
+        ledGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = ledGrad;
+        ctx.beginPath();
+        ctx.ellipse(0, 10, 75, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Thân bàn phím cơ 3D (Mechanical Case)
+        ctx.fillStyle = '#1c1c24';
+        ctx.strokeStyle = accessoriesColor;
+        ctx.lineWidth = 3.5;
+
+        ctx.beginPath();
+        ctx.moveTo(-kbW / 2, -kbH / 2);
+        ctx.lineTo(kbW / 2, -kbH / 2);
+        ctx.lineTo(kbW / 2 - 8, kbH / 2);
+        ctx.lineTo(-kbW / 2 + 8, kbH / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Mặt vát 3D bàn phím
+        ctx.fillStyle = '#101014';
+        ctx.beginPath();
+        ctx.moveTo(-kbW / 2 + 6, -kbH / 2 + 3);
+        ctx.lineTo(kbW / 2 - 6, -kbH / 2 + 3);
+        ctx.lineTo(kbW / 2 - 12, kbH / 2 - 3);
+        ctx.lineTo(-kbW / 2 + 12, kbH / 2 - 3);
+        ctx.closePath();
+        ctx.fill();
+
+        // Vẽ các Switch phím cơ rực LED (Matrix Keycaps)
+        const rowCount = 3, colCount = 9;
+        const kw = 7.5, kh = 4.5;
+        ctx.fillStyle = '#2b2b36';
+
+        // Tạo dải LED RGB lấp lánh tùy biến theo thời gian
+        for (let r = 0; r < rowCount; r++) {
+            for (let c = 0; c < colCount; c++) {
+                const px = -kbW / 2 + 17 + c * 8.2 + r * 1.5;
+                const py = -kbH / 2 + 8 + r * 6.8;
+
+                // Ánh sáng phím nảy ngẫu nhiên hoặc theo nhịp Fever
+                if (isFever || (Math.sin(t / 200 + c) > 0.4)) {
+                    ctx.fillStyle = accessoriesColor;
+                } else {
+                    ctx.fillStyle = '#3a3e4c';
+                }
+
+                ctx.beginPath();
+                ctx.roundRect(px, py, kw, kh, 1.2);
+                ctx.fill();
+            }
+        }
+
+        // Tấm đẩy lực 3D phía sau (Back Exhaust)
+        ctx.strokeStyle = accessoriesColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-kbW / 2 + 15, kbH / 2 - 3);
+        ctx.lineTo(kbW / 2 - 15, kbH / 2 - 3);
+        ctx.stroke();
+
         ctx.restore();
     }
 
